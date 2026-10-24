@@ -132,8 +132,28 @@ try {
   await A.getByRole('heading', { name: 'Your little invitation is waiting.' }).waitFor();
   await B.getByRole('heading', { name: 'Maybe this is your first hello.' }).waitFor();
   pass('One-sided hello intent stays private to the other author');
+  await A.evaluate(async () => {
+    const { game } = await import('/src/game.ts');
+    const read = game.helloInfo.bind(game);
+    let failed = false;
+    game.helloInfo = async (...args) => {
+      if (!failed) {
+        failed = true;
+        throw Error('Synthetic invitation transport failure');
+      }
+      return read(...args);
+    };
+  });
   await B.getByRole('button', { name: 'I’m open to saying hi', exact: true }).click();
+  await A.getByRole('alert').filter({ hasText: 'Your invitation couldn’t open.' }).waitFor();
+  assert.equal(await A.locator('.recognition-phrase').count(), 0);
+  await screen(A, 'hello-error-360.png');
+  await A.getByRole('button', { name: 'Check invitation again', exact: true }).click();
   await A.getByRole('heading', { name: 'You’re both up for a hello.' }).waitFor();
+  assert.equal(await A.locator('.hello-error').count(), 0);
+  pass(
+    'A failed private invitation read offers retry, keeps details hidden and clears the error after recovery',
+  );
   await B.getByRole('heading', { name: 'You’re both up for a hello.' }).waitFor();
   assert.equal(
     await A.locator('.recognition-phrase').innerText(),
