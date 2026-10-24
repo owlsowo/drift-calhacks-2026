@@ -118,6 +118,11 @@
       "viewport": "1440x1000",
       "artifact": "storage-unavailable-1440x1000.png",
       "observation": "Storage failures are visible and the draft label says kept in this tab; in-memory request metadata survives another read and submission works."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "hello-error-360.png",
+      "observation": "A failed private invitation read shows a direct retry action without revealing a phrase; subsequent retry succeeds and removes the stale error."
     }
   ]
 }

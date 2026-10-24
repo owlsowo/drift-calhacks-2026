@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-24T11:27:43.996085+00:00",
+  "checks": [
+    {
+      "service": "Mana",
+      "surface": "task in-app browser",
+      "observation": "Redirected to landing page with sign in and account creation; no authenticated workspace available in this surface.",
+      "result": "workflow not performed"
+    },
+    {
+      "service": "Figma",
+      "surface": "task in-app browser",
+      "observation": "Public homepage offers Log in and Get started; no connected Figma editing plugin or authenticated workspace available in this surface.",
+      "result": "workflow not performed"
+    }
+  ],
+  "limit": "These observations do not establish whether the owner has accounts in another browser. No account was created, no private code uploaded, and no workflow eligibility claimed."
+}

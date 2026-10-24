@@ -18,10 +18,12 @@ export function HelloPanel({
   const [details, setDetails] = useState<HelloDetails>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
   const expired = !invitation || time >= invitation.expiresMs;
   useEffect(() => {
     let current = true;
     setDetails(undefined);
+    setError('');
     if (connected && invitation?.mutual && !expired) {
       game
         .helloInfo(cardId)
@@ -29,13 +31,13 @@ export function HelloPanel({
           if (current) setDetails(value);
         })
         .catch(() => {
-          if (current) setError('Reconnect to check your invitation.');
+          if (current) setError('Your invitation couldn’t open. Try checking it again.');
         });
     }
     return () => {
       current = false;
     };
-  }, [cardId, invitation?.mutual, expired, connected]);
+  }, [cardId, invitation?.mutual, expired, connected, retry]);
   async function toggle() {
     if (busy) return;
     setBusy(true);
@@ -113,9 +115,16 @@ export function HelloPanel({
         </button>
       )}
       {error && (
-        <p role="alert" className="hello-error">
-          {error}
-        </p>
+        <>
+          <p role="alert" className="hello-error">
+            {error}
+          </p>
+          {connected && invitation?.mutual && !expired && (
+            <button className="text-button" onClick={() => setRetry((value) => value + 1)}>
+              Check invitation again
+            </button>
+          )}
+        </>
       )}
     </aside>
   );
