@@ -2024,3 +2024,52 @@ a {
     align-items: center;
   }
 }
+
+/* Six word-sized marks, rather than letter guesses: one small daily ritual. */
+.word-feedback {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 11px 12px;
+  font-variant-numeric: tabular-nums;
+}
+.word-feedback .word-dots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-column: 1 / -1;
+  gap: 7px;
+  width: 100%;
+  margin: 0;
+}
+.word-feedback .word-dots > span {
+  width: auto;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #8a9a8b;
+  border-radius: 3px;
+  background: #fffdf633;
+  color: #586951;
+  font:
+    500 12px 'DM Sans',
+    sans-serif;
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: ease-out;
+}
+.word-feedback .word-dots > span.filled {
+  background: #dce6d7;
+  border-color: #607e60;
+  color: #244a3e;
+  box-shadow: inset 0 -2px 0 #48674918;
+  font-size: 17px;
+}
+.word-feedback .word-dots.over > span.filled {
+  background: #eeded1;
+  border-color: #ac7150;
+  color: #7c3c25;
+}
+@media (prefers-reduced-motion: reduce) {
+  .word-feedback .word-dots > span {
+    transition: none;
+  }
+}
