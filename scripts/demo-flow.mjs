@@ -141,15 +141,10 @@ try {
   await click(B.page, button(B.page, 'Toss my bottle'), 'B tosses a setup');
   await button(B.page, 'Catch a bottle').waitFor();
   const A = await context();
-  await ready(A.page, 'Step 1 · Write six words');
+  await ready(A.page, 'Step 1 · Pick up a stranger’s bottle');
   await wait(2500);
-  await shake(A.page, 'A shakes the bottle to start a round');
-  await type(A.page, 'I taught the octopus insider trading.');
-  await click(A.page, button(A.page, 'Toss my bottle'), 'A tosses a setup');
-  await button(A.page, 'Catch a bottle').waitFor();
-  await caption(A.page, 'Step 2 · Catch another writer’s setup');
-  await discover(A.page, 'catch / approved setup is waiting');
   await shake(A.page, 'A shakes the bottle to catch B’s setup');
+  await caption(A.page, 'Step 2 · Open the note over the sea');
   await click(
     A.page,
     A.page.getByRole('button', { name: 'Open bottle', exact: false }),
@@ -174,6 +169,15 @@ try {
   await click(A.page, button(A.page, 'Save image'), 'A downloads the real postcard image');
   await (await download).saveAs(path.join(work, 'recorded-postcard.png'));
   await wait(2000);
+  await caption(A.page, 'Step 5 · Leave a beginning for the next person');
+  await click(A.page, button(A.page, 'Toss my own bottle'), 'A chooses to pass a beginning on');
+  await type(A.page, 'I taught the octopus insider trading.');
+  await click(
+    A.page,
+    button(A.page, 'Toss my bottle'),
+    'A tosses their own beginning after keeping the postcard',
+  );
+  await wait(1800);
   const aVideo = A.page.video();
   await A.ctx.close();
   await click(B.page, button(B.page, 'My postcards 1'), 'B opens the live returned postcard');

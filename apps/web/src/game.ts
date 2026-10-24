@@ -235,6 +235,10 @@ export const game = {
     if (!connection?.isActive) throw Error('Connect before starting your story.');
     await connection.reducers.startRound({});
   },
+  async startCatching() {
+    if (!connection?.isActive) throw Error('Connect before catching a bottle.');
+    await connection.reducers.startCatching({});
+  },
   async verifyGate(token: string) {
     if (!connection?.isActive) throw Error('Reconnect before verifying your shore check.');
     const value = await connection.procedures.verifyShore({ token });

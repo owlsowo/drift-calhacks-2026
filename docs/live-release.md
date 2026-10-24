@@ -19,3 +19,7 @@ An hourly private schedule removes expired requests/bottles after seven days and
 Turnstile uses server-side Siteverify, checks the expected hostname and action, and binds a one-hour pass to the caller identity. The UI alone cannot authorize a paid action. Isolated tests explicitly clear real provider and Turnstile credentials. Production secrets stay in ignored environment files and server environment values.
 
 The private repository stays private. A judge still needs source access. Physical-phone behavior, independent moderation labels, and actual Figma/Mana workflow entries remain separate verification tasks.
+
+## Catch-first daily ritual
+
+The main shake/pick action now catches a peer beginning before asking for writing. Reply moderation creates the postcard immediately; an optional invitation then allows the writer to toss their own beginning in the same round or keep the result and leave. The write-first dock control remains. A returned bottle changes the bucket label based on actual co-author ownership. Seven prompts rotate weekly from October 24, with the first two preserving the original demo days. New example lines are development samples, not human-written production starters. `catch-first.json` and 42 server tests cover the transitions and empty-pool rollback.

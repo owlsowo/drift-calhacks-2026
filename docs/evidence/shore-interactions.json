@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-10-24T20:06:27.407Z",
+  "checkedAt": "2026-10-24T20:47:25.369Z",
   "mode": "Isolated local database; synthetic pointer and motion events; no physical-phone verification or paid AI calls",
   "checks": [
     "Real sea pixels move, pause without drift, resume, and stop during a simulated hidden-tab event",
     "Single-direction cursor movement does not activate a bottle",
-    "Deliberate cursor shaking starts one round",
+    "Write-first remains available alongside the new catch-first entry",
     "A failed catch stays on the shore with a visible error and permits another shake",
     "Caught paper begins crumpled, unfolds, and leaves the real sea behind the readable note at both viewports",
     "Finished postcard opens on paper over the same sea",

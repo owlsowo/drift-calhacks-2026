@@ -259,7 +259,7 @@ export const connected = db.clientConnected((ctx) => refresh(ctx));
 export const refresh_day = db.reducer((ctx) => refresh(ctx));
 export const server_time = db.procedure(t.f64(), (ctx) => now(ctx));
 
-export const start_round = db.reducer((ctx) => {
+function startRound(ctx: Tx, initialStage: 'write' | 'catch') {
   ready(ctx);
   refresh(ctx);
   const day = dayOf(now(ctx));
@@ -268,17 +268,17 @@ export const start_round = db.reducer((ctx) => {
   const active = own.find(
     (r) => r.stage !== 'done' && (r.day === day || (r.stage === 'reply' && r.leaseMs > now(ctx))),
   );
-  if (active) return;
+  if (active) return active;
   const today = own.filter((r) => r.day === day);
   if (today.length >= ROUNDS_PER_DAY)
     fail('Three little stories is today’s limit. Come back after the tide turns.');
-  ctx.db.round.insert({
+  return ctx.db.round.insert({
     id: ctx.newUuidV4().toString(),
     owner: ctx.sender,
     day,
     promptId: promptForDay(day).id,
     promptJson: promptJson(day),
-    stage: 'write',
+    stage: initialStage,
     setupId: '',
     assignmentId: '',
     leaseMs: 0,
@@ -293,6 +293,14 @@ export const start_round = db.reducer((ctx) => {
     inFlight: '',
     busyUntil: 0,
   });
+}
+export const start_round = db.reducer((ctx) => {
+  const r = startRound(ctx, 'write');
+  if (r.stage === 'catch' && !r.setupId && !r.cardId) saveRound(ctx, { ...r, stage: 'write' });
+});
+export const start_catching = db.reducer((ctx) => {
+  const r = startRound(ctx, 'catch');
+  if (r.stage === 'catch') assign(ctx, r);
 });
 
 const response = t.row('ActionResult', { ok: t.bool(), message: t.string(), hint: t.string() });
@@ -533,7 +541,13 @@ function paidAction(
         cardId: '',
         hidden: false,
       });
-      saveRound(tx, { ...current, stage: 'catch', setupId: id, inFlight: '', busyUntil: 0 });
+      saveRound(tx, {
+        ...current,
+        stage: current.cardId ? 'done' : 'catch',
+        setupId: id,
+        inFlight: '',
+        busyUntil: 0,
+      });
     } else {
       const id = tx.newUuidV4().toString();
       tx.db.postcard.insert({
@@ -552,7 +566,13 @@ function paidAction(
         claimRound: '',
         claimUntil: 0,
       });
-      saveRound(tx, { ...current, stage: 'done', cardId: id, inFlight: '', busyUntil: 0 });
+      saveRound(tx, {
+        ...current,
+        stage: current.setupId || r.day !== dayOf(now(tx)) ? 'done' : 'write',
+        cardId: id,
+        inFlight: '',
+        busyUntil: 0,
+      });
     }
     const value = result(true);
     finishRequest(tx, qid, value);
@@ -1001,6 +1021,13 @@ export const purge_old_data = db.reducer((ctx) => {
   admin(ctx);
   purgeExpired(ctx);
 });
+export const retire_bottle = db.reducer({bottleId:t.string()},(ctx,{bottleId})=> {
+  admin(ctx);
+  const b=ctx.db.bottle.id.find(bottleId);
+  if(!b)return;
+  if(b.cardId)fail('Only unpublished bottles can be retired.');
+  ctx.db.bottle.id.update({...b,hidden:true,text:'',claimRound:'',claimUntil:0,claimVersion:b.claimVersion+1});
+});
 export const maintenance_tick = db.reducer(
   { onSchedule: maintenance },
   { arg: maintenance.rowType },
@@ -1067,7 +1094,7 @@ export const my_outgoing = db.view(
     const rows = [];
     for (const r of ctx.db.round.owner.filter(ctx.sender)) {
       const b = ctx.db.bottle.id.find(r.setupId);
-      if (b) rows.push({ id: b.id, text: b.text, cardId: b.cardId, day: b.day });
+      if (b&&!b.hidden) rows.push({ id: b.id, text: b.text, cardId: b.cardId, day: b.day });
     }
     return rows;
   },

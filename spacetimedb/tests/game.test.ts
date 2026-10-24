@@ -75,6 +75,50 @@ beforeEach(() => {
   tx(owner, (c) => module.init(c, {}));
 });
 describe('authoritative game state', () => {
+  it('only the owner can retire an unpublished bottle and revoke an in-progress claim',()=> {
+    start(A);setup(A);const bottleId=active(A).setupId;
+    tx(B,c=>module.start_catching(c,{}));
+    expect(()=>tx(C,c=>module.retire_bottle(c,{bottleId}))).toThrow(/owner/);
+    tx(owner,c=>module.retire_bottle(c,{bottleId}));
+    expect(module.my_outgoing(h.viewContext(A))).toHaveLength(0);
+    expect(claim(B)).toBeUndefined();expect(reply(B).ok).toBe(false);
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+  });
+  it('catch-first gives a real postcard before inviting the same round to toss a beginning', () => {
+    start(B);
+    setup(B);
+    tx(A, (c) => module.start_catching(c, {}));
+    expect(active(A).stage).toBe('reply');
+    expect(active(A).setupId).toBe('');
+    const assignment = claim(A).id;
+    tx(A, (c) => module.start_catching(c, {}));
+    expect(claim(A).id).toBe(assignment);
+    expect(reply(A).ok).toBe(true);
+    expect(active(A).stage).toBe('write');
+    expect(active(A).cardId).toBeTruthy();
+    expect(module.my_cards(h.viewContext(B))).toHaveLength(1);
+    expect(setup(A, 'I challenged their shark to poker.').ok).toBe(true);
+    expect(view(A)).toHaveLength(1);
+    expect(active(A)).toBeUndefined();
+    expect(module.my_outgoing(h.viewContext(A))).toHaveLength(1);
+  });
+  it('catch-first empty production pool consumes no round and leaves write-first available', () => {
+    env.DRIFT_DEV_MODE = 'false';
+    expect(() => tx(A, (c) => module.start_catching(c, {}))).toThrow(/No bottles/);
+    expect(view(A)).toHaveLength(0);
+    start(A);
+    expect(active(A).stage).toBe('write');
+  });
+  it('a catch-first writer can keep the result and skip tossing without losing the postcard', () => {
+    tx(A, (c) => module.start_catching(c, {}));
+    reply(A);
+    const id = active(A).cardId;
+    const roundId = active(A).id;
+    tx(A, (c) => module.abandon_round(c, { roundId }));
+    expect(active(A)).toBeUndefined();
+    expect(h.db.postcard.id.find(id)).toBeTruthy();
+    expect(module.my_cards(h.viewContext(A))).toHaveLength(1);
+  });
   it('verifies Turnstile on the server, scopes passes to one identity and expires them', () => {
     env.DRIFT_TURNSTILE_SECRET = 'synthetic-server-secret';
     env.DRIFT_TURNSTILE_HOSTNAME = 'drift.test';

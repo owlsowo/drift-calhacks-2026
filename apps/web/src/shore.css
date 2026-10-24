@@ -566,6 +566,24 @@
   min-height: 44px;
   text-decoration: underline;
 }
+.dock-returned .dock-object {
+  filter: drop-shadow(0 0 9px #f6dc8e90);
+}
+.pass-it-on {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  margin: 24px 0;
+  color: #f0f0df;
+}
+.pass-it-on p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.pass-it-on .text-button {
+  min-height: 44px;
+}
 .sea-world:not(.shore-shell) .ocean-photograph::after {
   content: '';
   position: absolute;

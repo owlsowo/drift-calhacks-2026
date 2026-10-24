@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { words, validateLine, PROMPTS, dayOf } from './index.ts';
+import { words, validateLine, PROMPTS, dayOf, promptForDay } from './index.ts';
 test('configured examples and development starters meet the same six-word rule', () => {
   for (const p of PROMPTS)
     for (const s of [p.exampleSetup, p.exampleReply, ...p.starters])
@@ -19,4 +19,10 @@ test('UTC day changes once at the boundary', () => {
     dayOf(Date.parse('2026-10-25T00:00:00Z')),
     dayOf(Date.parse('2026-10-24T23:59:59Z')) + 1,
   );
+});
+test('seven distinct daily prompts repeat on a stable weekly schedule', () => {
+  const anchor = dayOf(Date.parse('2026-10-24T00:00:00Z'));
+  assert.equal(new Set(Array.from({ length: 7 }, (_, i) => promptForDay(anchor + i).id)).size, 7);
+  assert.equal(promptForDay(anchor + 7).id, promptForDay(anchor).id);
+  assert.equal(promptForDay(anchor - 1).id, promptForDay(anchor + 6).id);
 });
