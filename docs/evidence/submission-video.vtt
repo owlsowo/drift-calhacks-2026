@@ -1,0 +1,49 @@
+WEBVTT
+
+invitation
+00:00:00.000 --> 00:00:08.000
+Drift revives QQ and WeChat drift bottles as a tiny shared story: one six-word beginning and one six-word ending.
+
+catch-and-write
+00:00:08.000 --> 00:00:48.800
+Local sandbox recording, AI checks off, synthetic guest identities. Catch a beginning, unfold the note over the sea, write six words, save the shared postcard, then optionally pass on a beginning.
+
+other-shore
+00:00:48.800 --> 00:00:51.800
+We now switch to the original writer in the same recorded run. Idle waiting has been cut.
+
+live-return
+00:00:51.800 --> 00:01:04.200
+The original writer opens the same canonical postcard from their collection without refreshing. Local sandbox, AI checks off, synthetic writers.
+
+shared-state
+00:01:04.200 --> 00:01:16.200
+SpacetimeDB holds the exclusive catch, validates completion and returns the canonical postcard to both writers through live subscriptions. Ten-writer network checks passed after an ID-collision fix.
+
+hosted-claude
+00:01:16.200 --> 00:01:30.200
+Separate hosted evidence: this real postcard passed Claude checks. Haiku checks content; Sonnet can suggest an angle without filling the ending. The development moderation evaluation matched 35 of 36 synthetic labels, with agent review.
+
+figma-iteration
+00:01:30.200 --> 00:01:43.200
+Figma Make helped refine the quiet pool and returned-story states. We inspected the first prototype, revised its oversized paper, and implemented the selected design decision in the game.
+
+figma-slides
+00:01:43.200 --> 00:01:52.200
+The native eight-page Figma Slides deck includes the four-stage log, code links and a Make embed that we exercised inside the presentation. Both Figma files allow link viewing.
+
+mana-kitchen
+00:01:52.200 --> 00:02:03.200
+Mana built Bottle Kitchen, a working preparation app with seven themes, six-word validation, review progress and JSON export. It keeps drafts in the visitor's browser; human starter inventory is still empty.
+
+mana-gate
+00:02:03.200 --> 00:02:13.200
+Production export stays locked until all seven themes have twenty reviewed lines and the team attests authorship. We downloaded a real synthetic draft: Drift accepted its structure and refused production installation.
+
+image-credits
+00:02:13.200 --> 00:02:21.200
+Image credits: sea by Vyacheslav Argenberg, CC BY 4.0; paper ball by Army1987, CC BY-SA 3.0; paper texture by D Sharon Pruitt, CC BY 2.0. Source links, licenses and changes are on the game's Image credits page and in the video description.
+
+closing
+00:02:21.200 --> 00:02:31.200
+Try the deployed Drift game. Real-phone checks, independent moderation review and a human pilot remain. The private source repository still needs judge access.

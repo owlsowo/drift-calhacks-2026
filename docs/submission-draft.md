@@ -49,7 +49,7 @@ Real-phone checks, independent moderation review and human-written starter prepa
 
 **Creative / Hacker's Choice / Overall:** Show the QQ/WeChat inspiration, cursor-shaken bottle, opening paper over the moving sea, and a postcard returning live. Distinguish the revived metaphor from our six-plus-six-word collaboration and authoritative backend.
 
-**Figma:** Link the Make file, native Slides deck and four-stage log. Describe the late-stage iteration honestly. A final video must be at most three minutes. The Make file is also embedded on slide 8.
+**Figma:** Link the Make file, native Slides deck and four-stage log. Describe the late-stage iteration honestly. A reviewable 2:31.2 video draft now combines the labeled product recording with actual hosted and workflow evidence; see `docs/video-handoff.md`. Team review/upload remain. The Make file is also embedded on slide 8.
 
 **Mana:** We used Mana to build Drift Bottle Kitchen, a working app for preparing human-written six-word starters. It tracks seven themes, review progress, validation and export provenance without generating lines or contacting our live game. We exercised an actual draft through Drift's CLI; it validated as a draft and was refused for installation. Mana reports 48 core and 15 UI checks; we separately checked the real input/export gates and removed all synthetic content. It cannot prove authorship or replace moderation; human inventory is still empty.
 

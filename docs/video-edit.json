@@ -1,0 +1,159 @@
+{
+  "title": "Drift — a little story, together",
+  "status": "Reviewable submission video draft; not uploaded or submitted",
+  "width": 1280,
+  "height": 720,
+  "fps": 30,
+  "scenes": [
+    {
+      "id": "invitation",
+      "kind": "title",
+      "duration": 8,
+      "image": "apps/web/public/assets/sea-shore.jpg",
+      "kicker": "DRIFT / CAL HACKS 13.0",
+      "title": "A little story, together.",
+      "body": "Six words from you. Six from someone else.",
+      "note": "A daily bottle ritual, inspired by QQ and WeChat.",
+      "caption": "Drift revives QQ and WeChat drift bottles as a tiny shared story: one six-word beginning and one six-word ending."
+    },
+    {
+      "id": "catch-and-write",
+      "kind": "clip",
+      "source": "docs/evidence/local-sandbox-demo.mp4",
+      "start": 1,
+      "end": 41.8,
+      "caption": "Local sandbox recording, AI checks off, synthetic guest identities. Catch a beginning, unfold the note over the sea, write six words, save the shared postcard, then optionally pass on a beginning."
+    },
+    {
+      "id": "other-shore",
+      "kind": "title",
+      "duration": 3,
+      "image": "apps/web/public/assets/sea-shore.jpg",
+      "kicker": "SECOND GUEST IDENTITY / SAME RECORDED RUN",
+      "title": "Meanwhile, on the other shore.",
+      "body": "The story has arrived.",
+      "note": "Jump cut to the original writer · local sandbox, AI off",
+      "caption": "We now switch to the original writer in the same recorded run. Idle waiting has been cut."
+    },
+    {
+      "id": "live-return",
+      "kind": "clip",
+      "source": "docs/evidence/local-sandbox-demo.mp4",
+      "start": 81,
+      "end": 93.4,
+      "caption": "The original writer opens the same canonical postcard from their collection without refreshing. Local sandbox, AI checks off, synthetic writers."
+    },
+    {
+      "id": "shared-state",
+      "kind": "diagram",
+      "duration": 12,
+      "kicker": "SPACETIMEDB / THE GAME'S AUTHORITATIVE BACKEND",
+      "title": "One catch. One shared result.",
+      "steps": ["Reserve a beginning", "Check the ending", "Return to both writers"],
+      "body": "Exclusive, expiring claims. Transactional completion. Live subscriptions.",
+      "note": "Ten-writer network checks passed after fixing simultaneous ID collisions.",
+      "caption": "SpacetimeDB holds the exclusive catch, validates completion and returns the canonical postcard to both writers through live subscriptions. Ten-writer network checks passed after an ID-collision fix."
+    },
+    {
+      "id": "hosted-claude",
+      "kind": "evidence",
+      "duration": 14,
+      "image": "docs/evidence/hosted-reveal-360.png",
+      "crop": [0, 65, 360, 810],
+      "kicker": "SEPARATE HOSTED TEST / REAL CLAUDE CALLS",
+      "title": "AI supports the people writing.",
+      "paragraphs": [
+        "Haiku checks the beginning and the combined story. Optional Sonnet guidance suggests an angle.",
+        "This actual hosted postcard used synthetic test writers. Both creative halves were supplied through the test UI.",
+        "35 of 36 synthetic moderation labels matched in the development evaluation."
+      ],
+      "note": "Agent-reviewed evidence; no independent moderation study or attendee pilot.",
+      "caption": "Separate hosted evidence: this real postcard passed Claude checks. Haiku checks content; Sonnet can suggest an angle without filling the ending. The development moderation evaluation matched 35 of 36 synthetic labels, with agent review."
+    },
+    {
+      "id": "figma-iteration",
+      "kind": "evidence",
+      "duration": 13,
+      "image": "docs/evidence/workflow/figma-empty.png",
+      "kicker": "FIGMA MAKE / INSPECT, REVISE, HAND OFF",
+      "title": "An empty sea can still invite you in.",
+      "paragraphs": [
+        "A late-stage Make prototype explored the quiet pool and returned-story states.",
+        "The first empty state was too tall and opaque. A second prompt made the paper compact and the next action clear.",
+        "That design decision reached the real game in commit 2544990."
+      ],
+      "note": "Actual prototype screenshot · sample content · separate from the live game",
+      "caption": "Figma Make helped refine the quiet pool and returned-story states. We inspected the first prototype, revised its oversized paper, and implemented the selected design decision in the game."
+    },
+    {
+      "id": "figma-slides",
+      "kind": "evidence",
+      "duration": 9,
+      "image": "docs/evidence/workflow/drift-slide-8.png",
+      "crop": [0, 135, 674, 550],
+      "kicker": "FIGMA SLIDES / TRACEABLE WORKFLOW",
+      "title": "A playable handoff.",
+      "paragraphs": [
+        "Eight native Slides pages include the stage log, working-code links and a playable Make embed.",
+        "The embedded empty-state control was exercised inside the actual presentation."
+      ],
+      "note": "Make and Slides sharing: Anyone can view. Minutes and ratings are agent estimates.",
+      "caption": "The native eight-page Figma Slides deck includes the four-stage log, code links and a Make embed that we exercised inside the presentation. Both Figma files allow link viewing."
+    },
+    {
+      "id": "mana-kitchen",
+      "kind": "evidence",
+      "duration": 11,
+      "image": "docs/evidence/workflow/mana-kitchen.png",
+      "crop": [8, 56, 712, 573],
+      "kicker": "MANA / A WORKING PREPARATION COMPANION",
+      "title": "Help the team prepare. Keep the words human.",
+      "paragraphs": [
+        "Bottle Kitchen runs inside Mana: seven themes, six-word validation, review progress and JSON export.",
+        "It stores this visitor's drafts locally and makes no calls to the live Drift database."
+      ],
+      "note": "Actual app screenshot · human starter inventory remains empty",
+      "caption": "Mana built Bottle Kitchen, a working preparation app with seven themes, six-word validation, review progress and JSON export. It keeps drafts in the visitor's browser; human starter inventory is still empty."
+    },
+    {
+      "id": "mana-gate",
+      "kind": "evidence",
+      "duration": 10,
+      "image": "docs/evidence/workflow/mana-production-gate.png",
+      "crop": [28, 218, 695, 573],
+      "kicker": "MANA → DRIFT / AN ACTUAL CONTENT HANDOFF",
+      "title": "A draft must stay a draft.",
+      "paragraphs": [
+        "Production export requires twenty valid, unique, reviewed lines per theme and an explicit team attestation.",
+        "Our actual synthetic draft downloaded from Mana passed Drift's structural validator and was refused for production installation."
+      ],
+      "note": "The tool cannot verify authorship. Human review and moderation remain necessary.",
+      "caption": "Production export stays locked until all seven themes have twenty reviewed lines and the team attests authorship. We downloaded a real synthetic draft: Drift accepted its structure and refused production installation."
+    },
+    {
+      "id": "image-credits",
+      "kind": "credits",
+      "duration": 8,
+      "kicker": "PHOTOGRAPHS / HUMAN-MADE SOURCE IMAGES",
+      "title": "Made with real photographs.",
+      "credits": [
+        ["Sea / Vyacheslav Argenberg", "CC BY 4.0 · Andaman Sea at night, Moonset, Moonlight · cropped and tinted"],
+        ["Paper ball / Army1987", "CC BY-SA 3.0 · Paperball.png · original image with UI animation"],
+        ["Paper texture / D Sharon Pruitt", "CC BY 2.0 · Free crumpled paper texture for layers · tinted and mapped"]
+      ],
+      "note": "Sources, licenses and changes: the live game's Image credits page.",
+      "caption": "Image credits: sea by Vyacheslav Argenberg, CC BY 4.0; paper ball by Army1987, CC BY-SA 3.0; paper texture by D Sharon Pruitt, CC BY 2.0. Source links, licenses and changes are on the game's Image credits page and in the video description."
+    },
+    {
+      "id": "closing",
+      "kind": "title",
+      "duration": 10,
+      "image": "apps/web/public/assets/sea-shore.jpg",
+      "kicker": "OPEN THE SHORE. LEAVE SIX WORDS.",
+      "title": "A small moment of together.",
+      "body": "drift-game.drift-calhacks-2026-owlsowo.workers.dev",
+      "note": "Real-phone checks and human pilot still ahead. Source repo remains private.",
+      "caption": "Try the deployed Drift game. Real-phone checks, independent moderation review and a human pilot remain. The private source repository still needs judge access."
+    }
+  ]
+}

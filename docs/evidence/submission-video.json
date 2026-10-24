@@ -1,0 +1,121 @@
+{
+  "artifact": "drift-submission-preview.mp4",
+  "status": "Reviewable submission video draft; not uploaded or submitted",
+  "durationSeconds": 151.2,
+  "dimensions": [
+    1280,
+    720
+  ],
+  "sha256": "d187be4dfa48a9de20afb613af02ee51da252633c3515434095e70582d7e3f5e",
+  "editSha256": "f8f490a0bf0511e6fbdbc69aadf44569c76d1e50e202378316519174c0d4a678",
+  "sources": {
+    "apps/web/public/assets/sea-shore.jpg": "1377e7d6915ac250af3152a15433e26cee3180750c93ee7ada17da63827fd1b6",
+    "docs/evidence/local-sandbox-demo.mp4": "791795f553026beb6818bd3b4af639cebd91f130ee5590b00c2ae1a10578d69b",
+    "docs/evidence/hosted-reveal-360.png": "2ae234791d5ed90b7c3fbf62e0fc09dc5ee0a8878248c49f8fef05aee1895d75",
+    "docs/evidence/workflow/figma-empty.png": "d646763cb5ca332179e747377078822989293e65a573aa21e3d38054e212e9d5",
+    "docs/evidence/workflow/drift-slide-8.png": "3d6ac178afd2e460f1de4ea9481d33faed11e0cc0cdf5cc32141452f09cd8397",
+    "docs/evidence/workflow/mana-kitchen.png": "a69e070b1f2500c58c2697a74f55615ae046885a500056af94046da38a990873",
+    "docs/evidence/workflow/mana-production-gate.png": "4210990fecf6e0ac477943896d404b343122d58ca47fcc8647ddee494358a30b"
+  },
+  "timeline": [
+    {
+      "id": "invitation",
+      "start": 0.0,
+      "end": 8.0,
+      "kind": "title",
+      "caption": "Drift revives QQ and WeChat drift bottles as a tiny shared story: one six-word beginning and one six-word ending."
+    },
+    {
+      "id": "catch-and-write",
+      "start": 8.0,
+      "end": 48.8,
+      "kind": "clip",
+      "caption": "Local sandbox recording, AI checks off, synthetic guest identities. Catch a beginning, unfold the note over the sea, write six words, save the shared postcard, then optionally pass on a beginning."
+    },
+    {
+      "id": "other-shore",
+      "start": 48.8,
+      "end": 51.8,
+      "kind": "title",
+      "caption": "We now switch to the original writer in the same recorded run. Idle waiting has been cut."
+    },
+    {
+      "id": "live-return",
+      "start": 51.8,
+      "end": 64.2,
+      "kind": "clip",
+      "caption": "The original writer opens the same canonical postcard from their collection without refreshing. Local sandbox, AI checks off, synthetic writers."
+    },
+    {
+      "id": "shared-state",
+      "start": 64.2,
+      "end": 76.2,
+      "kind": "diagram",
+      "caption": "SpacetimeDB holds the exclusive catch, validates completion and returns the canonical postcard to both writers through live subscriptions. Ten-writer network checks passed after an ID-collision fix."
+    },
+    {
+      "id": "hosted-claude",
+      "start": 76.2,
+      "end": 90.2,
+      "kind": "evidence",
+      "caption": "Separate hosted evidence: this real postcard passed Claude checks. Haiku checks content; Sonnet can suggest an angle without filling the ending. The development moderation evaluation matched 35 of 36 synthetic labels, with agent review."
+    },
+    {
+      "id": "figma-iteration",
+      "start": 90.2,
+      "end": 103.2,
+      "kind": "evidence",
+      "caption": "Figma Make helped refine the quiet pool and returned-story states. We inspected the first prototype, revised its oversized paper, and implemented the selected design decision in the game."
+    },
+    {
+      "id": "figma-slides",
+      "start": 103.2,
+      "end": 112.2,
+      "kind": "evidence",
+      "caption": "The native eight-page Figma Slides deck includes the four-stage log, code links and a Make embed that we exercised inside the presentation. Both Figma files allow link viewing."
+    },
+    {
+      "id": "mana-kitchen",
+      "start": 112.2,
+      "end": 123.2,
+      "kind": "evidence",
+      "caption": "Mana built Bottle Kitchen, a working preparation app with seven themes, six-word validation, review progress and JSON export. It keeps drafts in the visitor's browser; human starter inventory is still empty."
+    },
+    {
+      "id": "mana-gate",
+      "start": 123.2,
+      "end": 133.2,
+      "kind": "evidence",
+      "caption": "Production export stays locked until all seven themes have twenty reviewed lines and the team attests authorship. We downloaded a real synthetic draft: Drift accepted its structure and refused production installation."
+    },
+    {
+      "id": "image-credits",
+      "start": 133.2,
+      "end": 141.2,
+      "kind": "credits",
+      "caption": "Image credits: sea by Vyacheslav Argenberg, CC BY 4.0; paper ball by Army1987, CC BY-SA 3.0; paper texture by D Sharon Pruitt, CC BY 2.0. Source links, licenses and changes are on the game's Image credits page and in the video description."
+    },
+    {
+      "id": "closing",
+      "start": 141.2,
+      "end": 151.2,
+      "kind": "title",
+      "caption": "Try the deployed Drift game. Real-phone checks, independent moderation review and a human pilot remain. The private source repository still needs judge access."
+    }
+  ],
+  "audio": "None; silent captioned draft with optional human narration script",
+  "scope": "Edited local sandbox gameplay, separately labeled real hosted evidence, actual Figma/Mana screenshots. No generated application frames, AI images or fabricated model output.",
+  "credits": "docs/asset-sources.md and apps/web/public/credits.html",
+  "checks": [
+    "All referenced files exist within repository",
+    "Source cuts lie within original recording",
+    "Text layout has no detected overflow",
+    "Export is shorter than 180 seconds",
+    "Full exported video decodes without errors"
+  ],
+  "visualReview": {
+    "reviewer": "Codex agent",
+    "scope": "Twelve encoded scene frames visually inspected; original gameplay source contact sheets inspected for paper-opening and cut boundaries. Not a complete human playback review.",
+    "result": "No visible clipping or mismatched scene content in inspected frames."
+  }
+}
