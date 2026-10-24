@@ -877,7 +877,7 @@ function App() {
                     </div>
                     {active?.stage === 'write' && active.cardId === card.id && (
                       <div className="pass-it-on">
-                        <p>A stranger left a beginning for you. Leave one for the next person.</p>
+                        <p>Want to leave six words for the next person?</p>
                         <button
                           className="button primary"
                           onClick={begin}
