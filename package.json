@@ -1,0 +1,35 @@
+{
+  "name": "drift",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
+    "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts",
+    "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
+    "db:publish:local": "node scripts/spacetime.mjs publish-local",
+    "db:publish": "node scripts/spacetime.mjs publish",
+    "db:generate": "node scripts/spacetime.mjs generate",
+    "test:ui": "node scripts/ui-smoke.mjs"
+  },
+  "dependencies": {
+    "@fontsource/dm-sans": "^5.2.8",
+    "@fontsource/fraunces": "^5.2.8",
+    "lucide-react": "^0.577.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "spacetimedb": "2.13.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "latest",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "latest",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "8.3.5",
+    "vitest": "^5.0.5"
+  }
+}

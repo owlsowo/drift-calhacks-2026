@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-24T10:00:17.773Z",
+  "mode": "local SpacetimeDB with explicitly disabled AI checks; synthetic test inputs, no attendee pilot",
+  "checks": [
+    "Real database connection and responsive home at 360 / 1440 pixels",
+    "Empty collection offers a working next action",
+    "Two isolated identities submit their own six-word setups",
+    "Each identity catches the other writer, never itself",
+    "Draft and exclusive assignment resume after a full reload",
+    "Original author receives the returned postcard without refreshing",
+    "Both authors complete a canonical two-human postcard",
+    "PNG export creates a downloadable local image",
+    "Both completed and returned postcards appear in the collection",
+    "Author hiding removes the public card and collection projection",
+    "No uncaught browser errors"
+  ],
+  "errors": []
+}
