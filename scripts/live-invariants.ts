@@ -107,6 +107,11 @@ try {
     'authorship',
     'hello',
     'config',
+    'maintenance',
+    'shore_pass',
+    'ai_budget',
+    'ai_call',
+    'id_allocator',
   ]) {
     const denied = await new Promise<boolean>((resolve, reject) => {
       const timer = setTimeout(() => reject(Error('Private table probe timed out: ' + name)), 8000);
@@ -126,6 +131,9 @@ try {
   }
   pass('The running server rejects guest subscriptions to every private table');
   await assert.rejects(first.connection.reducers.setPause({ paused: true }));
+  await assert.rejects(first.connection.procedures.adminAiUsage({}));
+  await assert.rejects(first.connection.procedures.adminAiCalls({}));
+  await assert.rejects(first.connection.reducers.setAiBudget({ limitMicros: 50_000_000n }));
   pass('A guest cannot invoke the owner pause control');
   const outsider = ownRound(first).id;
   await assert.rejects(writers[0].connection.reducers.abandonRound({ roundId: outsider }));

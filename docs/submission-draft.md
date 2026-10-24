@@ -19,7 +19,7 @@ There are three rounds per day, seven rotating prompts, no public score and no p
 ## How we built it
 React and TypeScript render the game. SpacetimeDB is the authoritative real-time backend: private participant state, exclusive expiring catches, transactional postcard completion, and live delivery to both writers. Only approved anonymous postcard content is public.
 
-Claude Haiku checks beginnings and the combined story before publication. Optional Sonnet guidance suggests an angle without supplying the finished ending. Requests are bound to the writer, text and claim version; duplicate, expired or late results cannot create another postcard. Paid calls have request limits and a global dispatch cap. Dollar-based reservation/accounting remains future work.
+Claude Haiku checks beginnings and the combined story before publication. Optional Sonnet guidance suggests an angle without supplying the finished ending. Requests are bound to the writer, text and claim version; duplicate, expired or late results cannot create another postcard. Paid calls have request limits, a global dispatch cap and an estimated-dollar reservation budget. Valid provider usage settles even when output is rejected; uncertain billing keeps its hold for owner review. Private usage/latency diagnostics contain no story text or participant identity.
 
 Cloudflare serves the HTTPS app. Turnstile tokens are verified on the server with hostname/action checks; an identity-bound pass gates game actions. Hourly retention removes expired server data, and local drafts expire after seven days.
 
@@ -29,7 +29,7 @@ Real-time subscriptions and procedure responses can arrive in either order. We m
 The paper needed to feel like one note opening, rather than disconnected tiles. We retained a continuous mesh and a static/CSS fallback for unavailable graphics acceleration.
 
 ## What we accomplished and learned
-The app is publicly deployed. A hosted two-browser test used real Claude calls and observed a returned postcard without refresh. Forty-three server tests and eighteen unit tests pass. Mobile/desktop browser checks cover the tested interaction, accessibility and recovery states.
+The app is publicly deployed. A hosted two-browser test used real Claude calls and observed a returned postcard without refresh. Fifty-one server tests and twenty-one unit tests pass. Mobile/desktop browser checks cover the tested interaction, accessibility and recovery states. An actual ten-writer run exposed colliding generated round IDs; a transaction-backed allocator fixed them, with forced-collision and real network checks passing afterward.
 
 A fifty-case real model evaluation produced valid outputs after an initial prompt-contract failure was fixed. Moderation matched 35 of 36 synthetic development labels; fourteen hints were reviewed by Codex. This is agent-reviewed synthetic evidence, not an independent moderation-quality study.
 

@@ -27,3 +27,11 @@ The main shake/pick action now catches a peer beginning before asking for writin
 ## Figma/Mana handoff release
 
 Frontend version `b4b6e68c-e6b8-477e-a6e7-2e7b963d15c5` deploys `2544990`. The backend was updated without schema/data deletion. A real production identity passed the automatic shore check and an empty catch displayed the compact paper recovery note; no model dispatch was needed. The old unconsumed synthetic hosted-smoke bottle was confirmed hidden with empty text. Production team inventory remains empty: an environment flag cannot convert bundled development samples into human content. The actual Mana synthetic draft validates as a draft and is refused for installation. Figma Slides and Make files, and the Mana app/chat snapshot, have public view-only sharing.
+
+## Cost accounting and concurrent-ID release
+
+Frontend version `988b56f4-24c1-41ce-aab0-616be85b50dc` and the matching backend add private USD reservation/usage/latency accounting, owner diagnostics and a transactional ID allocator. The additive migration retained game data and reconnected clients. The real hosted app reloaded successfully and displayed the updated retention explanation.
+
+The first actual ten-writer run exposed duplicate round primary keys under simultaneous starts. A durable counter suffix now keeps opaque server IDs unique even when their UUID component repeats. A forced-entropy regression and the actual ten-writer, shared-identity, private-table and duplicate-publication checks passed afterward. Fifty-one server tests, twenty-one unit tests, build/typechecks and the four catch-first browser checks passed.
+
+Two owner-only fixed synthetic health checks used real Sonnet and Haiku calls, created no game content and settled their reservations. Recorded usage totaled 1,093 input and 75 output tokens, with a $0.001703 estimate and zero remaining holds. The two observed server durations were approximately 1.63 and 1.97 seconds; this is a two-probe snapshot, not a latency benchmark. Four pre-ledger application dispatches and component evaluations are explicitly excluded. See `docs/evidence/hosted-ai-usage.json` and `docs/ai-budget.md`.

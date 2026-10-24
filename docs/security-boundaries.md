@@ -12,9 +12,9 @@ All raw gameplay/ownership/report/request/hello tables are private. Caller-scope
 
 The Anthropic key is an untracked, server-only environment value. The frontend never calls Anthropic. The schema/instruction/output checks are shared with the evaluation runner. Model output does not authorize any state change: the transaction rechecks identity, immutable request binding, claim version, absolute deadline, hidden state, publication state and pause flag.
 
-A paid attempt is persisted and counted before dispatch. Duplicate IDs replay saved results; changed text cannot reuse a request ID. Provider refusals, truncation, invalid schemas, contradictory moderation, network failures, late results and exhausted quotas fail closed and keep the writing flow recoverable. No request is blindly retried after an ambiguous transport outcome.
+A paid attempt and estimated USD reservation are persisted before dispatch. Duplicate IDs replay saved results; changed text cannot reuse a request ID. Valid provider usage settles before parsing the output, including rejected or late results. Unknown billing keeps its hold until owner reconciliation. Financial rows have no participant identity or text. Provider refusals, truncation, invalid schemas, contradictory moderation, network failures, late results and exhausted quotas fail closed and keep the writing flow recoverable. No request is blindly retried after an ambiguous transport outcome.
 
-The model contract does not prove moderation accuracy. Synthetic HTTP tests establish application behavior for specified responses. Live evaluation and human review remain necessary before claiming real model quality.
+The model contract does not prove moderation accuracy. Synthetic HTTP tests establish application behavior for specified responses. The real fifty-case component evaluation and fourteen agent-reviewed hints are recorded with limitations; independent human moderation review remains missing.
 
 ## Hello
 
@@ -22,7 +22,7 @@ Disabled unless the owner enables it and supplies a verified public meeting poin
 
 ## Distribution and deployment
 
-The current build is a controlled local sandbox. A global paid dispatch cap and owner kill switch are implemented. It has no IP-based bot defense or Turnstile integration yet. Keep distribution controlled until account setup, hosted checks, rate controls and live moderation are complete. Static `_headers` apply only on compatible hosting; verify actual response headers after deployment. A provider budget alert is not an application spending cap.
+The production build runs on hosted Maincloud and Cloudflare HTTPS. Actual static response headers were checked. Turnstile is verified on the server against expected hostname/action and bound to the guest identity for one hour. Per-round limits, a global dispatch cap, estimated-USD reservations and an owner kill switch are implemented. Clearing storage can still create new guest identities. The owner-only fixed synthetic health check bypasses the guest gate for diagnostics, uses the shared budget/cap, is throttled to one per minute and cannot publish. Budget prices are reviewed estimates; uncertain billing keeps its hold. Account spending outside this ledger and independent security testing remain outside these checks.
 
 ## Evidence
 
@@ -31,4 +31,4 @@ The current build is a controlled local sandbox. A global paid dispatch cap and 
 - WCAG automated scans at 360x800 and 1440x1000: home, help, writing, reply, reveal, hello, collection, shared/hidden cards, loading, pause and offline states. Keyboard focus and reduced motion also checked.
 - Production dependency audit: zero reported advisories at the recorded check. Audits cover known advisories only.
 
-No public production deployment, external penetration test or actual attendee validation is claimed.
+Public deployment and the recorded hosted checks are established. No external penetration test or actual attendee validation is claimed.

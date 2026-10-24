@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/starter-content/*.test.ts scripts/shake.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts",
     "starters:check": "tsx scripts/check-starters.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
@@ -20,6 +20,8 @@
     "test:server": "vitest run",
     "test:a11y": "node scripts/test-room.mjs a11y",
     "eval:models": "tsx scripts/eval-models.ts",
+    "cost:report": "tsx scripts/cost-report.ts",
+    "ops:usage": "tsx scripts/owner-usage.ts",
     "test:live": "node scripts/test-room.mjs live",
     "test:states": "node scripts/test-room.mjs states",
     "demo:rehearse": "node scripts/test-room.mjs demo --rehearse",

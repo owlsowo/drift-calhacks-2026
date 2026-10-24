@@ -88,6 +88,7 @@ if (dryRun) {
     const started = Date.now();
     const model = f.kind === 'nudge' ? process.env.NUDGE_MODEL : process.env.MODERATION_MODEL;
     const request = modelRequest(f.kind, f.input, model);
+    let providerUsage: unknown;
     try {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -101,6 +102,7 @@ if (dryRun) {
       });
       if (!response.ok) throw Error(`Provider HTTP ${response.status}`);
       const body = await response.json();
+      providerUsage = body.usage;
       const output = parseModelResponse(f.kind, body);
       results.push({
         id: f.id,
@@ -110,7 +112,7 @@ if (dryRun) {
         output,
         expected: f.expected,
         agrees: f.expected ? output.decision === f.expected : undefined,
-        usage: body.usage,
+        usage: providerUsage,
         manualReview: {
           reviewed: false,
           helpful: null,
@@ -126,6 +128,7 @@ if (dryRun) {
         model: request.model,
         elapsedMs: Date.now() - started,
         error: e instanceof Error ? e.message : 'Unknown failure',
+        usage: providerUsage,
         retried: false,
       });
     }

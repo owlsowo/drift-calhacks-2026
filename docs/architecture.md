@@ -12,9 +12,10 @@ sequenceDiagram
     DB->>DB: Assign caller + version + absolute deadline atomically
     DB-->>W: Private assignment view
     W->>DB: Submit ending + immutable request ID
-    DB->>DB: Verify owner/claim, reserve attempt, count dispatch
+    DB->>DB: Verify owner/claim, reserve attempt and estimated USD, count dispatch
     DB->>C: Check combined setup and ending outside transaction
     C-->>DB: Structured decision + fixed reason
+    DB->>DB: Settle observed usage before output acceptance; keep unknown billing on hold
     DB->>DB: Recheck ownership/version/deadline/hidden/pause
     alt allowed and still current
         DB->>DB: Atomically create card + ownership + completion
@@ -33,6 +34,8 @@ sequenceDiagram
 
 **One publication.** The canonical postcard, both authors’ ownership and round completion finalize together. The original writer’s browser receives the result through subscriptions. AI guidance follows a separate path and cannot produce a postcard or replace the participant’s draft.
 
+**Metering.** A separate private ledger reserves estimated USD in the same transaction as the request/attempt. Valid provider usage settles before output parsing, so a rejected or late result still records cost. Ambiguous billing retains its reservation. Owner diagnostics show retained server latency, usage and estimates without participant text or identity. A private transactional counter also disambiguates server IDs when UUID entropy repeats under simultaneous starts.
+
 ## Private and public data
 
 | Data | Access |
@@ -46,10 +49,11 @@ sequenceDiagram
 
 ## Evidence and limits
 
-- `spacetimedb/tests/game.test.ts`: 36 harness checks include expiry, rollover, model failures/races, ownership, replay, quotas, reports and hello privacy.
+- `spacetimedb/tests/game.test.ts`: 51 harness checks include expiry, rollover, model failures/races, ownership, replay, quotas, reports, hello privacy, budget reservations/reconciliation and forced ID collisions.
 - `docs/evidence/live-invariants.json`: actual local network checks for concurrent catches, shared-identity tabs, inaccessible private tables and duplicate publication.
 - `docs/evidence/ui-smoke.json`: actual synthetic browser interaction, reload recovery, live return, download and hide/report behavior.
 - `docs/evidence/content-states.json`: loading, pause, offline/reconnect and blocked-storage behavior at two viewport sizes.
-- `packages/ai-contracts/index.test.ts`: outbound system instructions/data separation and fail-closed parsing. The 50-case fixture set still needs live model calls and review.
+- `packages/ai-contracts/index.test.ts`: outbound system instructions/data separation and fail-closed parsing. A real fifty-case model evaluation produced valid outputs; moderation matched 35/36 synthetic labels and fourteen hints were reviewed by Codex, not an independent human.
+- `docs/evidence/hosted-ai-usage.json`: actual owner health checks against the deployed Claude integration and server ledger. These synthetic probes publish no game content.
 
-These tests establish specified software behavior, not real attendee benefit or production-wide reliability. Guest identities can be recreated by clearing storage. Static headers and the intended hosted deployment remain unverified. Broad-link bot controls are absent; keep distribution controlled. Mutual hello is disabled until the owner supplies a verified public meeting point.
+These tests establish specified software behavior, not real attendee benefit or production-wide reliability. Hosted Maincloud, Cloudflare HTTPS headers and server-side Turnstile rejection checks passed. Guest identities can still be recreated by clearing storage; one-human-one-account enforcement is not claimed. Physical phones and independent moderation quality remain unverified. Mutual hello is disabled until the owner supplies a verified public meeting point. Price-based cost estimates are not invoices or the provider account balance.

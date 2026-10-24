@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-10-24T21:44:48.524Z",
+  "priceVersion": "anthropic-standard-global-2026-10-24",
+  "mode": "Offline estimate from saved provider usage; no new dispatches",
+  "scope": "Component evaluations only; excludes application/owner calls and all other account use. Not an invoice or account balance.",
+  "calls": 62,
+  "unknownBilling": 1,
+  "knownEstimateUsd": "0.031378",
+  "report": [
+    {
+      "file": "evals/results-2026-10-24T20-23-19-948Z.json",
+      "groups": {
+        "moderation": {
+          "calls": 8,
+          "unknownBilling": 0,
+          "knownEstimateUsd": "0.000499",
+          "p50Ms": 1121,
+          "p95Ms": 1972
+        },
+        "nudge": {
+          "calls": 4,
+          "unknownBilling": 1,
+          "knownEstimateUsd": "0.005208",
+          "p50Ms": 1979,
+          "p95Ms": 2870
+        }
+      }
+    },
+    {
+      "file": "evals/results-2026-10-24T20-26-00-326Z.json",
+      "groups": {
+        "moderation": {
+          "calls": 36,
+          "unknownBilling": 0,
+          "knownEstimateUsd": "0.002225",
+          "p50Ms": 1135,
+          "p95Ms": 1730
+        },
+        "nudge": {
+          "calls": 14,
+          "unknownBilling": 0,
+          "knownEstimateUsd": "0.023446",
+          "p50Ms": 1799,
+          "p95Ms": 2025
+        }
+      }
+    }
+  ]
+}
