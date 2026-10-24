@@ -454,6 +454,8 @@ function App() {
           {view === 'today' && (
             <Shore
               mode="home"
+              day={s.today?.day}
+              stamped={stampedToday}
               prompt={prompt}
               disabled={
                 controlsDisabled || !prompt || (!active && dailyRounds >= 3) || !!s.service?.paused
@@ -544,6 +546,7 @@ function App() {
                 ) : active.stage === 'catch' ? (
                   <Shore
                     mode="catch"
+                    day={active.day}
                     hasOutgoing={!!active.setupId}
                     prompt={prompt}
                     disabled={controlsDisabled}
@@ -613,7 +616,9 @@ function App() {
                     <div className="word-feedback" id="word-help">
                       <div className={`word-dots ${count > 6 ? 'over' : ''}`} aria-hidden="true">
                         {Array.from({ length: 6 }, (_, i) => (
-                          <span key={i} className={i < count ? 'filled' : ''} />
+                          <span key={i} className={i < count ? 'filled' : ''}>
+                            {i < count ? '✓' : String(i + 1).padStart(2, '0')}
+                          </span>
                         ))}
                       </div>
                       <span className={count === 6 ? 'count-done' : count > 6 ? 'count-over' : ''}>

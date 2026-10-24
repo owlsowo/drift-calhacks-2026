@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent, type RefObject } from 'react';
 import { Hand, LoaderCircle, Smartphone } from 'lucide-react';
 import { ShakeMeter } from './shake';
-import type { Prompt } from '../../../packages/game-rules/index';
+import { FIRST_TIDE_DAY, type Prompt } from '../../../packages/game-rules/index';
 import './shore.css';
 
 type MotionConstructor = typeof DeviceMotionEvent & { requestPermission?: () => Promise<string> };
@@ -95,6 +95,8 @@ export function Shore({
   empty = false,
   hasOutgoing = true,
   headingRef,
+  day,
+  stamped = false,
 }: {
   mode: 'home' | 'catch';
   prompt?: Prompt;
@@ -109,6 +111,8 @@ export function Shore({
   empty?: boolean;
   hasOutgoing?: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
+  day?: number;
+  stamped?: boolean;
 }) {
   const grip = useRef<HTMLButtonElement>(null);
   const emptyHeading = useRef<HTMLHeadingElement>(null);
@@ -242,6 +246,21 @@ export function Shore({
       aria-label={mode === 'catch' ? 'Catch a bottle on the moonlit shore' : 'Drift bottle shore'}
     >
       <div className="shore-heading">
+        {day !== undefined && (
+          <div className="tide-edition">
+            <span>
+              DAILY BOTTLE <b>№ {String(Math.max(1, day - FIRST_TIDE_DAY + 1)).padStart(3, '0')}</b>
+            </span>
+            <time dateTime={new Date(day * 86400000).toISOString().slice(0, 10)}>
+              {new Date(day * 86400000).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                timeZone: 'UTC',
+              })}
+            </time>
+          </div>
+        )}
         <h1 ref={headingRef} tabIndex={-1} className="sr-only">
           {mode === 'catch' ? 'Something’s washing ashore.' : 'There’s a story out there.'}
         </h1>
@@ -252,6 +271,11 @@ export function Shore({
               : 'A different little beginning is out there.'
             : 'A little daily nonsense from someone else.'}
         </p>
+        {mode === 'home' && stamped && (
+          <span className="shore-stamp">
+            <span aria-hidden="true">✓</span> Today’s stamp, collected
+          </span>
+        )}
       </div>
       {empty && (
         <div className="quiet-tide-note">
@@ -345,7 +369,7 @@ export function Shore({
       )}
       <div className="shore-dock">
         <button
-          className={`dock-action ${mode === 'home' ? 'dock-primary' : ''}`}
+          className="dock-action"
           onClick={() => void onWrite()}
           disabled={disabled || (mode === 'catch' && hasOutgoing)}
         >
@@ -361,7 +385,7 @@ export function Shore({
           </span>
         </button>
         <button
-          className={`dock-action ${mode === 'catch' ? 'dock-primary' : ''}`}
+          className="dock-action dock-primary"
           onClick={() => void activate()}
           disabled={disabled}
         >

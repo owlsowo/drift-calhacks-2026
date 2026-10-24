@@ -1116,3 +1116,82 @@
     transition: none;
   }
 }
+
+/* Numbered daily identity and one clear catch action; the reward stays a shared note. */
+.tide-edition {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 9px;
+  color: #ece7ce;
+  font:
+    500 10px/1.4 'DM Sans',
+    sans-serif;
+  letter-spacing: 0.13em;
+  font-variant-numeric: tabular-nums;
+}
+.tide-edition b {
+  font-weight: 600;
+  margin-left: 5px;
+}
+.tide-edition time {
+  color: #c6d5d0;
+  letter-spacing: 0.04em;
+}
+.sea-world .shore-prompt {
+  top: 112px;
+}
+.shore-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  color: #e9d5a8;
+  font-size: 11px;
+}
+.shore-stamp > span {
+  font-size: 15px;
+}
+.shore-dock .dock-primary > span:last-child {
+  padding: 7px 10px;
+  border-radius: 4px;
+  border: 1px solid #f0e6bf;
+  background: #eee6cd;
+  color: #1c4145;
+  text-shadow: none;
+  box-shadow: 0 3px 0 #1c3546;
+  font-weight: 600;
+  transition:
+    background-color 150ms ease-out,
+    transform 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+.shore-dock .dock-primary:hover > span:last-child {
+  background: #fff5d8;
+}
+.shore-dock .dock-primary:active > span:last-child {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1c3546;
+}
+@media (max-width: 700px) {
+  .tide-edition {
+    gap: 9px;
+    font-size: 9px;
+    margin-bottom: 8px;
+  }
+  .sea-world .shore-prompt {
+    top: 99px;
+  }
+  .shore-dock .dock-primary > span:last-child {
+    padding: 7px 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shore-dock .dock-primary > span:last-child {
+    transition: none;
+  }
+  .shore-dock .dock-primary:active > span:last-child {
+    transform: none;
+  }
+}
