@@ -531,6 +531,21 @@
     linear-gradient(#10365544, #17466133),
     url('/assets/sea-shore.jpg') center center / cover;
 }
+.sea-surface {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+.sea-motion-button {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  min-height: 44px;
+  margin-left: 12px;
+  white-space: nowrap;
+}
 .sea-world:not(.shore-shell) .ocean-photograph::after {
   content: '';
   position: absolute;
@@ -823,7 +838,7 @@
   min-height: 540px;
 }
 .paper-unfolding .paper-content {
-  animation: note-uncrumple 1250ms cubic-bezier(0.2, 0.65, 0.25, 1) both;
+  animation: note-uncrumple 1900ms cubic-bezier(0.2, 0.65, 0.25, 1) both;
 }
 .paper-unfolding .paper-content > * {
   opacity: 0;
@@ -836,29 +851,34 @@
   width: 170px;
   height: auto;
   transform: translate(-50%, -50%) rotate(-12deg);
-  animation: crumple-release 660ms ease-out both;
+  animation: crumple-release 420ms ease-out both;
   pointer-events: none;
 }
-.paper-facets {
+.paper-surface {
   position: absolute;
   z-index: 3;
   inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  transform-style: preserve-3d;
-  overflow: hidden;
-  animation: note-uncrumple 1250ms cubic-bezier(0.2, 0.65, 0.25, 1) both;
+  filter: drop-shadow(0 12px 16px #06192740);
 }
-.paper-facets span {
-  position: absolute;
-  width: 33.5%;
-  height: 33.5%;
-  left: calc(var(--col) * 33.33%);
-  top: calc(var(--row) * 33.33%);
-  background: linear-gradient(#f0e8d4b3, #f0e8d4b3), url('/assets/paper-texture.jpg');
-  background-size: 300% 300%;
-  background-position: calc(var(--col) * 50%) calc(var(--row) * 50%);
-  box-shadow: inset 0 0 20px #3d392b24;
-  animation: crease-open 1100ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--delay) both;
+.paper-unfolding.has-paper-mesh .paper-content {
+  visibility: hidden;
+  animation: none;
+}
+.paper-open .paper-content > * {
+  animation: note-ink-appear 300ms ease-out both;
+}
+@keyframes note-ink-appear {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .postcard-paper .paper-content {
   padding: 0;
@@ -876,7 +896,7 @@
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) rotate(8deg) scale(1.6);
+    transform: translate(-50%, -50%) rotate(-7deg) scale(1.08);
   }
 }
 @keyframes note-uncrumple {
@@ -895,25 +915,6 @@
     clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     transform: scale(1) rotate(0);
     filter: brightness(1);
-  }
-}
-@keyframes crease-open {
-  0%,
-  18% {
-    opacity: 0;
-    transform: translate(var(--fold-x), var(--fold-y)) rotateX(var(--fold-turn))
-      rotateY(var(--fold-turn)) scale(0.12);
-  }
-  35% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 0.75;
-    transform: translate(0, 0) rotateX(0) rotateY(0) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(0, 0) rotateX(0) rotateY(0) scale(1);
   }
 }
 @media (max-width: 700px) {
@@ -1008,10 +1009,11 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .unfolding-ball,
-  .paper-facets {
+  .paper-surface {
     display: none;
   }
-  .paper-unfolding .paper-content {
+  .paper-unfolding .paper-content,
+  .paper-open .paper-content > * {
     animation: none;
   }
   .paper-unfolding .paper-content > * {

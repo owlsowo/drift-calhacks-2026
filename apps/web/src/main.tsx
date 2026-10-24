@@ -220,6 +220,7 @@ function App() {
   const [draftState, setDraft] = useState({ key: '', text: '' });
   const [clock, setClock] = useState(Date.now());
   const [reveal, setReveal] = useState('');
+  const [seaPaused, setSeaPaused] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const nowDay = dayOf(clock);
   const active = s.rounds.find(
@@ -365,7 +366,7 @@ function App() {
       <div
         className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}`}
       >
-        <Ocean />
+        <Ocean paused={seaPaused} />
         <header className="site-header">
           <button
             className="wordmark"
@@ -943,6 +944,15 @@ function App() {
             <a href="/credits.html" target="_blank" rel="noreferrer">
               Image credits
             </a>
+            <button
+              className="sea-motion-button"
+              aria-label={seaPaused ? 'Resume sea motion' : 'Pause sea motion'}
+              aria-pressed={seaPaused}
+              onClick={() => setSeaPaused(!seaPaused)}
+            >
+              <Waves size={13} />
+              {seaPaused ? 'Resume sea' : 'Pause sea'}
+            </button>
           </span>
         </footer>
       </div>

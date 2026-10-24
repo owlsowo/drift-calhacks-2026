@@ -65,6 +65,34 @@ try {
   });
   const page = await desktop.newPage();
   await ready(page);
+  await page.locator('.sea-surface[data-motion="running"]').waitFor();
+  const waterClip = { x: 0, y: 650, width: 90, height: 70 };
+  const waveA = await page.screenshot({ clip: waterClip });
+  await page.waitForTimeout(500);
+  const waveB = await page.screenshot({ clip: waterClip });
+  assert.notDeepEqual(waveA, waveB, 'Water pixels move with time');
+  await page.getByRole('button', { name: 'Pause sea motion', exact: true }).click();
+  await page.locator('.sea-surface[data-motion="paused"]').waitFor();
+  const stillA = await page.screenshot({ clip: waterClip });
+  await page.waitForTimeout(500);
+  const stillB = await page.screenshot({ clip: waterClip });
+  assert.deepEqual(stillA, stillB, 'Paused water pixels remain stable');
+  await page.getByRole('button', { name: 'Resume sea motion', exact: true }).click();
+  await page.locator('.sea-surface[data-motion="running"]').waitFor();
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.locator('.sea-surface[data-motion="paused"]').waitFor();
+  await page.evaluate(() => {
+    delete document.hidden;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await page.locator('.sea-surface[data-motion="running"]').waitFor();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  pass(
+    'Real sea pixels move, pause without drift, resume, and stop during a simulated hidden-tab event',
+  );
   await screen(page, 'shore-desktop.png');
   await shake(page, [25, 50, 75, 100, 125]);
   assert.equal(await page.locator('.shore-home').count(), 1);
@@ -103,8 +131,12 @@ try {
   await screen(page, 'paper-crumpled.png');
   await page.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await page.locator('.paper-unfolding').waitFor();
+  await page.locator('.paper-unfolding.has-paper-mesh').waitFor();
+  assert.equal(await page.locator('.paper-facets').count(), 0);
   await page.waitForTimeout(250);
   await screen(page, 'paper-unfolding.png', false);
+  await page.waitForTimeout(480);
+  await screen(page, 'paper-relaxing.png', false);
   await page.locator('.paper-open textarea').waitFor();
   assert.equal(await page.locator('.ocean-world').isVisible(), true);
   assert.ok(
@@ -144,6 +176,7 @@ try {
   });
   const phone = await mobile.newPage();
   await ready(phone);
+  await phone.locator('.sea-surface[data-motion="paused"]').waitFor();
   await phoneShake(phone);
   assert.equal(await phone.locator('.shore-home').count(), 1);
   await phone.getByRole('button', { name: 'Enable phone shake', exact: true }).click();
@@ -200,6 +233,24 @@ try {
   );
   pass('Keyboard Enter provides a complete gesture alternative');
   await keyboard.close();
+  const fallback = await browser.newContext({ reducedMotion: 'no-preference' });
+  await fallback.addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+      if (type === 'webgl') return null;
+      return getContext.call(this, type, ...args);
+    };
+  });
+  const fallbackPage = await fallback.newPage();
+  await ready(fallbackPage);
+  await fallbackPage.locator('.sea-surface[data-motion="fallback"]').waitFor();
+  await fallbackPage.getByRole('button', { name: 'Write my six words', exact: true }).click();
+  await fallbackPage.locator('.paper-unfolding').waitFor();
+  assert.equal(await fallbackPage.locator('.has-paper-mesh').count(), 0);
+  await fallbackPage.getByRole('textbox').waitFor();
+  await screen(fallbackPage, 'motion-fallback.png');
+  await fallback.close();
+  pass('Unavailable WebGL preserves the real sea photograph and a working CSS note opening');
   assert.deepEqual(errors, []);
   await fs.writeFile(
     out + 'shore-interactions.json',

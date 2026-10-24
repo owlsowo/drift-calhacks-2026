@@ -1,7 +1,11 @@
-export function Ocean() {
+import { SeaSurface } from './SeaSurface';
+
+export function Ocean({ paused = false }: { paused?: boolean }) {
   return (
     <div className="ocean-world" aria-hidden="true">
-      <div className="ocean-photograph" />
+      <div className="ocean-photograph">
+        <SeaSurface paused={paused} />
+      </div>
       <img className="moon-photograph" src="/assets/moon-detail.jpg" alt="" draggable={false} />
       <svg className="shore-lighthouse" viewBox="0 0 100 120" fill="none">
         <path d="m0 114 19-9 14 2 16-6 21 7 12-2 18 8v6H0Z" fill="#142532" />
