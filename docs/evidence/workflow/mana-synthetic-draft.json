@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "provenance": "draft",
+  "prompts": [
+    {
+      "id": "aquarium",
+      "starters": [
+        "Synthetic test line stays here briefly."
+      ]
+    },
+    {
+      "id": "spaceship",
+      "starters": []
+    },
+    {
+      "id": "lecture",
+      "starters": []
+    },
+    {
+      "id": "roommate",
+      "starters": []
+    },
+    {
+      "id": "sleep",
+      "starters": []
+    },
+    {
+      "id": "cafeteria",
+      "starters": []
+    },
+    {
+      "id": "groupchat",
+      "starters": []
+    }
+  ]
+}

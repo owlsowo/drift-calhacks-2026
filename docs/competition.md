@@ -10,14 +10,13 @@ The software-only evidence case is a fresh-input, two-browser loop; actual subsc
 
 | Route                                     | Product/workflow contribution                                 | Evidence still required                                                                      |
 | ----------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Spacetime                                 | Core authoritative shared state, exclusive catch, live return | Hosted deployment, fresh-input live demo, race/permission results                            |
-| Anthropic                                 | Contextual moderation and optional writing guidance           | Actual calls, model eval, honest account of target-community hypothesis                      |
+| Spacetime                                 | Core authoritative shared state, exclusive catch, live return | Hosted flow and race/permission checks passed; final judging demo and private-code access remain |
+| Anthropic                                 | Contextual moderation and optional writing guidance           | Real calls/evaluation passed with stated limits; truthful firsthand community/problem account remains |
 | Meta                                      | Human collaboration; AI helps a stuck writer participate      | Useful nudge demonstration and evidence of connection; no assumed Meta model requirement     |
 | People-First                              | Low-pressure shared activity, privacy, accessibility          | No pilot available; clearly state evidence limit                                             |
 | Most Creative / Hacker’s Choice / Overall | A complete, memorable play experience                         | Polished live demo and truthful submission                                                   |
-| Figma design/use/creative                 | Genuine flow prototype and iteration                          | Actual Figma use, education verification, accessible files, Slides, stage log, <=3 min video |
-| Figma Agent categories                    | Substantive Agent design/handoff work                         | Do not claim until actually performed; category mapping conflicts                            |
-| Mana                                      | Meaningfully plan/build/debug a bounded part                  | Actual useful use, public-safe page/chat links, demo moment; entry path confirmation         |
+| Figma — Best Figma Workflow Hack           | Actual Make iteration, implemented handoff, native Slides with playable embed | Accessible files, Edu verification and stage log recorded; final <=3 min video/submission remain |
+| Mana                                      | Working Bottle Kitchen app and actual export-to-validator handoff | Public app/build chat shared; include the concrete workflow moment in final demo/submission |
 | Notability                                | Real sketches, decisions, testing notes                       | Actual contemporaneous use and feature evidence                                              |
 | Commit Fellowship                         | Working prototype and intended follow-through                 | Team interest/eligibility, category opt-in, supplemental form                                |
 | Domain                                    | Qualifying project domain                                     | Human registration/terms and current coach instructions                                      |

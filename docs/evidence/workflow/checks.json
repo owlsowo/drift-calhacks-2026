@@ -1,0 +1,60 @@
+{
+  "checkedAt": "2026-10-24 21:29:11 UTC",
+  "mode": "Actual authenticated browser workflow; synthetic test content only; no attendee study",
+  "figma": {
+    "file": "https://www.figma.com/make/4Sk3BHNmaGuxH17B36jAxP/Drift-Bottle-Interaction-Prototype",
+    "slides": "https://www.figma.com/slides/aIXkdSqeFH9r8mXu7qI6zv/Drift-idea-to-working-tide",
+    "sharing": "Both file dialogs confirmed Anyone can view",
+    "nativeSlideCount": 8,
+    "sourceSlideCount": 7,
+    "checks": [
+      "Version 1 and revised empty-state preview inspected",
+      "Visible empty retry entered Checking then remained empty",
+      "Returned state opened the sample postcard and closed back to returned state",
+      "Seven imported source slides visually reviewed",
+      "Eighth slide added natively with Make URL embed",
+      "Embedded prototype empty-state control activated inside actual presentation"
+    ],
+    "limitations": [
+      "Make writing action returns to shore; working game is separate",
+      "Minutes and ratings are agent estimates",
+      "Final three-minute video and actual Devpost submission remain"
+    ]
+  },
+  "mana": {
+    "app": "https://www.mana.space/home/uZUAnp4vMmhOcc7s846yMqttA8V2/apps/drift-bottle-kitchen",
+    "publicChat": "https://www.mana.space/shared-chats/uZUAnp4vMmhOcc7s846yMqttA8V2/001792875075719b18054a2b85b4dcba093",
+    "sharing": "App and build chat dialogs confirmed Anyone with link can view",
+    "toolReportedTests": {
+      "core": 48,
+      "ui": 15,
+      "reviewer": "Mana agent; not independently rerun by Codex"
+    },
+    "independentChecks": [
+      "Five-word synthetic input left Add line disabled",
+      "Six-word input enabled Add line",
+      "Added line stayed unreviewed and did not count toward 20",
+      "Human-team attestation stayed unchecked; production export disabled",
+      "Downloaded actual draft JSON",
+      "Drift CLI returned ready=false, no structural errors and one aquarium draft line",
+      "CLI --install refused actual draft with exit 1",
+      "Temporary synthetic line removed; all seven lists returned to zero"
+    ],
+    "draft": "mana-synthetic-draft.json",
+    "limitations": [
+      "Local-browser storage",
+      "Pattern-based contact flags",
+      "Authorship is team attestation, not verified",
+      "Production inventory remains empty"
+    ]
+  },
+  "deployment": {
+    "commit": "2544990715d2e2019db9c2f224b35d7e76cd554b",
+    "frontendVersion": "b4b6e68c-e6b8-477e-a6e7-2e7b963d15c5",
+    "checks": [
+      "Hosted empty catch showed new recovery note after automatic shore check",
+      "Retired hosted-smoke bottle confirmed hidden with empty text"
+    ]
+  },
+  "privacy": "No API keys or auth tokens included; code repository remains private."
+}

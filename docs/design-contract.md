@@ -1,6 +1,6 @@
 # Drift interaction contract
 
-Audience: event attendees taking a two-minute creative break. Primary action: write a six-word setup, then finish somebody else's. Both roles appear before starting.
+Audience: event attendees taking a two-minute creative break. Primary action: catch a stranger’s six-word beginning, add six words and keep the postcard. Tossing a new beginning is optional afterward; a write-first dock control remains.
 
 Direction: the intimate night sea of classic WeChat Drift Bottle and QQ Mail bottle. The supplied Bilibili video shows a small moon, distant lighthouse, a bottle in the water and a three-object bottom dock. Use a real moonlit-sea photograph with native bottle, beam and bucket controls. Open notes over the same sea instead of switching to a blank page. Warm photographed paper, deep coastal ink, Fraunces text and readable DM Sans controls keep the existing writing flow. Do not use AI-generated imagery. Tencent screenshots and video are reference material only, never bundled assets. Asset sources and licenses are in public/credits.html.
 

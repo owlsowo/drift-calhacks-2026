@@ -7,7 +7,7 @@
   ],
   "accessibility": {
     "status": "pass",
-    "evidence": "Updated ui-smoke.json records zero automated WCAG A/AA violations across home, empty collection, reply, reveal, hello, shared/hidden cards, collection and sample reveal. accessibility.json checks the writing form and help dialog at both primary viewports. Keyboard focus containment/restoration and reduced motion pass; shore-interactions.json checks keyboard Enter, pointer shaking and synthetic mobile permission denial/grant. No physical-phone or assistive-technology user study. Updated motion checks compare actual sea pixels before/after pause, verify reduced-motion stillness and a synthetic hidden-tab event, and exercise the no-WebGL CSS fallback. The paper opens as one connected mesh; keyboard focus transfers from Open bottle to the readable heading. catch-first.json checks the new optional contribution flow at 360 and 1440 pixels with zero automated WCAG violations."
+    "evidence": "Updated ui-smoke.json records zero automated WCAG A/AA violations across home, empty collection, reply, reveal, hello, shared/hidden cards, collection and sample reveal. accessibility.json checks the writing form and help dialog at both primary viewports. Keyboard focus containment/restoration and reduced motion pass; shore-interactions.json checks keyboard Enter, pointer shaking and synthetic mobile permission denial/grant. No physical-phone or assistive-technology user study. Updated motion checks compare actual sea pixels before/after pause, verify reduced-motion stillness and a synthetic hidden-tab event, and exercise the no-WebGL CSS fallback. The paper opens as one connected mesh; keyboard focus transfers from Open bottle to the readable heading. catch-first.json checks the new optional contribution flow at 360 and 1440 pixels with zero automated WCAG violations. empty-tide.json additionally verifies production-mode empty recovery at 360x800 and 1440x1000 with zero automated WCAG violations."
   },
   "responsive": {
     "status": "pass",
@@ -20,7 +20,7 @@
     },
     "empty": {
       "status": "pass",
-      "evidence": "empty-360.png and empty-1440.png: new identity collection offers a working return to the writing flow."
+      "evidence": "empty-tide.json and empty-tide-360.png / empty-tide-1440.png: a truly empty production-mode pool presents compact paper write/retry feedback over the sea, consumes no round on empty catch/retry, and preserves a writing draft through reload/resume. Existing empty collection checks remain in content-states.json."
     },
     "error": {
       "status": "pass",
@@ -174,6 +174,16 @@
       "viewport": "1440x1000",
       "artifact": "returned-bottle-1440.png",
       "observation": "A real returned postcard updates the original writer\u2019s navigation and bottle bucket without refreshing."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "empty-tide-360.png",
+      "observation": "Compact photographed paper remains within the mobile shore; heading, body and two 44px actions are readable. The sea, dock and footer remain usable without horizontal overflow. Screenshot is full-page and can extend below the viewport."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "empty-tide-1440.png",
+      "observation": "The note occupies a small area over the moving sea; write and retry are explicit. No simulated peer or activity count replaces the empty pool."
     }
   ]
 }
