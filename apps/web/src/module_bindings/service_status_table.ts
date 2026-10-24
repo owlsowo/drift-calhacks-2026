@@ -15,4 +15,5 @@ export default __t.row({
   paused: __t.bool(),
   sandbox: __t.bool(),
   aiReady: __t.bool().name("ai_ready"),
+  helloEnabled: __t.bool().name("hello_enabled"),
 });

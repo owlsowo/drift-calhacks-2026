@@ -11,7 +11,11 @@
     "db:publish:local": "node scripts/spacetime.mjs publish-local",
     "db:publish": "node scripts/spacetime.mjs publish",
     "db:generate": "node scripts/spacetime.mjs generate",
-    "test:ui": "node scripts/ui-smoke.mjs"
+    "test:ui": "node scripts/ui-smoke.mjs",
+    "test:server": "vitest run",
+    "test:a11y": "node scripts/accessibility.mjs",
+    "eval:models": "tsx scripts/eval-models.ts",
+    "test:live": "tsx scripts/live-invariants.ts"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
@@ -27,6 +31,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "latest",
+    "prettier": "^3.9.10",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "8.3.5",

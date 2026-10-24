@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-10-24T10:22:23.499Z",
+  "checks": [
+    {
+      "viewport": "360x800",
+      "state": "home",
+      "violations": []
+    },
+    {
+      "viewport": "360x800",
+      "state": "how",
+      "violations": []
+    },
+    {
+      "viewport": "360x800",
+      "state": "write",
+      "violations": []
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "home",
+      "violations": []
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "how",
+      "violations": []
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "write",
+      "violations": []
+    }
+  ]
+}

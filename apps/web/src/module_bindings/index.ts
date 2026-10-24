@@ -40,11 +40,13 @@ import HideMyCardReducer from "./hide_my_card_reducer";
 import PurgeOldDataReducer from "./purge_old_data_reducer";
 import RefreshDayReducer from "./refresh_day_reducer";
 import ReportContentReducer from "./report_content_reducer";
+import SetHelloIntentReducer from "./set_hello_intent_reducer";
 import SetPauseReducer from "./set_pause_reducer";
 import SkipBottleReducer from "./skip_bottle_reducer";
 import StartRoundReducer from "./start_round_reducer";
 
 // Import all procedure arg schemas
+import * as GetHelloProcedure from "./get_hello_procedure";
 import * as RequestNudgeProcedure from "./request_nudge_procedure";
 import * as SubmitReplyProcedure from "./submit_reply_procedure";
 import * as SubmitSetupProcedure from "./submit_setup_procedure";
@@ -52,7 +54,9 @@ import * as SubmitSetupProcedure from "./submit_setup_procedure";
 // Import all table schema definitions
 import MyAssignmentRow from "./my_assignment_table";
 import MyCardsRow from "./my_cards_table";
+import MyHelloRow from "./my_hello_table";
 import MyOutgoingRow from "./my_outgoing_table";
+import MyReportedCardsRow from "./my_reported_cards_table";
 import MyRoundRow from "./my_round_table";
 import PostcardRow from "./postcard_table";
 import ServiceStatusRow from "./service_status_table";
@@ -98,6 +102,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyCardsRow),
+  myHello: __table({
+    name: 'my_hello',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyHelloRow),
   myOutgoing: __table({
     name: 'my_outgoing',
     indexes: [
@@ -105,6 +116,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyOutgoingRow),
+  myReportedCards: __table({
+    name: 'my_reported_cards',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyReportedCardsRow),
   myRound: __table({
     name: 'my_round',
     indexes: [
@@ -129,6 +147,7 @@ const reducersSchema = __reducers(
   __reducerSchema("purge_old_data", PurgeOldDataReducer),
   __reducerSchema("refresh_day", RefreshDayReducer),
   __reducerSchema("report_content", ReportContentReducer),
+  __reducerSchema("set_hello_intent", SetHelloIntentReducer),
   __reducerSchema("set_pause", SetPauseReducer),
   __reducerSchema("skip_bottle", SkipBottleReducer),
   __reducerSchema("start_round", StartRoundReducer),
@@ -136,6 +155,7 @@ const reducersSchema = __reducers(
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
 const proceduresSchema = __procedures(
+  __procedureSchema("get_hello", GetHelloProcedure.params, GetHelloProcedure.returnType),
   __procedureSchema("request_nudge", RequestNudgeProcedure.params, RequestNudgeProcedure.returnType),
   __procedureSchema("submit_reply", SubmitReplyProcedure.params, SubmitReplyProcedure.returnType),
   __procedureSchema("submit_setup", SubmitSetupProcedure.params, SubmitSetupProcedure.returnType),
@@ -147,8 +167,12 @@ type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "ta
     readonly "my_assignment": Omit<typeof tablesSchema.schemaType.tables["myAssignment"], "accessorName"> & { readonly accessorName: "my_assignment" };
     /** @deprecated Use `myCards` instead. This alias will be removed in the next major version. */
     readonly "my_cards": Omit<typeof tablesSchema.schemaType.tables["myCards"], "accessorName"> & { readonly accessorName: "my_cards" };
+    /** @deprecated Use `myHello` instead. This alias will be removed in the next major version. */
+    readonly "my_hello": Omit<typeof tablesSchema.schemaType.tables["myHello"], "accessorName"> & { readonly accessorName: "my_hello" };
     /** @deprecated Use `myOutgoing` instead. This alias will be removed in the next major version. */
     readonly "my_outgoing": Omit<typeof tablesSchema.schemaType.tables["myOutgoing"], "accessorName"> & { readonly accessorName: "my_outgoing" };
+    /** @deprecated Use `myReportedCards` instead. This alias will be removed in the next major version. */
+    readonly "my_reported_cards": Omit<typeof tablesSchema.schemaType.tables["myReportedCards"], "accessorName"> & { readonly accessorName: "my_reported_cards" };
     /** @deprecated Use `myRound` instead. This alias will be removed in the next major version. */
     readonly "my_round": Omit<typeof tablesSchema.schemaType.tables["myRound"], "accessorName"> & { readonly accessorName: "my_round" };
     /** @deprecated Use `serviceStatus` instead. This alias will be removed in the next major version. */
@@ -173,7 +197,9 @@ const REMOTE_MODULE = {
 const tableAccessorAliases = {
   "my_assignment": "myAssignment",
   "my_cards": "myCards",
+  "my_hello": "myHello",
   "my_outgoing": "myOutgoing",
+  "my_reported_cards": "myReportedCards",
   "my_round": "myRound",
   "service_status": "serviceStatus",
 } as const;
@@ -200,8 +226,12 @@ export type DbView = __DbViewBase & {
   readonly "my_assignment": __DbViewBase["myAssignment"];
   /** @deprecated Use `myCards` instead. This alias will be removed in the next major version. */
   readonly "my_cards": __DbViewBase["myCards"];
+  /** @deprecated Use `myHello` instead. This alias will be removed in the next major version. */
+  readonly "my_hello": __DbViewBase["myHello"];
   /** @deprecated Use `myOutgoing` instead. This alias will be removed in the next major version. */
   readonly "my_outgoing": __DbViewBase["myOutgoing"];
+  /** @deprecated Use `myReportedCards` instead. This alias will be removed in the next major version. */
+  readonly "my_reported_cards": __DbViewBase["myReportedCards"];
   /** @deprecated Use `myRound` instead. This alias will be removed in the next major version. */
   readonly "my_round": __DbViewBase["myRound"];
   /** @deprecated Use `serviceStatus` instead. This alias will be removed in the next major version. */
@@ -214,8 +244,12 @@ export type Tables = __TablesBase & {
   readonly "my_assignment": __TablesBase["myAssignment"];
   /** @deprecated Use `myCards` instead. This alias will be removed in the next major version. */
   readonly "my_cards": __TablesBase["myCards"];
+  /** @deprecated Use `myHello` instead. This alias will be removed in the next major version. */
+  readonly "my_hello": __TablesBase["myHello"];
   /** @deprecated Use `myOutgoing` instead. This alias will be removed in the next major version. */
   readonly "my_outgoing": __TablesBase["myOutgoing"];
+  /** @deprecated Use `myReportedCards` instead. This alias will be removed in the next major version. */
+  readonly "my_reported_cards": __TablesBase["myReportedCards"];
   /** @deprecated Use `myRound` instead. This alias will be removed in the next major version. */
   readonly "my_round": __TablesBase["myRound"];
   /** @deprecated Use `serviceStatus` instead. This alias will be removed in the next major version. */

@@ -6,7 +6,7 @@ Write a setup, toss it, catch another writer’s setup, and write its ending. Yo
 
 ## Current status
 
-Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding have passed a real local-browser smoke test. See `docs/evidence/ui-smoke.json` and screenshots.
+Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness currently passes 29 transaction/privacy/failure tests. Automated accessibility scans pass the tested home, help and writing states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding have passed a real local-browser smoke test. See `docs/evidence/ui-smoke.json` and screenshots.
 
 **Not yet verified:** live Claude calls, hosted Maincloud deployment, actual phones, attendee outcomes, Figma/Mana/Notability use or sponsor eligibility. Local development is clearly marked and may explicitly disable model checks. This is never evidence of a live AI integration. No attendee pilot has been conducted.
 
@@ -45,9 +45,12 @@ Publish to Maincloud with `npm run db:publish -- <unique-database-name> --server
 
 ```sh
 npm test
+npm run test:server
 npm run check:server
 npm run build
 npm run test:ui
+npm run test:a11y
+npm run eval:models -- --dry-run
 ```
 
 The UI test requires the local database and frontend to be running. It uses synthetic fixtures in isolated browsers, saves screenshots and tests full reload recovery, live returns and downloads. It does not establish model quality or social impact.
@@ -70,3 +73,9 @@ Retention is a policy plus an owner-run `purge_old_data` reducer: seven days for
 See `docs/competition.md` for the track plan and evidence gaps. The product targets a playful first interaction for first-time event attendees; this remains a hypothesis. Screenshots, automated test identities and starter content must never be represented as real pilot participation.
 
 The October 21 illustrated prototype and earlier planning documents informed direction. This implementation was started during the event on October 24, 2026. The older prototype’s code and scripted demo are not used as evidence of live functionality.
+
+## Optional hello
+
+The mutual hello feature is implemented and disabled by default. To enable it, the human owner must physically verify a public meeting point and set server environment values `DRIFT_HELLO_ENABLED=true`, `DRIFT_MEETING_SPOT=<public label>` and `DRIFT_MEETING_SPOT_VERIFIED=true`, then republish. It is available only for cards made by two guest identities, not team starters. It expires ten minutes after postcard creation. Withdrawal or hiding cancels access. The private recognition phrase is absent from public data and exports.
+
+Cloudflare static hosting configuration and restrictive `_headers` are supplied; deployment and actual response headers remain unverified. See `docs/security-boundaries.md` for the bounded guest-token and distribution model.

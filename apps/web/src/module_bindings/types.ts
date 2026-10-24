@@ -59,14 +59,45 @@ export const Config = __t.object("Config", {
 });
 export type Config = __Infer<typeof Config>;
 
+export const Hello = __t.object("Hello", {
+  cardId: __t.string(),
+  setupAccepted: __t.bool(),
+  replyAccepted: __t.bool(),
+  phrase: __t.string(),
+  expiresMs: __t.f64(),
+});
+export type Hello = __Infer<typeof Hello>;
+
+export const HelloAvailability = __t.object("HelloAvailability", {
+  cardId: __t.string(),
+  optedIn: __t.bool(),
+  mutual: __t.bool(),
+  expiresMs: __t.f64(),
+});
+export type HelloAvailability = __Infer<typeof HelloAvailability>;
+
+export const HelloDetails = __t.object("HelloDetails", {
+  mutual: __t.bool(),
+  spot: __t.string(),
+  phrase: __t.string(),
+  expiresMs: __t.f64(),
+});
+export type HelloDetails = __Infer<typeof HelloDetails>;
+
 export const MyAssignment = __t.object("MyAssignment", {});
 export type MyAssignment = __Infer<typeof MyAssignment>;
 
 export const MyCards = __t.object("MyCards", {});
 export type MyCards = __Infer<typeof MyCards>;
 
+export const MyHello = __t.object("MyHello", {});
+export type MyHello = __Infer<typeof MyHello>;
+
 export const MyOutgoing = __t.object("MyOutgoing", {});
 export type MyOutgoing = __Infer<typeof MyOutgoing>;
+
+export const MyReportedCards = __t.object("MyReportedCards", {});
+export type MyReportedCards = __Infer<typeof MyReportedCards>;
 
 export const MyRound = __t.object("MyRound", {});
 export type MyRound = __Infer<typeof MyRound>;
@@ -104,6 +135,11 @@ export const Report = __t.object("Report", {
   createdMs: __t.f64(),
 });
 export type Report = __Infer<typeof Report>;
+
+export const ReportedCard = __t.object("ReportedCard", {
+  id: __t.string(),
+});
+export type ReportedCard = __Infer<typeof ReportedCard>;
 
 export const Request = __t.object("Request", {
   id: __t.string(),
@@ -146,6 +182,7 @@ export const ServiceInfo = __t.object("ServiceInfo", {
   paused: __t.bool(),
   sandbox: __t.bool(),
   aiReady: __t.bool(),
+  helloEnabled: __t.bool(),
 });
 export type ServiceInfo = __Infer<typeof ServiceInfo>;
 

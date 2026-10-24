@@ -6,10 +6,13 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all procedure arg schemas
+import * as GetHelloProcedure from "../get_hello_procedure";
 import * as RequestNudgeProcedure from "../request_nudge_procedure";
 import * as SubmitReplyProcedure from "../submit_reply_procedure";
 import * as SubmitSetupProcedure from "../submit_setup_procedure";
 
+export type GetHelloArgs = __Infer<typeof GetHelloProcedure.params>;
+export type GetHelloResult = __Infer<typeof GetHelloProcedure.returnType>;
 export type RequestNudgeArgs = __Infer<typeof RequestNudgeProcedure.params>;
 export type RequestNudgeResult = __Infer<typeof RequestNudgeProcedure.returnType>;
 export type SubmitReplyArgs = __Infer<typeof SubmitReplyProcedure.params>;
