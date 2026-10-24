@@ -75,6 +75,77 @@ beforeEach(() => {
   tx(owner, (c) => module.init(c, {}));
 });
 describe('authoritative game state', () => {
+  it('verifies Turnstile on the server, scopes passes to one identity and expires them', () => {
+    env.DRIFT_TURNSTILE_SECRET = 'synthetic-server-secret';
+    env.DRIFT_TURNSTILE_HOSTNAME = 'drift.test';
+    expect(() => start(A)).toThrow(/shore check/);
+    const answer = (data: object) => () => ({
+      code: 200,
+      headers: { entries: [] },
+      version: { tag: 'Http11' as const },
+      body: JSON.stringify(data),
+    });
+    expect(
+      module.verify_shore(modelCtx(A, answer({ success: false })), { token: 'forged' }).ok,
+    ).toBe(false);
+    expect(
+      module.verify_shore(
+        modelCtx(A, answer({ success: true, hostname: 'wrong.test', action: 'drift' })),
+        { token: 'wrong-host' },
+      ).ok,
+    ).toBe(false);
+    expect(
+      module.verify_shore(
+        modelCtx(A, answer({ success: true, hostname: 'drift.test', action: 'other' })),
+        { token: 'wrong-action' },
+      ).ok,
+    ).toBe(false);
+    expect(
+      module.verify_shore(
+        modelCtx(A, answer({ success: true, hostname: 'drift.test', action: 'drift' })),
+        { token: 'valid' },
+      ).ok,
+    ).toBe(true);
+    expect(() => start(A)).not.toThrow();
+    expect(() => start(B)).toThrow(/shore check/);
+    expect(module.verify_shore(h.procedureContext(A), { token: '' }).ok).toBe(true);
+    h.clock.advance(TimeDuration.fromMillis(3600001));
+    expect(() => setup(A)).not.toThrow();
+    expect(setup(A).ok).toBe(false);
+    expect([...h.db.request.iter()]).toHaveLength(0);
+  });
+  it('installs one hourly schedule and purges hidden-card identity mappings', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B);
+    catchBottle(B);
+    reply(B);
+    const card = [...h.db.postcard.iter()][0];
+    tx(A, (c) => module.hide_my_card(c, { cardId: card.id }));
+    expect([...h.db.authorship.iter()]).toHaveLength(1);
+    tx(owner, (c) => module.purge_old_data(c, {}));
+    expect([...h.db.authorship.iter()]).toHaveLength(0);
+    tx(A, (c) => module.refresh_day(c, {}));
+    expect([...h.db.maintenance.iter()]).toHaveLength(1);
+    expect(() => tx(C, (c) => module.purge_old_data(c, {}))).toThrow(/owner/);
+  });
+  it('scheduled maintenance removes expired private text and public postcards', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B);
+    catchBottle(B);
+    reply(B);
+    h.clock.advance(TimeDuration.fromMillis(31 * 86400000));
+    const arg = [...h.db.maintenance.iter()][0];
+    tx(owner, (c) => module.maintenance_tick(c, { arg }));
+    expect([...h.db.request.iter()]).toHaveLength(0);
+    expect([...h.db.bottle.iter()]).toHaveLength(0);
+    expect([...h.db.round.iter()]).toHaveLength(0);
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+    expect([...h.db.authorship.iter()]).toHaveLength(0);
+  });
   it('resumes the same round, keeps private views scoped, and excludes self assignment', () => {
     start(A);
     start(A);

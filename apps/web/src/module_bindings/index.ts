@@ -55,6 +55,7 @@ import * as RequestNudgeProcedure from "./request_nudge_procedure";
 import * as ServerTimeProcedure from "./server_time_procedure";
 import * as SubmitReplyProcedure from "./submit_reply_procedure";
 import * as SubmitSetupProcedure from "./submit_setup_procedure";
+import * as VerifyShoreProcedure from "./verify_shore_procedure";
 
 // Import all table schema definitions
 import MyAssignmentRow from "./my_assignment_table";
@@ -169,6 +170,7 @@ const proceduresSchema = __procedures(
   __procedureSchema("server_time", ServerTimeProcedure.params, ServerTimeProcedure.returnType),
   __procedureSchema("submit_reply", SubmitReplyProcedure.params, SubmitReplyProcedure.returnType),
   __procedureSchema("submit_setup", SubmitSetupProcedure.params, SubmitSetupProcedure.returnType),
+  __procedureSchema("verify_shore", VerifyShoreProcedure.params, VerifyShoreProcedure.returnType),
 );
 
 type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "tables"> & {

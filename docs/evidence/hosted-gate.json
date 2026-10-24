@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-24T20:38:35.948Z",
+  "mode": "Real hosted Turnstile negative check; no challenge solved and no paid AI dispatch attempted",
+  "checks": [
+    "Hosted service reports AI ready, sandbox off and bot protection required",
+    "A forged token is rejected through real Cloudflare Siteverify",
+    "An unverified identity cannot start a round"
+  ],
+  "status": {
+    "id": 0,
+    "paused": false,
+    "sandbox": false,
+    "aiReady": true,
+    "helloEnabled": false,
+    "botRequired": true
+  }
+}

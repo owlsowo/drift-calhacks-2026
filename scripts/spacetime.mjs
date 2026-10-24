@@ -22,6 +22,8 @@ if (['publish-test', 'delete-test', 'pause-test', 'resume-test'].includes(action
   if (!/^drift-test-[a-z0-9-]+$/.test(name || ''))
     throw Error('Test databases must use the drift-test- namespace.');
   env.ANTHROPIC_API_KEY = '';
+  env.DRIFT_TURNSTILE_SECRET = '';
+  env.DRIFT_TURNSTILE_HOSTNAME = '';
   env.DRIFT_DEV_MODE = 'true';
   env.DRIFT_STARTERS_HUMAN_WRITTEN = 'false';
   env.DRIFT_HELLO_ENABLED = env.DRIFT_TEST_HELLO === 'true' ? 'true' : 'false';

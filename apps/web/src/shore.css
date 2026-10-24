@@ -546,6 +546,26 @@
   margin-left: 12px;
   white-space: nowrap;
 }
+.shore-gate {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: #ede5d2;
+  color: #183e40;
+  font-size: 12px;
+}
+.shore-gate p {
+  margin: 0;
+}
+.shore-gate button {
+  min-height: 44px;
+  text-decoration: underline;
+}
 .sea-world:not(.shore-shell) .ocean-photograph::after {
   content: '';
   position: absolute;

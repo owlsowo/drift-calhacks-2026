@@ -96,6 +96,12 @@ export const HelloDetails = __t.object("HelloDetails", {
 });
 export type HelloDetails = __Infer<typeof HelloDetails>;
 
+export const Maintenance = __t.object("Maintenance", {
+  id: __t.u64(),
+  scheduledAt: __t.scheduleAt(),
+});
+export type Maintenance = __Infer<typeof Maintenance>;
+
 export const MyAssignment = __t.object("MyAssignment", {});
 export type MyAssignment = __Infer<typeof MyAssignment>;
 
@@ -211,11 +217,18 @@ export const ServiceInfo = __t.object("ServiceInfo", {
   sandbox: __t.bool(),
   aiReady: __t.bool(),
   helloEnabled: __t.bool(),
+  botRequired: __t.bool(),
 });
 export type ServiceInfo = __Infer<typeof ServiceInfo>;
 
 export const ServiceStatus = __t.object("ServiceStatus", {});
 export type ServiceStatus = __Infer<typeof ServiceStatus>;
+
+export const ShorePass = __t.object("ShorePass", {
+  owner: __t.identity(),
+  expiresMs: __t.f64(),
+});
+export type ShorePass = __Infer<typeof ShorePass>;
 
 export const Today = __t.object("Today", {
   id: __t.u32(),

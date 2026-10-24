@@ -34,6 +34,7 @@ import { friendlyError } from './errors';
 import { Shore } from './Shore';
 import { Ocean } from './Ocean';
 import { PaperNote } from './PaperNote';
+import { ShoreGate } from './ShoreGate';
 
 function Bottle({ small = false }: { small?: boolean }) {
   return (
@@ -221,6 +222,7 @@ function App() {
   const [clock, setClock] = useState(Date.now());
   const [reveal, setReveal] = useState('');
   const [seaPaused, setSeaPaused] = useState(false);
+  const [gateReady, setGateReady] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const nowDay = dayOf(clock);
   const active = s.rounds.find(
@@ -294,6 +296,7 @@ function App() {
     try {
       await fn();
     } catch (e) {
+      if (e instanceof Error && e.message.startsWith('Your shore check')) setGateReady(false);
       setError(friendlyError(e));
     } finally {
       setBusy('');
@@ -348,7 +351,7 @@ function App() {
       setError('');
     }
   }, [s.rounds, reveal, view]);
-  const controlsDisabled = !!busy || !s.connected;
+  const controlsDisabled = !!busy || !s.connected || (!!s.service?.botRequired && !gateReady);
   const reset = new Date((nowDay + 1) * 86400000).toLocaleTimeString([], {
     hour: 'numeric',
     minute: '2-digit',
@@ -424,6 +427,9 @@ function App() {
             {s.error || 'Finding the shore…'}
             {!s.connecting && <button onClick={() => game.reconnect()}>Reconnect</button>}
           </div>
+        )}
+        {s.connected && s.service?.botRequired && !gateReady && (
+          <ShoreGate onVerified={() => setGateReady(true)} />
         )}
         <main id="main" className={`main view-${view}`}>
           {view === 'today' && (
@@ -1006,9 +1012,9 @@ function App() {
             images or screenshots. Reports are private.
           </p>
           <p>
-            Unpublished submissions are retained for up to seven days; cards and reports for up to
-            thirty days when the owner runs the purge command. Automatic cleanup is not yet
-            scheduled.
+            Unpublished submissions are retained for seven days; cards and reports for thirty days.
+            Hourly cleanup removes expired data and hidden-card author mappings. Saved browser
+            drafts expire seven days after their latest edit.
           </p>
           <p>
             AI guidance is optional and stays separate from your words. Starter content is always

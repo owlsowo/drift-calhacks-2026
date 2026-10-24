@@ -13,6 +13,7 @@ import * as RequestNudgeProcedure from "../request_nudge_procedure";
 import * as ServerTimeProcedure from "../server_time_procedure";
 import * as SubmitReplyProcedure from "../submit_reply_procedure";
 import * as SubmitSetupProcedure from "../submit_setup_procedure";
+import * as VerifyShoreProcedure from "../verify_shore_procedure";
 
 export type AdminReportsArgs = __Infer<typeof AdminReportsProcedure.params>;
 export type AdminReportsResult = __Infer<typeof AdminReportsProcedure.returnType>;
@@ -28,4 +29,6 @@ export type SubmitReplyArgs = __Infer<typeof SubmitReplyProcedure.params>;
 export type SubmitReplyResult = __Infer<typeof SubmitReplyProcedure.returnType>;
 export type SubmitSetupArgs = __Infer<typeof SubmitSetupProcedure.params>;
 export type SubmitSetupResult = __Infer<typeof SubmitSetupProcedure.returnType>;
+export type VerifyShoreArgs = __Infer<typeof VerifyShoreProcedure.params>;
+export type VerifyShoreResult = __Infer<typeof VerifyShoreProcedure.returnType>;
 

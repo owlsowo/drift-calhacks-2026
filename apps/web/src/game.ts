@@ -1,4 +1,6 @@
+import './csp-serialization';
 import { DbConnection } from './module_bindings';
+import { encodeDraft, decodeDraft } from './drafts';
 import type {
   Round,
   Assignment,
@@ -63,6 +65,7 @@ const read = (key: string) => {
   }
 };
 export const persist = (key: string, value: string) => {
+  if (key.startsWith('drift:draft:')) value = encodeDraft(value);
   memory.set(key, value);
   try {
     localStorage.setItem(key, value);
@@ -70,7 +73,30 @@ export const persist = (key: string, value: string) => {
     storageUnavailable();
   }
 };
-export const saved = (key: string) => read(key) || '';
+export const saved = (key: string) => {
+  const raw = read(key) || '';
+  if (!raw || !key.startsWith('drift:draft:')) return raw;
+  const item = decodeDraft(raw);
+  if (item.expired) {
+    memory.delete(key);
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      storageUnavailable();
+    }
+    return '';
+  }
+  if (item.legacy) persist(key, item.text);
+  return item.text;
+};
+function pruneDrafts() {
+  try {
+    const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i));
+    for (const key of keys) if (key?.startsWith('drift:draft:')) saved(key);
+  } catch {
+    storageUnavailable();
+  }
+}
 function emit(patch: Partial<Snapshot> = {}) {
   if (connection?.isActive) {
     state = {
@@ -109,6 +135,7 @@ async function syncClock(conn: DbConnection) {
 }
 function connect() {
   if (connection) return;
+  pruneDrafts();
   connection = DbConnection.builder()
     .withUri(host)
     .withDatabaseName(database)
@@ -207,6 +234,11 @@ export const game = {
   async start() {
     if (!connection?.isActive) throw Error('Connect before starting your story.');
     await connection.reducers.startRound({});
+  },
+  async verifyGate(token: string) {
+    if (!connection?.isActive) throw Error('Reconnect before verifying your shore check.');
+    const value = await connection.procedures.verifyShore({ token });
+    if (!value.ok) throw Error(value.message);
   },
   async refresh() {
     if (connection?.isActive)

@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-24T20:34:19.914Z",
+  "origin": "https://drift-game.drift-calhacks-2026-owlsowo.workers.dev",
+  "mode": "Real hosted SpacetimeDB + Claude; synthetic writers, no attendee study; ran before Turnstile gate enablement",
+  "headers": {
+    "csp": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://*.spacetimedb.com wss://*.spacetimedb.com; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'",
+    "nosniff": "nosniff",
+    "permissions": "camera=(), microphone=(), geolocation=()"
+  },
+  "checks": [
+    "Two independent identities connect over real HTTPS with AI enabled and no sandbox banner",
+    "Fresh synthetic inputs pass real hosted Claude setup moderation",
+    "A real Sonnet nudge appears inside the hosted writing flow",
+    "Real pair moderation creates a canonical postcard and returns it live to the original writer",
+    "Hosted postcard exports as a real downloadable PNG",
+    "Synthetic hosted postcard is hidden after verification"
+  ],
+  "hint": "Try writing as a stiff corporate notice, treating the penguin's discount theft with deadpan legal seriousness and formal policy language.",
+  "cardId": "ec9e2eba-273a-4f61-a9cd-9e2a2b1d6061",
+  "errors": []
+}

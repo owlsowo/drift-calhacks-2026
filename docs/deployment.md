@@ -1,6 +1,6 @@
 # Deployment handoff
 
-The local app and its isolated tests work. Hosted deployment remains pending account access and a real Claude key. This runbook is preparation, not proof of deployment.
+The live checkpoint is documented in `docs/live-release.md`. Hosted Maincloud, Cloudflare HTTPS, real Claude calls and Turnstile rejection checks are now verified; physical-phone and attendee evidence remain pending. This runbook describes how to reproduce the deployment.
 
 ## 1. Connect the intended accounts
 
@@ -47,7 +47,7 @@ Use a separate, clearly identified demo database for rehearsal. Do not run `test
 
 Owner-only operations are `admin_status`, `admin_reports`, `resolve_report`, `set_pause`, `set_dispatch_cap` and `purge_old_data`. Use the authenticated database owner. Start with status and the report queue; never paste private report text or tokens into public submission material.
 
-If provider checks fail, pause submissions and retain drafts. Do not turn the live database into an unannounced sandbox. Publicly shared downloads cannot be revoked by hiding a card. Retention cleanup is owner-run, not automatically scheduled.
+If provider checks fail, pause submissions and retain drafts. Do not turn the live database into an unannounced sandbox. Publicly shared downloads cannot be revoked by hiding a card. Retention cleanup runs hourly through a private schedule; the owner-run purge remains available.
 
 Enable mutual hello only after physically verifying a public meeting spot and setting all three server flags described in the README. Do not use the synthetic test meeting point.
 

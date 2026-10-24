@@ -6,11 +6,11 @@ Write a setup, toss it, catch another writer’s setup, and write its ending. Yo
 
 ## Current status
 
-Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness passes 36 transaction/privacy/failure tests. Ten rule/model-contract/gesture tests pass. Automated accessibility scans pass the tested writing, reply, reveal, hello, collection, shared-card, loading, pause and offline states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding pass local-browser smoke tests. See `docs/evidence/ui-smoke.json`, `content-states.json`, `live-invariants.json` and `frontend-review.json` with screenshots.
+Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness passes 39 transaction/privacy/failure tests. Thirteen rule/model-contract/gesture/draft/CSP tests pass. Automated accessibility scans pass the tested writing, reply, reveal, hello, collection, shared-card, loading, pause and offline states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding pass local-browser smoke tests. See `docs/evidence/ui-smoke.json`, `content-states.json`, `live-invariants.json` and `frontend-review.json` with screenshots.
 
 The WeChat/QQ bottle-inspired shore supports cursor shaking, opt-in phone motion and keyboard/button alternatives. Water and moonlight ripple below a fixed horizon; the sea can be paused and stops when the page is hidden or reduced motion is requested. Caught notes loosen into one continuous creased sheet, settle flat and reveal the writing. Small native WebGL surfaces reuse the credited photographs; static sea and CSS note fallbacks work without WebGL. All photographic assets are human-made; see `docs/asset-sources.md`. Ten browser interaction checks cover sea pixel movement/pause, shaking, permissions, catch recovery, keyboard focus, reduced motion and graphics fallback using synthetic inputs. Physical-phone sensor behavior still needs verification.
 
-**Not yet verified:** live Claude calls, hosted Maincloud deployment, actual phones, attendee outcomes, Figma/Mana/Notability use or sponsor eligibility. Local development is clearly marked and may explicitly disable model checks. This is never evidence of a live AI integration. No attendee pilot has been conducted.
+**Live checkpoint:** Cloudflare HTTPS and Maincloud are deployed. A real hosted two-browser Claude flow and server-side Turnstile negative checks passed; see `docs/live-release.md`. **Not yet verified:** actual phones, attendee outcomes, Figma/Mana/Notability use or final sponsor eligibility. Local development is clearly marked and may explicitly disable model checks. This is never evidence of a live AI integration. No attendee pilot has been conducted.
 
 ## Local development
 
@@ -72,7 +72,7 @@ The integration tests require the local database server. Each creates a disposab
 - Setup moderation runs before delivery; pair moderation runs before postcard publication. Uncertain or malformed responses withhold text and preserve drafts.
 - Only the database owner can pause dispatch/publication or invoke the purge reducer. The application cap starts at 1,000 dispatches, including uncertain calls. Provider budget alerts are a separate control.
 
-Retention is a policy plus an owner-run `purge_old_data` reducer: seven days for submitted request text and bottles; thirty days for cards, reports and rounds. Automatic scheduling is not configured. Hiding cannot retract downloaded images or screenshots.
+An hourly private maintenance schedule enforces seven days for submitted request text and bottles, and thirty days for cards, reports and rounds. It also purges orphaned hidden-card author mappings and expired hello details. Browser drafts expire seven days after the latest edit. The owner can also run `purge_old_data` manually. Hiding cannot retract downloaded images or screenshots.
 
 ## Competition evidence
 
@@ -84,7 +84,7 @@ The October 21 illustrated prototype and earlier planning documents informed dir
 
 The mutual hello feature is implemented and disabled by default. To enable it, the human owner must physically verify a public meeting point and set server environment values `DRIFT_HELLO_ENABLED=true`, `DRIFT_MEETING_SPOT=<public label>` and `DRIFT_MEETING_SPOT_VERIFIED=true`, then republish. It is available only for cards made by two guest identities, not team starters. It expires ten minutes after postcard creation. Withdrawal or hiding cancels access. The private recognition phrase is absent from public data and exports.
 
-Cloudflare static hosting configuration and restrictive `_headers` are supplied; deployment and actual response headers remain unverified. See `docs/security-boundaries.md` for the bounded guest-token and distribution model.
+Cloudflare static hosting is deployed and actual HTTPS headers were verified. The CSP does not allow unsafe-eval; the browser SDK uses a tested interpreted serialization adapter. Server-side Turnstile binds a verified pass to one caller identity before paid operations. See `docs/security-boundaries.md` for the bounded guest-token and distribution model.
 
 ## Starter authorship
 

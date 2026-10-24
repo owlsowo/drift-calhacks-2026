@@ -16,4 +16,5 @@ export default __t.row({
   sandbox: __t.bool(),
   aiReady: __t.bool().name("ai_ready"),
   helloEnabled: __t.bool().name("hello_enabled"),
+  botRequired: __t.bool().name("bot_required"),
 });
