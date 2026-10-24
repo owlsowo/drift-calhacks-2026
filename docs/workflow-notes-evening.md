@@ -23,3 +23,9 @@ Review found the sample Writing path incorrectly credited the viewer as the begi
 At 23:25 UTC the production build, eight WebKit checks, two empty-tide viewport flows and ten shore-interaction checks passed. Selected accessibility scans reported no violations. Screenshots at 390px and 1440px were inspected, including the six-mark writer. The first concurrent shore test could not create its disposable database (`File exists`); a sequential rerun created a fresh room and passed. No physical-phone, attendee or paid-model test is implied.
 
 Approximate active-time estimates for this additional iteration at the checkpoint: ideation 1 minute (4/5), prototyping/review 3 minutes (3/5), handoff 1 minute (4/5), implementation/verification 4 minutes (4/5). These are Codex estimates and assessments; concurrent tool waits overlap and are not measured time savings.
+
+## Verified follow-up and deployment
+
+Make v4, “Correct Postcard Path Attribution”, reported 17 seconds of tool work. We re-entered six words and verified “Begun by another writer · finished by you”; the Returned path retained “Begun by you · finished by a stranger”. The sample label remained visible. After completing v4, Make displayed an exhausted daily-credit notice. We did not purchase an upgrade. The prototype's editing cap remains a sample limitation; the handoff recommendation and real app preserve over-count drafts.
+
+Code commit `5043061ff2cb6bea1e586d46c7237c3d8de5bfbe` is pushed and deployed as Cloudflare version `fe60dd10-2525-4389-b2ff-bc15a4c5ef56`. Both hosted entry assets match the local tested build. The actual hosted dated bottle and primary action were inspected without creating game content. All 22 unit tests also pass. See `docs/evidence/daily-ui-release.json`, the refreshed browser evidence and the consolidated four-stage log. This is technical workflow evidence; the team retains final submission/writeup review.
