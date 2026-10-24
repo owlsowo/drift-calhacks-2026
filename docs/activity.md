@@ -27,3 +27,5 @@ Counts from different days and actions are not a common cohort: a round or postc
 Five additional module-harness cases cover committed transitions/replay, per-author deduplication and permissions, source separation, mode separation/retention and empty-catch rollback. The actual local WebKit flow reads the private owner totals after two authors open the postcard, exports repeat, cancellation/denial occur, a native-share adapter resolves and a public visitor opens the link. These synthetic checks verify instrumentation, not adoption. The actual ten-writer network test rejects guest access to `activity_day` and `admin_activity`.
 
 The privacy dialog describes the counts. Current deployment state and actual read-only hosted diagnostics are recorded in `docs/live-release.md`.
+
+The deployed initial owner read is saved in `docs/evidence/hosted-activity.json`; it has no rows and does not backfill pre-release events. Hosted anonymous probes reject both `admin_activity` and direct `activity_day` subscription. The live UI disclosure and deployed file hashes are recorded separately. Code checkpoint `5947fc7` passed CI.

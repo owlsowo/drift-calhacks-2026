@@ -1,10 +1,12 @@
 {
-  "checkedAt": "2026-10-24T20:38:35.948Z",
-  "mode": "Real hosted Turnstile negative check; no challenge solved and no paid AI dispatch attempted",
+  "checkedAt": "2026-10-24T23:06:38.355Z",
+  "mode": "Real hosted protection and private-diagnostics checks; no challenge solved and no paid AI dispatch attempted",
   "checks": [
     "Hosted service reports AI ready, sandbox off and bot protection required",
     "A forged token is rejected through real Cloudflare Siteverify",
-    "An unverified identity cannot start a round"
+    "An unverified identity cannot start a round",
+    "A guest cannot call owner activity diagnostics",
+    "A guest cannot subscribe to private daily totals"
   ],
   "status": {
     "id": 0,

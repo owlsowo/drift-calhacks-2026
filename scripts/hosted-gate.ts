@@ -37,13 +37,31 @@ try {
     rejected = String(error);
   }
   assert.match(rejected, /shore check/);
+  await assert.rejects(connection.procedures.adminActivity({}));
+  const privateDenied = await new Promise<boolean>((resolve, reject) => {
+    const timer = setTimeout(() => reject(Error('Hosted activity privacy probe timed out')), 8000);
+    connection
+      .subscriptionBuilder()
+      .onError(() => {
+        clearTimeout(timer);
+        resolve(true);
+      })
+      .onApplied(() => {
+        clearTimeout(timer);
+        resolve(false);
+      })
+      .subscribe('SELECT * FROM activity_day');
+  });
+  assert.equal(privateDenied, true);
   const evidence = {
     checkedAt: new Date().toISOString(),
-    mode: 'Real hosted Turnstile negative check; no challenge solved and no paid AI dispatch attempted',
+    mode: 'Real hosted protection and private-diagnostics checks; no challenge solved and no paid AI dispatch attempted',
     checks: [
       'Hosted service reports AI ready, sandbox off and bot protection required',
       'A forged token is rejected through real Cloudflare Siteverify',
       'An unverified identity cannot start a round',
+      'A guest cannot call owner activity diagnostics',
+      'A guest cannot subscribe to private daily totals',
     ],
     status,
   };
