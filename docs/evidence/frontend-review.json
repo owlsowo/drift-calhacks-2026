@@ -1,0 +1,113 @@
+{
+  "contract": "docs/design-contract.md",
+  "targetViewports": [
+    "360x800",
+    "1440x1000"
+  ],
+  "accessibility": {
+    "status": "pass",
+    "evidence": "ui-smoke.json records zero automated WCAG A/AA violations across home, empty collection, reply, reveal, hello, shared/hidden cards, collection and sample reveal; keyboard focus containment/restoration and reduced motion checked. content-states scans loading, pause and offline states. Manual screen inspection supplements automation; no assistive-technology user study."
+  },
+  "responsive": {
+    "status": "pass",
+    "evidence": "All browser captures assert document width <= viewport. Rendered mobile and desktop home/reveal/error states inspected for legibility, wrapping and order; mobile postcard precedes sharing/hello controls."
+  },
+  "contentStates": {
+    "loading": {
+      "status": "pass",
+      "evidence": "content-states.json: held real WebSocket handshake at both target viewports; unavailable actions stay disabled."
+    },
+    "empty": {
+      "status": "pass",
+      "evidence": "empty-360.png and empty-1440.png: new identity collection offers a working return to the writing flow."
+    },
+    "error": {
+      "status": "pass",
+      "evidence": "error-360x800.png and error-1440x1000.png: authoritative owner pause rejects a valid submission; draft remains. Offline captures separately show editable text with disabled submission."
+    },
+    "partial": {
+      "status": "pass",
+      "evidence": "reveal-360.png: completed incoming postcard is usable while own outgoing setup is still waiting; live-return assertion later observes its arrival without refresh."
+    },
+    "success": {
+      "status": "pass",
+      "evidence": "reveal-360.png and reveal-1440.png: real database-confirmed postcard, download and collection. Lost reply acknowledgment still reveals the server-confirmed card."
+    },
+    "permission": {
+      "status": "pass",
+      "evidence": "shared-card-360.png shows no author hide control for a visitor; permission-360.png shows caller-only hiding after report; permission-1440.png shows unavailable permalink after actual author hiding. Private-table and owner-action checks in live-invariants.json."
+    }
+  },
+  "renderedEvidence": [
+    {
+      "viewport": "360x800",
+      "artifact": "home-360.png",
+      "observation": "Connected home has a clear setup/reply explanation, visible sandbox label and a primary writing action."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "reveal-360.png",
+      "observation": "Canonical postcard text wraps inside the paper artifact. Mobile card is above secondary controls; desktop uses a two-column reveal."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "empty-360.png",
+      "observation": "Empty collection is explicit and offers a next step."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "permission-360.png",
+      "observation": "Unavailable shared card contains no story or author-only controls."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "loading-360x800.png",
+      "observation": "Handshake loading remains legible and does not imply a successful connection."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "error-360x800.png",
+      "observation": "Pause error names the recoverable condition while retaining entered text."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "offline-360x800.png",
+      "observation": "Reconnection status remains visible with the saved draft."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "home-1440.png",
+      "observation": "Connected home has a clear setup/reply explanation, visible sandbox label and a primary writing action."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "reveal-1440.png",
+      "observation": "Canonical postcard text wraps inside the paper artifact. Mobile card is above secondary controls; desktop uses a two-column reveal."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "empty-1440.png",
+      "observation": "Empty collection is explicit and offers a next step."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "permission-1440.png",
+      "observation": "Unavailable shared card contains no story or author-only controls."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "loading-1440x1000.png",
+      "observation": "Handshake loading remains legible and does not imply a successful connection."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "error-1440x1000.png",
+      "observation": "Pause error names the recoverable condition while retaining entered text."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "offline-1440x1000.png",
+      "observation": "Reconnection status remains visible with the saved draft."
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Check, Hand, LoaderCircle, MapPin } from 'lucide-react';
 import { game } from './game';
+import { friendlyError } from './errors';
 import type { HelloAvailability, HelloDetails } from './module_bindings/types';
 
 export function HelloPanel({
@@ -42,13 +43,15 @@ export function HelloPanel({
     try {
       await game.setHello(cardId, !invitation?.optedIn);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Try your invitation again.');
+      setError(friendlyError(e, 'Try your invitation again.'));
     } finally {
       setBusy(false);
     }
   }
   const mutual = !expired && invitation?.mutual && details?.mutual;
-  const minutes = invitation ? Math.max(0, Math.ceil((invitation.expiresMs - time) / 60000)) : 0;
+  const minutes = invitation
+    ? Math.max(0, Math.min(10, Math.ceil((invitation.expiresMs - time) / 60000)))
+    : 0;
   return (
     <aside className="hello-panel" aria-label="Optional mutual hello">
       <span className="eyebrow">

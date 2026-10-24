@@ -1,6 +1,6 @@
 import type { Card } from '../../../packages/game-rules/index';
 export const cardText = (c: Card) =>
-  `${c.setup}\n${c.reply}\n\nTwo people. Twelve words. Drift.${c.seeded ? ' Setup written by the Drift team.' : ''}`;
+  `${c.setup}\n${c.reply}\n\n${c.seeded && c.starterKind !== 'team' ? 'Sample starter + a writer’s ending. Drift. Development fixture.' : `Two people. Twelve words. Drift.${c.seeded ? ' Setup written by the Drift team.' : ''}`}`;
 export const cardUrl = (c: Card) =>
   `${location.origin}${location.pathname}?card=${encodeURIComponent(c.id)}`;
 function wrap(ctx: CanvasRenderingContext2D, text: string, width: number) {
@@ -70,7 +70,11 @@ export async function postcardPng(card: Card): Promise<Blob> {
   const parts = [
     {
       text: card.setup,
-      label: card.seeded ? '01 / THE DRIFT TEAM’S SETUP' : '01 / A STRANGER’S SETUP',
+      label: card.seeded
+        ? card.starterKind === 'team'
+          ? '01 / THE DRIFT TEAM’S SETUP'
+          : '01 / SAMPLE STARTER — DEVELOPMENT FIXTURE'
+        : '01 / A STRANGER’S SETUP',
       y: 288,
     },
     { text: card.reply, label: '02 / ANOTHER HUMAN’S ENDING', y: 740 },
@@ -99,7 +103,13 @@ export async function postcardPng(card: Card): Promise<Blob> {
   c.restore();
   c.fillStyle = '#173e40';
   c.font = '500 28px Fraunces';
-  c.fillText('Neither of us could have written this alone.', 76, 1200);
+  c.fillText(
+    card.seeded && card.starterKind !== 'team'
+      ? 'A sample beginning. A writer’s ending.'
+      : 'Neither of us could have written this alone.',
+    76,
+    1200,
+  );
   c.font = '400 19px "DM Sans"';
   c.fillText(location.host, 76, 1251);
   c.fillText(

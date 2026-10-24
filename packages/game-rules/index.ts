@@ -67,5 +67,6 @@ export type Card = {
   setup: string;
   reply: string;
   seeded: boolean;
+  starterKind?: string;
   createdMs: number;
 };

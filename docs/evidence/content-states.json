@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-10-24T11:04:27.275Z",
+  "mode": "isolated local sandbox; synthetic fault injection",
+  "evidence": [
+    {
+      "viewport": "360x800",
+      "state": "loading",
+      "artifact": "loading-360x800.png",
+      "observation": "Real WebSocket handshake held; prompt/action remain unavailable until server state arrives."
+    },
+    {
+      "viewport": "360x800",
+      "state": "error",
+      "artifact": "error-360x800.png",
+      "observation": "Authoritative emergency pause rejects submission with a clear saved-draft message."
+    },
+    {
+      "viewport": "360x800",
+      "state": "offline",
+      "artifact": "offline-360x800.png",
+      "observation": "Disconnected session preserves editable words, disables submission and names reconnection."
+    },
+    {
+      "viewport": "360x800",
+      "state": "reconnected",
+      "artifact": "reconnected-360x800.png",
+      "observation": "Restored subscription resumes the same identity and draft; a new submission completes after reconnection."
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "loading",
+      "artifact": "loading-1440x1000.png",
+      "observation": "Real WebSocket handshake held; prompt/action remain unavailable until server state arrives."
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "error",
+      "artifact": "error-1440x1000.png",
+      "observation": "Authoritative emergency pause rejects submission with a clear saved-draft message."
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "offline",
+      "artifact": "offline-1440x1000.png",
+      "observation": "Disconnected session preserves editable words, disables submission and names reconnection."
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "reconnected",
+      "artifact": "reconnected-1440x1000.png",
+      "observation": "Restored subscription resumes the same identity and draft; a new submission completes after reconnection."
+    }
+  ]
+}

@@ -2,11 +2,11 @@
 
 **Six words from you. Six from a stranger.** A mobile web game where two people make a tiny comedy postcard together.
 
-Write a setup, toss it, catch another writer’s setup, and write its ending. Your completed postcard appears immediately; its original author receives it live. A labeled, team-written starter keeps the normal loop moving when attendee inventory is empty. AI guidance never writes either creative line.
+Write a setup, toss it, catch another writer’s setup, and write its ending. Your completed postcard appears immediately; its original author receives it live. The production design supports human-written team starters when peer inventory is empty. Current fallback lines are clearly labeled development samples; production will not silently use them. AI guidance never writes either creative line.
 
 ## Current status
 
-Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness currently passes 29 transaction/privacy/failure tests. Automated accessibility scans pass the tested home, help and writing states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding have passed a real local-browser smoke test. See `docs/evidence/ui-smoke.json` and screenshots.
+Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness currently passes 36 transaction/privacy/failure tests. Six rule/model-contract tests pass. Automated accessibility scans pass the tested writing, reply, reveal, hello, collection, shared-card, loading, pause and offline states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding have passed a real local-browser smoke test. See `docs/evidence/ui-smoke.json`, `content-states.json`, `live-invariants.json` and `frontend-review.json` with screenshots.
 
 **Not yet verified:** live Claude calls, hosted Maincloud deployment, actual phones, attendee outcomes, Figma/Mana/Notability use or sponsor eligibility. Local development is clearly marked and may explicitly disable model checks. This is never evidence of a live AI integration. No attendee pilot has been conducted.
 
@@ -17,7 +17,7 @@ Prerequisites: Node 22.12+ (tested here with 26.7), npm, Chrome, and the [Spacet
 ```sh
 npm ci
 npm ci --prefix spacetimedb
-cp .env.example .env
+test -f .env || cp .env.example .env
 # Put ANTHROPIC_API_KEY in .env for real model calls. Never commit it.
 
 # Terminal 1: start a local database server
@@ -53,7 +53,7 @@ npm run test:a11y
 npm run eval:models -- --dry-run
 ```
 
-The UI test requires the local database and frontend to be running. It uses synthetic fixtures in isolated browsers, saves screenshots and tests full reload recovery, live returns and downloads. It does not establish model quality or social impact.
+The integration tests require the local database server. Each creates a disposable database and, for browser tests, its own frontend; cleanup leaves the main development database alone. They use synthetic fixtures in isolated browsers, save screenshots and test full reload recovery, live returns and downloads. They do not establish model quality or social impact. `test:live` probes concurrent claims and access controls; `test:states` injects loading, pause and offline failures.
 
 ## Architecture and boundaries
 
@@ -79,3 +79,11 @@ The October 21 illustrated prototype and earlier planning documents informed dir
 The mutual hello feature is implemented and disabled by default. To enable it, the human owner must physically verify a public meeting point and set server environment values `DRIFT_HELLO_ENABLED=true`, `DRIFT_MEETING_SPOT=<public label>` and `DRIFT_MEETING_SPOT_VERIFIED=true`, then republish. It is available only for cards made by two guest identities, not team starters. It expires ten minutes after postcard creation. Withdrawal or hiding cancels access. The private recognition phrase is absent from public data and exports.
 
 Cloudflare static hosting configuration and restrictive `_headers` are supplied; deployment and actual response headers remain unverified. See `docs/security-boundaries.md` for the bounded guest-token and distribution model.
+
+## Starter authorship
+
+The sample starter arrays in `packages/game-rules/index.ts` are development fixtures, not verified human contributions. Before using a team-written fallback in production, replace them with at least eight human-written starters per prompt and set `DRIFT_STARTERS_HUMAN_WRITTEN=true`. Samples remain tagged in stored cards and exports even if server settings later change. If production has neither a peer bottle nor attested starters, it preserves the setup and offers an honest retry instead.
+
+## Owner operations
+
+The database owner can call `admin_status` for dispatch/cap/failure counts, `admin_reports` for the private unresolved queue, `resolve_report` with a report ID and `dismiss` or `hide`, `set_pause`, `set_dispatch_cap`, and `purge_old_data`. These operations are checked on the server; they are not a general admin dashboard. A viewer report hides a card for that viewer while preserving its publication for the authors unless the owner resolves it by hiding.

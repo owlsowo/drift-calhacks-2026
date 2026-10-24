@@ -123,12 +123,12 @@ describe('authoritative game state', () => {
       text: 'I taught the octopus insider trading.',
     };
     expect(module.submit_setup(h.procedureContext(A), args).ok).toBe(true);
-    expect(() =>
+    expect(
       module.submit_setup(h.procedureContext(A), {
         ...args,
         text: 'I challenged their shark to poker.',
       }),
-    ).toThrow(/different text/);
+    ).toMatchObject({ ok: false, message: expect.stringMatching(/different text/) });
   });
   it('withholds an expired claim and never renews it across reset', () => {
     h.clock.set(new Timestamp(BigInt(Date.parse('2026-10-24T23:58:00Z')) * 1000n));
@@ -140,7 +140,7 @@ describe('authoritative game state', () => {
     tx(A, (c) => module.start_round(c, {}));
     expect(claim(A).leaseMs).toBe(deadline);
     h.clock.advance(TimeDuration.fromMillis(8 * 60000));
-    expect(() => reply(A)).toThrow(/drifted on/);
+    expect(reply(A)).toMatchObject({ ok: false, message: expect.stringMatching(/drifted on/) });
     expect([...h.db.postcard.iter()]).toHaveLength(0);
   });
   it('enforces one skip, keeps exclusions, and gives reporting a free release', () => {
@@ -183,7 +183,7 @@ describe('authoritative game state', () => {
       c.db.config.id.update({ ...cfg, dispatchCap: cfg.dispatches });
     });
     start(B);
-    expect(() => setup(B)).toThrow(/allowance/);
+    expect(setup(B)).toMatchObject({ ok: false, message: expect.stringMatching(/allowance/) });
   });
 });
 describe('two-phase model boundary', () => {
@@ -473,5 +473,106 @@ describe('viewer reporting', () => {
     expect(() =>
       tx(C, (ctx) => module.report_content(ctx, { roundId: '', cardId, reason: 'other' })),
     ).toThrow(/report limit/);
+  });
+});
+describe('owner operations', () => {
+  it('keeps the report queue private and lets the owner dismiss a caught-bottle report', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B);
+    catchBottle(B);
+    const roundId = active(B).id;
+    tx(B, (ctx) => module.report_content(ctx, { roundId, cardId: '', reason: 'other' }));
+    const r = [...h.db.report.iter()][0];
+    expect(h.db.bottle.id.find(r.target)?.hidden).toBe(true);
+    expect(() => module.admin_reports(h.procedureContext(C))).toThrow(/project owner/);
+    expect(() =>
+      tx(C, (ctx) => module.resolve_report(ctx, { reportId: r.id, decision: 'dismiss' })),
+    ).toThrow(/project owner/);
+    expect(module.admin_reports(h.procedureContext(owner))[0].content).toBe(
+      'I taught the octopus insider trading.',
+    );
+    tx(owner, (ctx) => module.resolve_report(ctx, { reportId: r.id, decision: 'dismiss' }));
+    expect(h.db.bottle.id.find(r.target)?.hidden).toBe(false);
+    expect(module.admin_status(h.procedureContext(owner)).openReports).toBe(0);
+    expect(module.my_reported_cards(h.viewContext(B))).toEqual([{ id: r.target }]);
+  });
+  it('lets the owner remove a reported public card without granting viewers that authority', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B);
+    catchBottle(B);
+    reply(B);
+    const cardId = [...h.db.postcard.iter()][0].id;
+    tx(C, (ctx) => module.report_content(ctx, { roundId: '', cardId, reason: 'hurtful' }));
+    const r = [...h.db.report.iter()][0];
+    tx(owner, (ctx) => module.resolve_report(ctx, { reportId: r.id, decision: 'hide' }));
+    expect(h.db.postcard.id.find(cardId)).toBeNull();
+    expect(module.my_cards(h.viewContext(A))[0].hidden).toBe(true);
+  });
+  it('exposes bounded spending controls only to the owner', () => {
+    expect(() => module.admin_status(h.procedureContext(A))).toThrow(/project owner/);
+    expect(() => tx(A, (ctx) => module.set_dispatch_cap(ctx, { cap: 10000 }))).toThrow(
+      /project owner/,
+    );
+    tx(owner, (ctx) => module.set_dispatch_cap(ctx, { cap: 200 }));
+    expect(module.admin_status(h.procedureContext(owner)).cap).toBe(200);
+    expect(() => tx(owner, (ctx) => module.set_dispatch_cap(ctx, { cap: 10001 }))).toThrow(
+      /at most/,
+    );
+  });
+  it('records review and provider failures as private diagnostics without publishing', () => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const args = {
+      roundId: active(A).id,
+      requestId: crypto.randomUUID(),
+      text: 'I taught the octopus insider trading.',
+    };
+    expect(
+      module.submit_setup(
+        modelCtx(A, () => modelResponse({ decision: 'review', reason: 'uncertain' })),
+        args,
+      ).ok,
+    ).toBe(false);
+    const ctx = modelCtx(A, () => ({
+      code: 401,
+      headers: { entries: [] },
+      version: { tag: 'Http11' },
+      body: 'not printed',
+    }));
+    expect(module.submit_setup(ctx, { ...args, requestId: crypto.randomUUID() }).ok).toBe(false);
+    const stats = module.admin_status(h.procedureContext(owner));
+    expect(stats.reviewSubmissions).toBe(1);
+    expect(stats.failedModelCalls).toBe(1);
+    expect([...h.db.bottle.iter()]).toHaveLength(0);
+  });
+});
+describe('starter provenance', () => {
+  it('labels development starter content as sample throughout the canonical card', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    expect(claim(A).starterKind).toBe('sample');
+    reply(A);
+    expect([...h.db.postcard.iter()][0]).toMatchObject({ seeded: true, starterKind: 'sample' });
+  });
+  it('does not silently use samples when production has no eligible peer', () => {
+    start(A);
+    setup(A);
+    delete env.DRIFT_DEV_MODE;
+    expect(() => catchBottle(A)).toThrow(/No bottles are available/);
+    expect(active(A).stage).toBe('catch');
+    expect(h.db.bottle.id.find(active(A).setupId)).not.toBeNull();
+  });
+  it('uses the team label only after explicit owner attestation', () => {
+    start(A);
+    setup(A);
+    delete env.DRIFT_DEV_MODE;
+    env.DRIFT_STARTERS_HUMAN_WRITTEN = 'true';
+    catchBottle(A);
+    expect(claim(A).starterKind).toBe('team');
   });
 });

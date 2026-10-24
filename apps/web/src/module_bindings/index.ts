@@ -40,14 +40,19 @@ import HideMyCardReducer from "./hide_my_card_reducer";
 import PurgeOldDataReducer from "./purge_old_data_reducer";
 import RefreshDayReducer from "./refresh_day_reducer";
 import ReportContentReducer from "./report_content_reducer";
+import ResolveReportReducer from "./resolve_report_reducer";
+import SetDispatchCapReducer from "./set_dispatch_cap_reducer";
 import SetHelloIntentReducer from "./set_hello_intent_reducer";
 import SetPauseReducer from "./set_pause_reducer";
 import SkipBottleReducer from "./skip_bottle_reducer";
 import StartRoundReducer from "./start_round_reducer";
 
 // Import all procedure arg schemas
+import * as AdminReportsProcedure from "./admin_reports_procedure";
+import * as AdminStatusProcedure from "./admin_status_procedure";
 import * as GetHelloProcedure from "./get_hello_procedure";
 import * as RequestNudgeProcedure from "./request_nudge_procedure";
+import * as ServerTimeProcedure from "./server_time_procedure";
 import * as SubmitReplyProcedure from "./submit_reply_procedure";
 import * as SubmitSetupProcedure from "./submit_setup_procedure";
 
@@ -147,6 +152,8 @@ const reducersSchema = __reducers(
   __reducerSchema("purge_old_data", PurgeOldDataReducer),
   __reducerSchema("refresh_day", RefreshDayReducer),
   __reducerSchema("report_content", ReportContentReducer),
+  __reducerSchema("resolve_report", ResolveReportReducer),
+  __reducerSchema("set_dispatch_cap", SetDispatchCapReducer),
   __reducerSchema("set_hello_intent", SetHelloIntentReducer),
   __reducerSchema("set_pause", SetPauseReducer),
   __reducerSchema("skip_bottle", SkipBottleReducer),
@@ -155,8 +162,11 @@ const reducersSchema = __reducers(
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
 const proceduresSchema = __procedures(
+  __procedureSchema("admin_reports", AdminReportsProcedure.params, AdminReportsProcedure.returnType),
+  __procedureSchema("admin_status", AdminStatusProcedure.params, AdminStatusProcedure.returnType),
   __procedureSchema("get_hello", GetHelloProcedure.params, GetHelloProcedure.returnType),
   __procedureSchema("request_nudge", RequestNudgeProcedure.params, RequestNudgeProcedure.returnType),
+  __procedureSchema("server_time", ServerTimeProcedure.params, ServerTimeProcedure.returnType),
   __procedureSchema("submit_reply", SubmitReplyProcedure.params, SubmitReplyProcedure.returnType),
   __procedureSchema("submit_setup", SubmitSetupProcedure.params, SubmitSetupProcedure.returnType),
 );

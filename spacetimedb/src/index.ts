@@ -57,6 +57,7 @@ const bottle = table(
     claimUntil: t.f64(),
     cardId: t.string(),
     hidden: t.bool(),
+    starterKind: t.string().default('sample'),
   },
 );
 const postcard = table(
@@ -68,6 +69,7 @@ const postcard = table(
     reply: t.string(),
     seeded: t.bool(),
     createdMs: t.f64(),
+    starterKind: t.string().default('sample'),
   },
 );
 const authorship = table(
@@ -127,12 +129,21 @@ const hello = table(
     expiresMs: t.f64(),
   },
 );
+const reportResolution = table(
+  { name: 'report_resolution' },
+  {
+    reportId: t.string().primaryKey(),
+    decision: t.string(),
+    resolvedMs: t.f64(),
+  },
+);
 const db = schema(
-  { round, bottle, postcard, authorship, request, report, config, today, hello },
+  { round, bottle, postcard, authorship, request, report, config, today, hello, reportResolution },
   {
     env: {
       ANTHROPIC_API_KEY: t.option(t.string()),
       DRIFT_DEV_MODE: t.option(t.string()),
+      DRIFT_STARTERS_HUMAN_WRITTEN: t.option(t.string()),
       NUDGE_MODEL: t.option(t.string()),
       MODERATION_MODEL: t.option(t.string()),
       DRIFT_HELLO_ENABLED: t.option(t.string()),
@@ -187,9 +198,9 @@ function unlocked(ctx: Tx, r: Round) {
 function saveRound(ctx: Tx, r: Round) {
   ctx.db.round.id.update(r);
 }
-function finishRequest(ctx: Tx, id: string, result: object) {
+function finishRequest(ctx: Tx, id: string, result: object, state = 'finished') {
   const q = ctx.db.request.id.find(id)!;
-  ctx.db.request.id.update({ ...q, state: 'finished', result: JSON.stringify(result) });
+  ctx.db.request.id.update({ ...q, state, result: JSON.stringify(result) });
 }
 
 function promptJson(day: number) {
@@ -216,6 +227,7 @@ export const init = db.init((ctx) => {
 });
 export const connected = db.clientConnected((ctx) => refresh(ctx));
 export const refresh_day = db.reducer((ctx) => refresh(ctx));
+export const server_time = db.procedure(t.f64(), (ctx) => now(ctx));
 
 export const start_round = db.reducer((ctx) => {
   ready(ctx);
@@ -278,7 +290,7 @@ function callClaude(ctx: Proc, kind: 'moderation' | 'nudge', payload: object): a
     timeout: TimeDuration.fromMillis(18000),
     body: JSON.stringify(modelRequest(kind, payload, model)),
   });
-  if (!res.ok) throw Error('Model service unavailable.');
+  if (!res.ok) throw Error('provider_http_' + res.status);
   const body = JSON.parse(res.text());
   return parseModelResponse(kind, body);
 }
@@ -368,12 +380,18 @@ function paidAction(
       ...(operation === 'reply' ? { reply: text } : {}),
       ...(operation === 'nudge' ? { draft: text } : {}),
     });
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    const code = /^provider_http_\d{3}$/.test(message)
+      ? message
+      : message === 'Incomplete model result.'
+        ? 'model_incomplete'
+        : 'model_error';
     return ctx.withTx((tx) => {
       const current = currentRound(tx, r.id);
       if (current.inFlight === qid) saveRound(tx, { ...current, inFlight: '', busyUntil: 0 });
       const value = result(false, 'We couldn’t finish that check. Your draft is saved. Try again.');
-      finishRequest(tx, qid, value);
+      finishRequest(tx, qid, value, code);
       return value;
     });
   }
@@ -388,7 +406,7 @@ function paidAction(
       now(tx) > current.busyUntil
     ) {
       const value = result(false, 'That check arrived too late. Your draft is saved.');
-      finishRequest(tx, qid, value);
+      finishRequest(tx, qid, value, 'late');
       return value;
     }
     saveRound(tx, { ...current, inFlight: '', busyUntil: 0 });
@@ -432,7 +450,7 @@ function paidAction(
           ? 'We couldn’t confidently check this version. It remains private; try a different line.'
           : messages[checked.reason],
       );
-      finishRequest(tx, qid, value);
+      finishRequest(tx, qid, value, checked.decision);
       return value;
     }
     if (operation === 'setup') {
@@ -444,6 +462,7 @@ function paidAction(
         promptId: r.promptId,
         text,
         seeded: false,
+        starterKind: 'none',
         seedIndex: 0,
         claimRound: '',
         claimVersion: 0,
@@ -460,6 +479,7 @@ function paidAction(
         setup: b!.text,
         reply: text,
         seeded: b!.seeded,
+        starterKind: b!.seeded ? b!.starterKind : 'none',
         createdMs: now(tx),
       });
       tx.db.authorship.insert({ id, setupOwner: b!.owner, replyOwner: tx.sender, hidden: false });
@@ -477,14 +497,32 @@ function paidAction(
   });
 }
 const paidArgs = { roundId: t.string(), requestId: t.string(), text: t.string() };
+function safePaidAction(
+  ctx: Proc,
+  args: { roundId: string; requestId: string; text: string },
+  operation: 'setup' | 'reply' | 'nudge',
+): Result {
+  try {
+    return paidAction(ctx, args, operation);
+  } catch (error) {
+    // Procedures do not expose reducer-style SenderError values. Return expected
+    // application failures explicitly so callers never receive a module-fatal wrapper.
+    return result(
+      false,
+      error instanceof SenderError
+        ? error.message
+        : 'We couldn’t complete that request. Your draft is saved.',
+    );
+  }
+}
 export const submit_setup = db.procedure(paidArgs, response, (ctx, args) =>
-  paidAction(ctx, args, 'setup'),
+  safePaidAction(ctx, args, 'setup'),
 );
 export const submit_reply = db.procedure(paidArgs, response, (ctx, args) =>
-  paidAction(ctx, args, 'reply'),
+  safePaidAction(ctx, args, 'reply'),
 );
 export const request_nudge = db.procedure(paidArgs, response, (ctx, args) =>
-  paidAction(ctx, args, 'nudge'),
+  safePaidAction(ctx, args, 'nudge'),
 );
 
 function assign(ctx: Tx, r: Round) {
@@ -504,6 +542,9 @@ function assign(ctx: Tx, r: Round) {
       !excluded.has(b.id),
   );
   if (!found) {
+    const humanWritten = ctx.env.DRIFT_STARTERS_HUMAN_WRITTEN === 'true';
+    if (!humanWritten && ctx.env.DRIFT_DEV_MODE !== 'true')
+      fail('No bottles are available just now. Your setup is safe; try again later.');
     const prompt = promptForDay(r.day);
     const available = prompt.starters
       .map((text, index) => ({ text, index }))
@@ -518,6 +559,7 @@ function assign(ctx: Tx, r: Round) {
       promptId: r.promptId,
       text: seed.text,
       seeded: true,
+      starterKind: humanWritten ? 'team' : 'sample',
       seedIndex: seed.index,
       claimRound: '',
       claimVersion: 0,
@@ -780,6 +822,88 @@ export const set_pause = db.reducer({ paused: t.bool() }, (ctx, { paused }) => {
   const c = admin(ctx);
   ctx.db.config.id.update({ ...c, paused });
 });
+export const set_dispatch_cap = db.reducer({ cap: t.u32() }, (ctx, { cap }) => {
+  const c = admin(ctx);
+  if (cap > 10000) fail('Use a dispatch cap of at most 10,000.');
+  ctx.db.config.id.update({ ...c, dispatchCap: cap });
+});
+const adminStatusInfo = t.row('AdminStatusInfo', {
+  dispatches: t.u32(),
+  cap: t.u32(),
+  paused: t.bool(),
+  openReports: t.u32(),
+  reviewSubmissions: t.u32(),
+  failedModelCalls: t.u32(),
+});
+export const admin_status = db.procedure(adminStatusInfo, (ctx) =>
+  ctx.withTx((tx) => {
+    const c = admin(tx);
+    const reports = [...tx.db.report.iter()].filter(
+      (r) => !tx.db.reportResolution.reportId.find(r.id),
+    );
+    const requests = [...tx.db.request.iter()];
+    return {
+      dispatches: c.dispatches,
+      cap: c.dispatchCap,
+      paused: c.paused,
+      openReports: reports.length,
+      reviewSubmissions: requests.filter((r) => r.state === 'review').length,
+      failedModelCalls: requests.filter(
+        (r) => r.state.startsWith('model_') || r.state.startsWith('provider_http_'),
+      ).length,
+    };
+  }),
+);
+const reportQueueItem = t.row('ReportQueueItem', {
+  id: t.string(),
+  reason: t.string(),
+  content: t.string(),
+  createdMs: t.f64(),
+});
+export const admin_reports = db.procedure(t.array(reportQueueItem), (ctx) =>
+  ctx.withTx((tx) => {
+    admin(tx);
+    return [...tx.db.report.iter()]
+      .filter((r) => !tx.db.reportResolution.reportId.find(r.id))
+      .sort((a, b) => a.createdMs - b.createdMs)
+      .slice(0, 50)
+      .map((r) => {
+        const card = tx.db.postcard.id.find(r.target);
+        const b = tx.db.bottle.id.find(r.target);
+        return {
+          id: r.id,
+          reason: r.reason,
+          content: card
+            ? card.setup + ' / ' + card.reply
+            : (b?.text ?? '[Content no longer retained]'),
+          createdMs: r.createdMs,
+        };
+      });
+  }),
+);
+export const resolve_report = db.reducer(
+  { reportId: t.string(), decision: t.string() },
+  (ctx, { reportId, decision }) => {
+    admin(ctx);
+    if (!['dismiss', 'hide'].includes(decision)) fail('Choose dismiss or hide.');
+    const r = ctx.db.report.id.find(reportId);
+    if (!r) fail('This report is no longer available.');
+    const b = ctx.db.bottle.id.find(r.target);
+    if (b && !b.cardId) ctx.db.bottle.id.update({ ...b, hidden: decision === 'hide' });
+    if (decision === 'hide') {
+      const a = ctx.db.authorship.id.find(b?.cardId || r.target);
+      if (a) {
+        ctx.db.postcard.id.delete(a.id);
+        ctx.db.authorship.id.update({ ...a, hidden: true });
+        ctx.db.hello.cardId.delete(a.id);
+      }
+    }
+    const row = { reportId, decision, resolvedMs: now(ctx) };
+    if (ctx.db.reportResolution.reportId.find(reportId))
+      ctx.db.reportResolution.reportId.update(row);
+    else ctx.db.reportResolution.insert(row);
+  },
+);
 export const purge_old_data = db.reducer((ctx) => {
   admin(ctx);
   const cutoff = now(ctx) - 30 * 86400000;
@@ -793,7 +917,11 @@ export const purge_old_data = db.reducer((ctx) => {
     if (q.createdMs < now(ctx) - 7 * 86400000) ctx.db.request.id.delete(q.id);
   for (const b of ctx.db.bottle.iter())
     if (b.day < dayOf(now(ctx)) - 7) ctx.db.bottle.id.delete(b.id);
-  for (const r of ctx.db.report.iter()) if (r.createdMs < cutoff) ctx.db.report.id.delete(r.id);
+  for (const r of ctx.db.report.iter())
+    if (r.createdMs < cutoff) {
+      ctx.db.report.id.delete(r.id);
+      ctx.db.reportResolution.reportId.delete(r.id);
+    }
   for (const r of ctx.db.round.iter())
     if (r.day < dayOf(now(ctx)) - 30) ctx.db.round.id.delete(r.id);
 });
@@ -809,6 +937,7 @@ const assigned = t.row('Assignment', {
   seeded: t.bool(),
   leaseMs: t.f64(),
   roundId: t.string(),
+  starterKind: t.string(),
 });
 export const my_assignment = db.view(
   { name: 'my_assignment', public: true },
@@ -825,6 +954,7 @@ export const my_assignment = db.view(
           seeded: b.seeded,
           leaseMs: r.leaseMs,
           roundId: r.id,
+          starterKind: b.seeded ? b.starterKind : 'none',
         });
     }
     return result;

@@ -16,4 +16,5 @@ export default __t.row({
   seeded: __t.bool(),
   leaseMs: __t.f64().name("lease_ms"),
   roundId: __t.string().name("round_id"),
+  starterKind: __t.string().name("starter_kind"),
 });

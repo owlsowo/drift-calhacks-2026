@@ -28,7 +28,7 @@ The current build is a controlled local sandbox. A global paid dispatch cap and 
 
 - Official Spacetime module test harness: authorization, lease expiry, rollover, replay, caps, external-call race/failure cases and hello privacy.
 - Two isolated browser contexts: real database loop, reload recovery, live return, export and hide.
-- WCAG automated scans at 360x800 and 1440x1000: home, help and writing states.
+- WCAG automated scans at 360x800 and 1440x1000: home, help, writing, reply, reveal, hello, collection, shared/hidden cards, loading, pause and offline states. Keyboard focus and reduced motion also checked.
 - Production dependency audit: zero reported advisories at the recorded check. Audits cover known advisories only.
 
 No public production deployment, external penetration test or actual attendee validation is claimed.

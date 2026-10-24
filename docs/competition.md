@@ -43,4 +43,4 @@ Do not add finance, payments, web scraping, an extra database, or a runtime codi
 4. Show the finished card on B and its immediate return to A without refresh.
 5. Save the image. Briefly show one privacy/failure boundary, then explain the architecture.
 
-Any team starter is labeled. Any sandbox has a persistent visible notice. A recorded backup must say which calls were live and which content was seeded.
+Any sample or team starter is labeled with its actual provenance. Human-written production starters still require the owner’s input. Any sandbox has a persistent visible notice. A recorded backup must say which calls were live and which content was seeded.
