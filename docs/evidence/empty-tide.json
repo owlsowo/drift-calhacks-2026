@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-10-24T21:07:25.655Z",
+  "mode": "Isolated empty production-mode database, synthetic identities, no provider key or paid calls",
+  "checks": [
+    "360px: empty pool and retry consume no round, accessible note offers write flow, draft survives reload",
+    "1440px: empty pool and retry consume no round, accessible note offers write flow, draft survives reload"
+  ]
+}

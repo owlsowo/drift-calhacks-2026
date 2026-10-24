@@ -569,6 +569,60 @@
 .dock-returned .dock-object {
   filter: drop-shadow(0 0 9px #f6dc8e90);
 }
+.quiet-tide-note {
+  position: absolute;
+  top: 26%;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  width: min(350px, calc(100% - 48px));
+  padding: 25px 24px 18px;
+  box-sizing: border-box;
+  color: #203d40;
+  background: #f2e8ce url('/assets/paper-texture.jpg') center / cover;
+  box-shadow: 0 12px 30px #041f3240;
+  z-index: 3;
+}
+.quiet-tide-note h2 {
+  font:
+    400 27px/1.2 'Fraunces',
+    serif;
+  margin: 0 0 12px;
+  color: #203d40;
+}
+.quiet-tide-note p {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 15px;
+}
+.quiet-tide-note small {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+}
+.quiet-tide-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.quiet-tide-actions button {
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #49605b;
+  border-radius: 3px;
+  background: transparent;
+  color: #203d40;
+  font-size: 13px;
+}
+.quiet-tide-actions button:first-child {
+  background: #203d40;
+  color: #fff5dd;
+}
+.shore-empty .bottle-grip,
+.shore-empty .bottle-ripple,
+.shore-empty .bottle-spotlight,
+.shore-empty .shake-instruction {
+  visibility: hidden;
+}
 .pass-it-on {
   display: flex;
   flex-direction: column;

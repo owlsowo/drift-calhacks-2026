@@ -257,6 +257,7 @@ function App() {
   const returnedToday = mine.filter(
     (o) => o.role === 'setup' && dayOf(o.card.createdMs) === nowDay,
   ).length;
+  const emptyTide = error.startsWith('No bottles are available');
   const remaining = active
     ? Math.max(0, Math.min(600, Math.ceil((active.leaseMs - clock) / 1000)))
     : 0;
@@ -467,6 +468,7 @@ function App() {
               onCollection={() => setView('collection')}
               count={mine.length}
               returnedCount={returnedToday}
+              empty={emptyTide}
               headingRef={heading}
             />
           )}
@@ -547,6 +549,7 @@ function App() {
                     onCollection={() => setView('collection')}
                     count={mine.length}
                     returnedCount={returnedToday}
+                    empty={emptyTide}
                     headingRef={heading}
                   />
                 ) : (
@@ -992,14 +995,18 @@ function App() {
               )}
             </section>
           )}
-          {error && (
-            <div className="error-note" role="alert">
-              <span>{error}</span>
-              <button aria-label="Dismiss message" onClick={() => setError('')}>
-                <X size={17} />
-              </button>
-            </div>
-          )}
+          {error &&
+            !(
+              emptyTide &&
+              (view === 'today' || (view === 'play' && active?.stage === 'catch'))
+            ) && (
+              <div className="error-note" role="alert">
+                <span>{error}</span>
+                <button aria-label="Dismiss message" onClick={() => setError('')}>
+                  <X size={17} />
+                </button>
+              </div>
+            )}
         </main>
         <footer className="site-footer">
           <span>A small moment of together.</span>

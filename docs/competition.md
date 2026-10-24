@@ -23,7 +23,7 @@ The software-only evidence case is a fresh-input, two-browser loop; actual subsc
 | Domain                                    | Qualifying project domain                                     | Human registration/terms and current coach instructions                                      |
 | Vultr                                     | Real hosting                                                  | Only choose if deployment is quick; avoid redundant hosts                                    |
 
-Confirmed published sources disagree: the organizer guide includes Anthropic, Spacetime and Mana; the public Devpost list omits their explicit entries. Figma’s detailed brief lists workflow and stage-log awards while Devpost lists five different labels. Maximum entry count and stacking rules were not established. A human owner must confirm those narrow points before final submission.
+The current public Devpost list explicitly includes Anthropic, Spacetime and Mana. Figma's detailed brief lists Best Design, Most Creative, Best Figma Workflow and Best Stage Log, while current Devpost exposes one Best Figma Workflow Hack entry. Prepare the complete Figma bundle without counting four confirmed entry slots. Maximum entry count and stacking rules were not established.
 
 Do not add finance, payments, web scraping, an extra database, or a runtime coding agent merely to claim more integrations. The current project has no essential role for those services. Gemini is conditional on a distinct useful feature, rather than duplicate moderation.
 

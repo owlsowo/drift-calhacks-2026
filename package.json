@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts scripts/shake.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/starter-content/*.test.ts scripts/shake.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts",
+    "starters:check": "tsx scripts/check-starters.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
     "db:publish:local": "node scripts/spacetime.mjs publish-local",
@@ -15,6 +16,7 @@
     "test:ui": "node scripts/test-room.mjs ui",
     "test:shore": "node scripts/test-room.mjs shore",
     "test:catch-first": "node scripts/test-room.mjs catch-first",
+    "test:empty": "node scripts/test-room.mjs empty",
     "test:server": "vitest run",
     "test:a11y": "node scripts/test-room.mjs a11y",
     "eval:models": "tsx scripts/eval-models.ts",

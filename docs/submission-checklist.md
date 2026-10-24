@@ -1,0 +1,73 @@
+# Drift — tracks and submission checklist
+
+Checked October 24, 2026 against the current Devpost listing, organizer guide and Figma brief. These are target entries, not submitted or confirmed awards. Account login alone does not complete a workflow entry.
+
+## Target portfolio
+
+| Track | Drift's case | Material outside product integration |
+| --- | --- | --- |
+| Best Use of Spacetime | Authoritative catches, shared state, atomic completion and immediate postcard return | Explain the backend's essential role in the Devpost/README; show two identities and a return without refresh. The published guide does not prescribe a separate essay or word limit. |
+| Anthropic — Claude for Public Benefit | Moderation and optional guidance that preserves human authorship | Name a specific community; describe a problem the team has lived or learned from someone affected; show a usable solution; explain Claude's role and failure risks. These are judging expectations, not a prescribed four-document submission. |
+| Meta — Bringing People Closer Together with AI | Two people make something together; AI helps participation | Explain the connection mechanism, why AI matters, originality and the working demo. The guide does not prescribe a separate writeup format or require a Meta model. |
+| Best People-First Social Impact Hack | A low-pressure, anonymous creative exchange | Explain who benefits, the barrier addressed, consent/privacy/accessibility choices and limits of existing evidence. This is our recommended supporting narrative, not an additional published essay requirement. |
+| Most Creative Project | A revival of QQ/WeChat drift bottles as a daily six-plus-six-word ritual | Explain the original inspiration and our contribution; show the physical interaction and coauthored artifact. No separate published essay requirement found. |
+| Hacker's Choice | A memorable experience other hackers can try | A working link, clear project image and concise demo. No separate published writeup requirement found. |
+| Overall awards | A complete project with intentional UX and engineering depth | Main Devpost submission and demonstration. First/second/third are placements, not three independent integrations. |
+| Best Figma Workflow Hack | A real prototype/iteration and traceable handoff into Drift | The detailed deliverables below. Still requires actual workflow work. |
+| Best Use of Mana | A useful planning/build/debug contribution | Explain where Mana helped; link one or two PUBLIC pages/chats actually used; show one moment where Mana changed the build or speed. A working app/agent inside Mana can earn bonus credit. Still requires actual workflow work. |
+
+Beginner is conditional on the team's eligibility. Notability, Commit Fellowship, domain and Vultr are not committed entries. Commit would require team interest, category opt-in and its supplemental form; Notability requires genuine contemporaneous use. We have not established an entry-count cap or prize-stacking policy.
+
+## Common submission bundle
+
+- Devpost project description: inspiration, what it does, how it was built, challenges, accomplishments, lessons and next steps. This structure is a practical drafting plan; the visible portal fields govern the final submission.
+- Project image and GitHub repository link are explicitly required by Devpost. Give judges source access while keeping the repository private.
+- Working public app URL and a clear demo video. Devpost allows a prerecorded or live demonstration; its judging criteria also call for a meaningful video for asynchronous sponsor review. The organizer guide expects a live demo at judging.
+- Use a video of at most three minutes so the same core recording also fits Figma. Include live two-identity behavior, Claude's role and a concise architecture explanation.
+- Select the relevant prize categories in the actual submission form and answer any extra sponsor fields it presents.
+- Deadline: Sunday October 25, 2026, 9:00 AM Pacific. Be at the assigned judging table for the full 10:30 AM–12:30 PM window.
+
+## Figma — explicit extra deliverables
+
+1. Demo video, maximum three minutes.
+2. Workflow artifact / stage log, maximum 200 words PER STAGE. Cover ideation, prototyping, handoff and code generation, accurately identifying where Figma was used and where other tools were used.
+3. Figma Slides demonstrating the work and workflow — explicitly required.
+4. Embedded Make/prototype files, accessible to Anyone, plus a working code/repository link.
+5. Education verification.
+
+For each stage record: tool/product and why, approximate minutes, effectiveness rating 1–5, how the output reached the final project, and relevant friction/rework. Do not invent timing, initial Figma usage, interviews or measured time savings. A later design iteration is valid when described honestly.
+
+Stage log working template:
+
+| Stage | Actual tools and why | Approx. minutes | Rating 1–5 | Output used in Drift | Friction |
+| --- | --- | --- | --- | --- | --- |
+| Ideation | To record | To record | To record | To record | To record |
+| Prototyping | To record | To record | To record | To record | To record |
+| Handoff | To record | To record | To record | To record | To record |
+| Code generation | To record | To record | To record | To record | To record |
+
+The detailed Figma brief lists Best Design, Most Creative, Best Figma Workflow and Best Stage Log, while current Devpost exposes one Best Figma Workflow Hack entry. Prepare the full artifact bundle; do not count four confirmed separate entry slots without clarification.
+
+## Mana — explicit evidence, flexible writing format
+
+- Say where Mana helped. One concrete paragraph is our drafting choice; the guide does not specify a paragraph count or word limit.
+- Provide one or two public Mana pages/chats used during the build, such as the working companion app and its development chat.
+- Demonstrate one specific moment where Mana changed what was built or accelerated it.
+- If pursuing the inside-Mana bonus, provide a working app/agent a judge can open and use.
+
+Suggested paragraph structure: problem encountered → work done in Mana → useful output → how it affected Drift → evidence links and an honest limitation. Fill this after actual use, rather than presenting planned work as completed.
+
+## Human input still needed
+
+- Devpost draft link, teammate details and beginner eligibility.
+- A short, truthful account of who this is for and a problem the team has personally experienced. Do not invent an attendee interview or claim reduced loneliness without evidence.
+- Human-written starter lines if we want populated production inventory. Development samples remain labeled as samples.
+- Final review of the writeup, public workflow sharing and judge access to the private code.
+
+No additional account login is established as necessary for this target portfolio now that Figma and Mana are available.
+
+## Sources
+
+- [Current prize list, requirements and deadline](https://cal-hacks-13-0.devpost.com/)
+- [Organizer guide: Anthropic, Meta, Spacetime, Mana and judging](https://docs.google.com/document/d/1RQrueC9wm5u8uxtWSC2gadIchp05hVayhGUrIjxT9dE/edit)
+- [Figma submission brief](https://docs.google.com/document/d/1HjzThDGveSLiilIdEPEHq12ZVLZ5eS0T8CQC5_m_-rg/edit)
