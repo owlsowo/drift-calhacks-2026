@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { PaperSurface, NOTE_OPEN_MS } from './PaperSurface';
 
 export function PaperNote({
   children,
@@ -10,13 +11,14 @@ export function PaperNote({
   postcard?: boolean;
 }) {
   const note = useRef<HTMLDivElement>(null);
+  const [meshReady, setMeshReady] = useState(false);
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const [phase, setPhase] = useState<'closed' | 'unfolding' | 'open'>(() =>
     closed ? 'closed' : reduced() ? 'open' : 'unfolding',
   );
   useEffect(() => {
     if (phase !== 'unfolding') return;
-    const timer = setTimeout(() => setPhase('open'), 1250);
+    const timer = setTimeout(() => setPhase('open'), NOTE_OPEN_MS);
     return () => clearTimeout(timer);
   }, [phase]);
   useEffect(() => {
@@ -32,7 +34,7 @@ export function PaperNote({
   return (
     <div
       ref={note}
-      className={`paper-note paper-${phase} ${postcard ? 'postcard-paper' : ''}`}
+      className={`paper-note paper-${phase} ${meshReady ? 'has-paper-mesh' : ''} ${postcard ? 'postcard-paper' : ''}`}
       data-paper-phase={phase}
     >
       {phase === 'closed' && (
@@ -45,23 +47,7 @@ export function PaperNote({
       {phase === 'unfolding' && (
         <>
           <img className="unfolding-ball" src="/assets/paper-ball.png" alt="" draggable={false} />
-          <div className="paper-facets" aria-hidden="true">
-            {Array.from({ length: 9 }, (_, i) => (
-              <span
-                key={i}
-                style={
-                  {
-                    '--col': i % 3,
-                    '--row': Math.floor(i / 3),
-                    '--fold-x': `${(1 - (i % 3)) * 52}px`,
-                    '--fold-y': `${(1 - Math.floor(i / 3)) * 47}px`,
-                    '--fold-turn': `${i % 2 ? 57 : -62}deg`,
-                    '--delay': `${i * 22}ms`,
-                  } as CSSProperties
-                }
-              />
-            ))}
-          </div>
+          <PaperSurface onReady={() => setMeshReady(true)} />
           <span className="sr-only" role="status">
             Unfolding the note.
           </span>
