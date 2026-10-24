@@ -47,6 +47,7 @@ Publish to Maincloud with `npm run db:publish -- <unique-database-name> --server
 npm test
 npm run test:server
 npm run check:server
+npm run check:scripts
 npm run build
 npm run test:ui
 npm run test:a11y
@@ -54,6 +55,8 @@ npm run eval:models -- --dry-run
 ```
 
 The integration tests require the local database server. Each creates a disposable database and, for browser tests, its own frontend; cleanup leaves the main development database alone. They use synthetic fixtures in isolated browsers, save screenshots and test full reload recovery, live returns and downloads. They do not establish model quality or social impact. `test:live` probes concurrent claims and access controls; `test:states` injects loading, pause and offline failures.
+
+`npm run demo:rehearse` discovers and exercises the recording flow in a disposable local sandbox. After it passes, `npm run demo:record` records two isolated browser identities and assembles a 1280×720 MP4 in the task’s `outputs/` folder. Chrome, Playwright’s FFmpeg helper (`npx playwright install ffmpeg`) and a system `ffmpeg` are required. The video is visibly labeled as synthetic sandbox participation with model checks off. It is a product demonstration, not live AI or attendee evidence. The recorded checkpoint and its provenance are in `docs/evidence/local-sandbox-demo.mp4` and `demo-run.json`. See `docs/deployment.md` for the real release handoff.
 
 ## Architecture and boundaries
 

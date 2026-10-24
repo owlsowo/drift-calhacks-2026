@@ -9,6 +9,13 @@ const dryRun = args.includes('--dry-run');
 const limitAt = args.indexOf('--limit');
 const limit = limitAt >= 0 ? Number(args[limitAt + 1]) : 12;
 if (!Number.isInteger(limit) || limit < 1 || limit > 80) throw Error('Use --limit from 1 to 80.');
+const kindAt = args.indexOf('--kind');
+const kindFilter = kindAt >= 0 ? args[kindAt + 1] : undefined;
+if (kindAt >= 0 && kindFilter !== 'moderation' && kindFilter !== 'nudge')
+  throw Error('Use --kind moderation or --kind nudge.');
+const idsAt = args.indexOf('--ids');
+const ids = idsAt >= 0 ? (args[idsAt + 1] || '').split(',').filter(Boolean) : [];
+if (idsAt >= 0 && !ids.length) throw Error('Provide comma-separated fixture IDs after --ids.');
 const fixtures = JSON.parse(await fs.readFile(new URL('evals/cases.json', root), 'utf8')) as Array<{
   id: string;
   kind: ModelKind;
@@ -23,6 +30,30 @@ for (const f of fixtures) {
     throw Error('Malformed fixture.');
   JSON.stringify(modelRequest(f.kind, f.input));
 }
+for (const id of ids)
+  if (!fixtures.some((f) => f.id === id)) throw Error('Unknown fixture ID: ' + id);
+const priority = [
+  'benign-1',
+  'pair-wordplay',
+  'targeted-hate',
+  'pair-targeting',
+  'contact-email',
+  'instruction-harm',
+  'quoted-rejection',
+  'nudge-1',
+  'nudge-3',
+  'nudge-injection',
+  'nudge-personal',
+  'benign-13',
+];
+const ordered = [
+  ...priority.map((id) => fixtures.find((f) => f.id === id)),
+  ...fixtures.filter((f) => !priority.includes(f.id)),
+].filter((f): f is (typeof fixtures)[number] => !!f);
+const selected = ordered
+  .filter((f) => (!kindFilter || f.kind === kindFilter) && (!ids.length || ids.includes(f.id)))
+  .slice(0, limit);
+if (!selected.length) throw Error('No fixtures match the requested filters.');
 if (dryRun) {
   console.log(
     JSON.stringify(
@@ -33,6 +64,7 @@ if (dryRun) {
         nudge: fixtures.filter((f) => f.kind === 'nudge').length,
         dispatched: 0,
         liveEvaluation: false,
+        selected: selected.map((f) => f.id),
       },
       null,
       2,
@@ -46,25 +78,6 @@ if (dryRun) {
   let ledger: { dispatches: number } = { dispatches: 0 };
   if (existsSync(ledgerPath)) ledger = JSON.parse(await fs.readFile(ledgerPath, 'utf8'));
   const results: any[] = [];
-  const priority = [
-    'benign-1',
-    'pair-wordplay',
-    'targeted-hate',
-    'pair-targeting',
-    'contact-email',
-    'instruction-harm',
-    'quoted-rejection',
-    'nudge-1',
-    'nudge-3',
-    'nudge-injection',
-    'nudge-personal',
-    'benign-13',
-  ];
-  const ordered = [
-    ...priority.map((id) => fixtures.find((f) => f.id === id)!),
-    ...fixtures.filter((f) => !priority.includes(f.id)),
-  ];
-  const selected = ordered.slice(0, limit);
   for (const f of selected) {
     if (ledger.dispatches >= 80)
       throw Error(

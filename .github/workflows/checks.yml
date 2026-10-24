@@ -18,4 +18,5 @@ jobs:
       - run: npm test
       - run: npm run test:server
       - run: npm run check:server
+      - run: npm run check:scripts
       - run: npm run build

@@ -119,6 +119,48 @@ try {
       'Restored subscription resumes the same identity and draft; a new submission completes after reconnection.',
     );
     await context.close();
+    const limited = await browser.newContext({
+      viewport: { width, height },
+      reducedMotion: 'reduce',
+    });
+    await limited.addInitScript(() => {
+      Storage.prototype.getItem = () => {
+        throw new DOMException('Synthetic blocked storage', 'SecurityError');
+      };
+      Storage.prototype.setItem = () => {
+        throw new DOMException('Synthetic blocked storage', 'SecurityError');
+      };
+    });
+    const limitedPage = await limited.newPage();
+    await limitedPage.goto(origin);
+    await limitedPage
+      .getByText(
+        'This browser can’t save progress. Keep this tab open; refreshing may lose your words.',
+        { exact: true },
+      )
+      .waitFor();
+    await limitedPage.getByRole('button', { name: 'Write my six words', exact: true }).click();
+    await limitedPage.getByRole('textbox').fill('I taught the octopus insider trading.');
+    const retainedRequest = await limitedPage.evaluate(async () => {
+      const { persist, saved, game } = await import('/src/game.ts');
+      const value = JSON.stringify({ text: 'unchanged draft', id: crypto.randomUUID() });
+      persist('drift:synthetic-request-retention', value);
+      return {
+        retained: saved('drift:synthetic-request-retention') === value,
+        storageAvailable: game.snapshot().storageAvailable,
+      };
+    });
+    assert.deepEqual(retainedRequest, { retained: true, storageAvailable: false });
+    await limitedPage.getByText('Kept in this tab', { exact: false }).waitFor();
+    await capture(
+      limitedPage,
+      `${width}x${height}`,
+      'storage-unavailable',
+      'Blocked browser storage is named honestly; draft and immutable request metadata remain in memory within the current tab.',
+    );
+    await limitedPage.getByRole('button', { name: 'Toss my bottle', exact: true }).click();
+    await limitedPage.getByRole('button', { name: 'Catch a bottle', exact: true }).waitFor();
+    await limited.close();
   }
   await fs.writeFile(
     out + 'content-states.json',

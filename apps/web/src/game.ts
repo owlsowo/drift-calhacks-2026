@@ -14,6 +14,7 @@ export type Snapshot = {
   connecting: boolean;
   error: string;
   identity: string;
+  storageAvailable: boolean;
   clockOffsetMs: number;
   rounds: Round[];
   assignments: Assignment[];
@@ -30,6 +31,7 @@ const blank: Snapshot = {
   connecting: true,
   error: '',
   identity: '',
+  storageAvailable: true,
   clockOffsetMs: 0,
   rounds: [],
   assignments: [],
@@ -47,18 +49,25 @@ const database = import.meta.env.VITE_SPACETIMEDB_DATABASE || 'drift-local';
 const host =
   import.meta.env.VITE_SPACETIMEDB_HOST || `${location.protocol}//${location.hostname}:3000`;
 const tokenKey = `drift:${host}:${database}:identity`;
+const memory = new Map<string, string>();
+function storageUnavailable() {
+  if (state.storageAvailable) emit({ storageAvailable: false });
+}
 const read = (key: string) => {
+  if (memory.has(key)) return memory.get(key) || undefined;
   try {
     return localStorage.getItem(key) || undefined;
   } catch {
+    storageUnavailable();
     return undefined;
   }
 };
 export const persist = (key: string, value: string) => {
+  memory.set(key, value);
   try {
     localStorage.setItem(key, value);
   } catch {
-    /* Play remains possible when storage is unavailable. */
+    storageUnavailable();
   }
 };
 export const saved = (key: string) => read(key) || '';

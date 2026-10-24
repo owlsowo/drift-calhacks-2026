@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
     "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
+    "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
     "db:publish:local": "node scripts/spacetime.mjs publish-local",
     "db:publish": "node scripts/spacetime.mjs publish",
     "db:generate": "node scripts/spacetime.mjs generate",
@@ -16,7 +17,9 @@
     "test:a11y": "node scripts/test-room.mjs a11y",
     "eval:models": "tsx scripts/eval-models.ts",
     "test:live": "node scripts/test-room.mjs live",
-    "test:states": "node scripts/test-room.mjs states"
+    "test:states": "node scripts/test-room.mjs states",
+    "demo:rehearse": "node scripts/test-room.mjs demo --rehearse",
+    "demo:record": "node scripts/test-room.mjs demo"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
@@ -29,6 +32,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "latest",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "latest",

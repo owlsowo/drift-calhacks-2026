@@ -409,6 +409,16 @@ function App() {
               : 'AI checks are off. Sample fixtures are labeled.'}
           </div>
         )}
+        {!s.storageAvailable && (
+          <div className="connection-banner" role="status">
+            This browser can’t save progress. Keep this tab open; refreshing may lose your words.
+          </div>
+        )}
+        {s.connected && s.service?.paused && (
+          <div className="connection-banner" role="status">
+            The tide is taking a short break. You can keep writing and save existing postcards.
+          </div>
+        )}
         {!s.connected && (
           <div className="connection-banner" role="status">
             {s.connecting ? <LoaderCircle className="spin" size={16} /> : <Waves size={16} />}{' '}
@@ -599,7 +609,8 @@ function App() {
                           : '02 / MAKE IT YOURS'}
                       </span>
                       <span className="draft-saved">
-                        <Check size={13} /> Draft saved here
+                        <Check size={13} />{' '}
+                        {s.storageAvailable ? 'Draft saved here' : 'Kept in this tab'}
                       </span>
                     </div>
                     <h1 ref={heading} tabIndex={-1}>
