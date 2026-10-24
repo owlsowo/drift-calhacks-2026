@@ -1,9 +1,10 @@
 {
-  "checkedAt": "2026-10-24T21:49:32.849Z",
+  "checkedAt": "2026-10-24T22:34:12.910Z",
   "mode": "Isolated local sandbox; synthetic writers; no paid model calls",
   "checks": [
     "A fresh identity shakes to catch a real peer beginning before writing anything",
     "Finishing immediately creates a postcard, returns it live, and offers an optional beginning",
+    "The mobile postcard appears before its sharing controls and optional next-beginning invitation",
     "Passing on a beginning completes the same round and returns to the shore",
     "The writer can keep a completed postcard and decline to toss a beginning"
   ],

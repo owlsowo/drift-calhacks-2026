@@ -31,6 +31,8 @@ The paper needed to feel like one note opening, rather than disconnected tiles. 
 ## What we accomplished and learned
 The app is publicly deployed. A hosted two-browser test used real Claude calls and observed a returned postcard without refresh. Fifty-one server tests and twenty-two unit tests pass. Mobile/desktop browser checks cover the tested interaction, accessibility and recovery states. An actual ten-writer run exposed colliding generated round IDs; a transaction-backed allocator fixed them, with forced-collision and real network checks passing afterward.
 
+WebKit testing with an iPhone viewport also found and fixed a mobile ordering bug: the optional next beginning appeared before the completed postcard. The payoff now comes first. The actual WebKit engine passes the local catch/open/write/return/export loop; physical-phone and native OS sharing checks are still pending.
+
 A fifty-case real model evaluation produced valid outputs after an initial prompt-contract failure was fixed. Moderation matched 35 of 36 synthetic development labels; fourteen hints were reviewed by Codex. This is agent-reviewed synthetic evidence, not an independent moderation-quality study.
 
 We added real theme contexts for all seven days and two adversarial drafts, then made two nine-call coaching checks. A strict word-count receiver rejected one useful hint per run, so the final receiver leaves limited word-count headroom. The final prompt's nine saved responses pass offline revalidation; seven were judged useful by Codex and two were generic. A separate deployed Sonnet probe passes. These are additional coaching checks, not additional moderation labels or a human pilot.

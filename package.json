@@ -17,6 +17,7 @@
     "test:shore": "node scripts/test-room.mjs shore",
     "test:catch-first": "node scripts/test-room.mjs catch-first",
     "test:empty": "node scripts/test-room.mjs empty",
+    "test:webkit": "node scripts/test-room.mjs webkit",
     "test:server": "vitest run",
     "test:a11y": "node scripts/test-room.mjs a11y",
     "eval:models": "tsx scripts/eval-models.ts",
