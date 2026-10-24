@@ -35,6 +35,7 @@ import { Shore } from './Shore';
 import { Ocean } from './Ocean';
 import { PaperNote } from './PaperNote';
 import { ShoreGate } from './ShoreGate';
+import { EarlierDrafts } from './EarlierDrafts';
 
 function Bottle({ small = false }: { small?: boolean }) {
   return (
@@ -337,6 +338,12 @@ function App() {
       setView('play');
     });
   }
+  async function copyDraft(text: string) {
+    await run('Copying…', async () => {
+      await copyText(text);
+      setToast('Draft copied');
+    });
+  }
   async function beginCatch() {
     await run('Finding a bottle…', async () => {
       await game.startCatching();
@@ -526,41 +533,43 @@ function App() {
                 <span className="eyebrow">TODAY’S LITTLE ADVENTURE</span>
                 <h2>{prompt.title}</h2>
                 <p>{prompt.scene}</p>
-                <ol className="steps">
-                  {active && !active.setupId && (active.stage === 'reply' || active.cardId) ? (
-                    <>
-                      <li className="complete">
-                        <span>
-                          <Check size={15} />
-                        </span>
-                        Their beginning
-                      </li>
-                      <li className={active.stage === 'reply' ? 'current' : 'complete'}>
-                        <span>2</span>Your six-word ending
-                      </li>
-                      <li className={active.stage === 'write' ? 'current' : ''}>
-                        <span>3</span>Pass a bottle on
-                      </li>
-                    </>
-                  ) : (
-                    <>
-                      <li className={active?.stage === 'write' ? 'current' : 'complete'}>
-                        <span>{active?.stage === 'write' ? '1' : <Check size={15} />}</span>Your six
-                        words
-                      </li>
-                      <li
-                        className={
-                          active?.stage === 'catch' || active?.stage === 'reply' ? 'current' : ''
-                        }
-                      >
-                        <span>2</span>Their story, your ending
-                      </li>
-                      <li>
-                        <span>3</span>A postcard, together
-                      </li>
-                    </>
-                  )}
-                </ol>
+                {active && (
+                  <ol className="steps">
+                    {active && !active.setupId && (active.stage === 'reply' || active.cardId) ? (
+                      <>
+                        <li className="complete">
+                          <span>
+                            <Check size={15} />
+                          </span>
+                          Their beginning
+                        </li>
+                        <li className={active.stage === 'reply' ? 'current' : 'complete'}>
+                          <span>2</span>Your six-word ending
+                        </li>
+                        <li className={active.stage === 'write' ? 'current' : ''}>
+                          <span>3</span>Pass a bottle on
+                        </li>
+                      </>
+                    ) : (
+                      <>
+                        <li className={active?.stage === 'write' ? 'current' : 'complete'}>
+                          <span>{active?.stage === 'write' ? '1' : <Check size={15} />}</span>Your
+                          six words
+                        </li>
+                        <li
+                          className={
+                            active?.stage === 'catch' || active?.stage === 'reply' ? 'current' : ''
+                          }
+                        >
+                          <span>2</span>Their story, your ending
+                        </li>
+                        <li>
+                          <span>3</span>A postcard, together
+                        </li>
+                      </>
+                    )}
+                  </ol>
+                )}
                 <div className="margin-note">
                   <Waves size={24} />
                   <p>
@@ -571,7 +580,7 @@ function App() {
               </div>
               <div className="writing-desk">
                 {!active ? (
-                  <div className="empty-state">
+                  <div className="empty-state closed-round">
                     <Mail size={38} />
                     <h1 ref={heading} tabIndex={-1}>
                       A fresh tide.
@@ -580,9 +589,21 @@ function App() {
                       This prompt has closed, or your round is finished. Your saved words stay on
                       this browser.
                     </p>
-                    <button className="button primary" disabled={controlsDisabled} onClick={begin}>
-                      Open today’s bottle <ArrowRight size={18} />
+                    <button
+                      className="button primary"
+                      disabled={controlsDisabled}
+                      onClick={beginCatch}
+                    >
+                      Catch today’s bottle <ArrowRight size={18} />
                     </button>
+                    <EarlierDrafts
+                      identity={s.identity}
+                      rounds={s.rounds}
+                      day={nowDay}
+                      currentKey={currentDraftKey}
+                      busy={!!busy}
+                      onCopy={(text) => void copyDraft(text)}
+                    />
                   </div>
                 ) : active.stage === 'catch' ? (
                   <Shore
@@ -706,6 +727,25 @@ function App() {
                         )}
                       </div>
                     )}
+                    {active.stage === 'reply' && remaining <= 0 && !checksExhausted && (
+                      <div className="quota-recovery expiry-recovery" role="status">
+                        <p>
+                          <strong>This bottle has drifted on.</strong>{' '}
+                          {draft.trim()
+                            ? 'Your ending is still here. Copy it before catching a fresh beginning.'
+                            : 'Catch a fresh beginning when you’re ready.'}
+                        </p>
+                        {draft.trim() && (
+                          <button
+                            className="text-button"
+                            disabled={!!busy}
+                            onClick={() => void copyDraft(draft)}
+                          >
+                            <Copy size={14} /> Copy my draft
+                          </button>
+                        )}
+                      </div>
+                    )}
                     {checksExhausted && (
                       <div className="quota-recovery">
                         <p>
@@ -714,12 +754,8 @@ function App() {
                         <div>
                           <button
                             className="text-button"
-                            onClick={() =>
-                              run('Copying…', async () => {
-                                await copyText(draft);
-                                setToast('Draft copied');
-                              })
-                            }
+                            disabled={!!busy}
+                            onClick={() => void copyDraft(draft)}
                           >
                             <Copy size={14} />
                             Copy my draft
@@ -777,7 +813,7 @@ function App() {
                             </button>
                           ) : (
                             <button
-                              disabled={controlsDisabled}
+                              disabled={controlsDisabled || !!checksExhausted}
                               onClick={() =>
                                 run('Finding a fresh bottle…', () => game.claim(active.id))
                               }
@@ -1051,6 +1087,14 @@ function App() {
                   ))}
                 </section>
               )}
+              <EarlierDrafts
+                identity={s.identity}
+                rounds={s.rounds}
+                day={nowDay}
+                currentKey={currentDraftKey}
+                busy={!!busy}
+                onCopy={(text) => void copyDraft(text)}
+              />
             </section>
           )}
           {error &&
@@ -1096,17 +1140,17 @@ function App() {
         <Modal title="A little story, together." onClose={() => setModal(null)}>
           <ol className="how-list">
             <li>
-              <strong>Catch a beginning.</strong> Shake the bottle or choose “Pick up a bottle”
-              to open someone’s six words over the sea.
+              <strong>Catch a beginning.</strong> Shake the bottle or choose “Pick up a bottle” to
+              open someone’s six words over the sea.
             </li>
             <li>
-              <strong>Add your six-word ending.</strong> You both keep the finished postcard.
-              Save it or share it, then leave another beginning if you feel like it.
+              <strong>Add your six-word ending.</strong> You both keep the finished postcard. Save
+              it or share it, then leave another beginning if you feel like it.
             </li>
             <li>
               <strong>Keep the bottle drifting.</strong> “Write my six words” lets you start
-              instead. When the sea is quiet, leave a beginning or try catching again later.
-              A return isn’t guaranteed; samples are labeled in the sandbox.
+              instead. When the sea is quiet, leave a beginning or try catching again later. A
+              return isn’t guaranteed; samples are labeled in the sandbox.
             </li>
           </ol>
           <p>

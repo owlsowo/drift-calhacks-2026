@@ -289,6 +289,18 @@ describe('authoritative game state', () => {
     expect(reply(A)).toMatchObject({ ok: false, message: expect.stringMatching(/drifted on/) });
     expect([...h.db.postcard.iter()]).toHaveLength(0);
   });
+  it('reassigns an expired bottle without retaining the old writer’s private assignment', () => {
+    start(B);
+    setup(B);
+    tx(A, (c) => module.start_catching(c, {}));
+    const id = claim(A).id;
+    h.clock.advance(TimeDuration.fromMillis(10 * 60000 + 1));
+    tx(C, (c) => module.start_catching(c, {}));
+    expect(claim(C).id).toBe(id);
+    expect(claim(A)).toBeUndefined();
+    expect(reply(A)).toMatchObject({ ok: false });
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+  });
   it('enforces one skip, keeps exclusions, and gives reporting a free release', () => {
     start(A);
     setup(A);

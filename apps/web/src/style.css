@@ -835,6 +835,15 @@ a {
 .empty-state h1 {
   margin-top: 20px;
 }
+.sea-world .closed-round {
+  padding: 28px clamp(20px, 4vw, 42px);
+  color: #183e40;
+  border-radius: 4px;
+  background:
+    linear-gradient(#f5eedbdb, #f5eedbdb),
+    url('/assets/paper-texture.jpg') center/cover;
+  box-shadow: 0 12px 35px #082a3d44;
+}
 .reveal-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1862,6 +1871,49 @@ a {
 }
 .quota-recovery button {
   font-size: 10px;
+  min-height: 44px;
+}
+.earlier-drafts {
+  width: 100%;
+  margin-top: 28px;
+  padding: 16px 20px;
+  border: 1px solid #b9c4af;
+  border-radius: 4px;
+  background: #edf0e2;
+  color: #23484a;
+  text-align: left;
+}
+.earlier-drafts > summary {
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 44px;
+  line-height: 44px;
+}
+.earlier-drafts > p {
+  max-width: none;
+  margin: 10px 0 18px;
+  color: #46615c;
+  font-size: 12px;
+}
+.earlier-draft {
+  border-top: 1px solid #c5cebc;
+  padding: 14px 0;
+}
+.earlier-draft time,
+.earlier-drafts > small {
+  color: #48625b;
+  font-size: 11px;
+}
+.earlier-draft blockquote {
+  margin: 10px 0;
+  font:
+    400 23px/1.5 'Fraunces',
+    serif;
+  overflow-wrap: anywhere;
+}
+.earlier-draft .text-button {
+  color: #23484a;
+  min-height: 44px;
 }
 
 .hello-panel {

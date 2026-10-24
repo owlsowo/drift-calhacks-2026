@@ -59,12 +59,15 @@ npm run test:ui
 npm run test:a11y
 npm run test:shore
 npm run test:webkit
+npm run test:recovery
 npm run eval:models -- --dry-run
 ```
 
 The integration tests require the local database server. Each creates a disposable database and, for browser tests, its own frontend; cleanup leaves the main development database alone. They use synthetic fixtures in isolated browsers, save screenshots and test full reload recovery, live returns and downloads. They do not establish model quality or social impact. `test:live` probes concurrent claims and access controls; `test:states` injects loading, pause and offline failures.
 
 `test:webkit` additionally needs `npx playwright install webkit`. The actual engine passes the catch/open/write/return/export loop with an iPhone viewport, and found a mobile completion-order bug now fixed. Share cancellation/denial use injected adapters; physical iPhones, motion sensors and OS share sheets remain separate checks. See [browser evidence and limits](docs/browser-checks.md).
+
+`test:recovery` exercises real catch/skip transitions in Chrome and WebKit, then injects the UI clock/assignment projection to check deadline and daily-reset recovery without an overnight wait. Earlier local words remain copyable without replacing the active draft; expired envelopes and other identities are excluded. Short-viewport checks are not physical-keyboard evidence. The module suite separately verifies real server-time expiry and reassignment. See [draft recovery](docs/draft-recovery.md).
 
 `npm run demo:rehearse` discovers and exercises the recording flow in a disposable local sandbox. After it passes, `npm run demo:record` records two isolated browser identities and assembles a 1280×720 MP4 in the task’s `outputs/` folder. Chrome, Playwright’s FFmpeg helper (`npx playwright install ffmpeg`) and a system `ffmpeg` are required. The video is visibly labeled as synthetic sandbox participation with model checks off. It is a product demonstration, not live AI or attendee evidence. The recorded checkpoint and its provenance are in `docs/evidence/local-sandbox-demo.mp4` and `demo-run.json`. See `docs/deployment.md` for the real release handoff.
 
