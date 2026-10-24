@@ -23,6 +23,7 @@
     "eval:models": "tsx scripts/eval-models.ts",
     "cost:report": "tsx scripts/cost-report.ts",
     "ops:usage": "tsx scripts/owner-usage.ts",
+    "ops:activity": "tsx scripts/owner-activity.ts",
     "test:live": "node scripts/test-room.mjs live",
     "test:states": "node scripts/test-room.mjs states",
     "demo:rehearse": "node scripts/test-room.mjs demo --rehearse",

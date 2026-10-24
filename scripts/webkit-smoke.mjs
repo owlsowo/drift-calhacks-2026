@@ -2,6 +2,9 @@ import { webkit, devices } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
 
 const origin = process.env.DRIFT_WEB_URL;
 if (!origin || !process.env.DRIFT_TEST_DATABASE?.startsWith('drift-test-'))
@@ -13,6 +16,38 @@ const checks = [],
   errors = [],
   accessibility = [];
 const details = { engine: browser.version(), capabilities: {} };
+function activity() {
+  const root = new URL('../', import.meta.url).pathname;
+  const bundled = path.resolve(root, '../work/spacetime-cli/cli.toml');
+  const config = existsSync(bundled) ? bundled : path.resolve(root, '.spacetime/cli.toml');
+  const report = spawnSync(
+    process.execPath,
+    [
+      'scripts/spacetime.mjs',
+      '--config-path',
+      config,
+      'call',
+      process.env.DRIFT_TEST_DATABASE,
+      'admin_activity',
+      '--server',
+      process.env.DRIFT_TEST_HOST,
+    ],
+    { cwd: root, encoding: 'utf8' },
+  );
+  assert.equal(report.status, 0, 'Local owner can read private activity');
+  const line = report.stdout.split('\n').find((line) => line.startsWith('['));
+  const rows = JSON.parse(line);
+  return JSON.parse(rows.find((row) => row[1] === 'sandbox')[2]);
+}
+async function waitForCount(key, expected) {
+  const deadline = Date.now() + 10_000;
+  while (true) {
+    const counts = activity();
+    if (counts[key] === expected) return counts;
+    if (Date.now() >= deadline) assert.equal(counts[key], expected, key);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+}
 const button = (p, name) => p.getByRole('button', { name, exact: true });
 const pass = (name) => {
   checks.push(name);
@@ -148,9 +183,24 @@ try {
   assert.equal(await A.locator('.human-seal').count(), 1);
   await screen(A, 'postcard-390');
   await download(A, 'postcard-export.png');
+  await B.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
   await button(B, 'My postcards 1').click();
   await B.locator('.collection-card').click();
   await B.getByText('Our lawyers would like another hand.', { exact: true }).waitFor();
+  await B.locator('.postcard-paper.paper-open').waitFor();
+  assert.equal(
+    activity().setupOpened,
+    0,
+    'An injected hidden-page state is not an observed return open',
+  );
+  await B.evaluate(() => {
+    delete document.visibilityState;
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await waitForCount('setupOpened', 1);
   pass(
     'Two WebKit identities receive the same canonical postcard without refresh and export a 1080×1350 PNG',
   );
@@ -200,6 +250,31 @@ try {
   await screen(publicPage, 'shared-card-390');
   pass(
     'Injected native-share cancellation stays quiet; injected share denial copies a link a third WebKit identity can open',
+  );
+  const beforeShare = await waitForCount('linkCopied', 1);
+  assert.equal(beforeShare.setupOpened, 1);
+  assert.equal(beforeShare.replyOpened, 1);
+  assert.equal(beforeShare.pngRequested, 1);
+  assert.equal(
+    beforeShare.nativeShareResolved,
+    0,
+    'Cancellation/denial do not become native-share success',
+  );
+  await A.evaluate(() =>
+    Object.defineProperty(navigator, 'share', { configurable: true, value: async () => {} }),
+  );
+  await button(A, 'Share our story').click();
+  await button(A, 'Share our story').click();
+  await button(A, 'Copy the words').click();
+  await download(A, 'postcard-export.png');
+  const measured = await waitForCount('wordsCopied', 1);
+  assert.equal(measured.nativeShareResolved, 1);
+  assert.equal(measured.pngRequested, 1, 'Repeated export counts once per author/card');
+  assert.equal(measured.peerCompleted, 1);
+  assert.equal(measured.sampleCompleted, 0);
+  details.activity = measured;
+  pass(
+    'Private owner totals observe visible author opens and export/share outcomes, exclude hidden pages/cancellation/public viewers, and deduplicate repeats',
   );
 
   const fallback = await browser.newContext({

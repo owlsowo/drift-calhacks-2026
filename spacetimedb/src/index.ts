@@ -1,6 +1,11 @@
 import { messages, modelRequest, parseModelResponse } from '../../packages/ai-contracts/index';
 import { teamStartersFor } from '../../packages/starter-content/index';
 import {
+  ACTIVITY_METRICS,
+  CARD_ACTIONS,
+  type ActivityMetric as Metric,
+} from '../../packages/activity/index';
+import {
   DEFAULT_BUDGET_MICROS,
   MAX_BUDGET_MICROS,
   PRICE_VERSION,
@@ -88,6 +93,8 @@ const authorship = table(
     setupOwner: t.option(t.identity()),
     replyOwner: t.identity(),
     hidden: t.bool(),
+    setupActions: t.u32().default(0),
+    replyActions: t.u32().default(0),
   },
 );
 const request = table(
@@ -156,6 +163,11 @@ const shorePass = table(
   { owner: t.identity().primaryKey(), expiresMs: t.f64() },
 );
 const idAllocator = table({ name: 'id_allocator' }, { id: t.u32().primaryKey(), next: t.u64() });
+// Coarse first-party totals only: no story text, identity, URL or device data.
+const activityDay = table(
+  { name: 'activity_day' },
+  { id: t.string().primaryKey(), day: t.u32(), mode: t.string(), counts: t.string() },
+);
 const aiBudget = table(
   { name: 'ai_budget' },
   {
@@ -207,6 +219,7 @@ const db = schema(
     aiBudget,
     aiCall,
     idAllocator,
+    activityDay,
   },
   {
     env: {
@@ -294,6 +307,64 @@ function finishRequest(ctx: Tx, id: string, result: object, state = 'finished') 
     );
   ctx.db.request.id.update({ ...q, state, result: JSON.stringify(result) });
 }
+
+function countActivity(ctx: Tx, changes: Partial<Record<Metric, number>>) {
+  const day = dayOf(now(ctx));
+  const mode = ctx.env.DRIFT_DEV_MODE === 'true' ? 'sandbox' : 'live';
+  const id = `${day}:${mode}`;
+  const old = ctx.db.activityDay.id.find(id);
+  const counts = old
+    ? JSON.parse(old.counts)
+    : Object.fromEntries(ACTIVITY_METRICS.map((key) => [key, 0]));
+  for (const key of ACTIVITY_METRICS) counts[key] = (counts[key] ?? 0) + (changes[key] ?? 0);
+  const row = { id, day, mode, counts: JSON.stringify(counts) };
+  if (old) ctx.db.activityDay.id.update(row);
+  else ctx.db.activityDay.insert(row);
+}
+export const record_card_action = db.reducer(
+  { cardId: t.string(), action: t.string() },
+  (ctx, { cardId, action }) => {
+    if (!cardId || cardId.length > 128) fail('Invalid postcard identifier.');
+    if (!Object.hasOwn(CARD_ACTIONS, action)) fail('Unknown postcard action.');
+    const author = ctx.db.authorship.id.find(cardId);
+    if (!author || author.hidden || !ctx.db.postcard.id.find(cardId))
+      fail('This postcard is no longer available.');
+    const role = same(author.replyOwner, ctx.sender)
+      ? 'reply'
+      : author.setupOwner && same(author.setupOwner, ctx.sender)
+        ? 'setup'
+        : undefined;
+    if (!role) fail('This postcard belongs to another writer.');
+    const bit = CARD_ACTIONS[action as keyof typeof CARD_ACTIONS];
+    const field = role === 'setup' ? 'setupActions' : 'replyActions';
+    const previous = author[field] ?? 0;
+    if (previous & bit) return;
+    ctx.db.authorship.id.update({ ...author, [field]: previous | bit });
+    const metric: Metric =
+      action === 'open'
+        ? role === 'setup'
+          ? 'setupOpened'
+          : 'replyOpened'
+        : action === 'png_requested'
+          ? 'pngRequested'
+          : action === 'words_copied'
+            ? 'wordsCopied'
+            : action === 'native_share_resolved'
+              ? 'nativeShareResolved'
+              : 'linkCopied';
+    countActivity(ctx, { [metric]: 1 });
+  },
+);
+const activityInfo = t.row('ActivityInfo', { day: t.u32(), mode: t.string(), counts: t.string() });
+export const admin_activity = db.procedure(t.array(activityInfo), (ctx) =>
+  ctx.withTx((tx) => {
+    admin(tx);
+    return [...tx.db.activityDay.iter()]
+      .filter((row) => row.day > dayOf(now(tx)) - 30)
+      .sort((a, b) => b.day - a.day || a.mode.localeCompare(b.mode))
+      .map(({ day, mode, counts }) => ({ day, mode, counts }));
+  }),
+);
 
 function budgetFor(ctx: Tx) {
   return (
@@ -422,6 +493,7 @@ function startRound(ctx: Tx, initialStage: 'write' | 'catch') {
   const today = own.filter((r) => r.day === day);
   if (today.length >= ROUNDS_PER_DAY)
     fail('Three little stories is today’s limit. Come back after the tide turns.');
+  countActivity(ctx, { roundStarted: 1 });
   return ctx.db.round.insert({
     id: newId(ctx),
     owner: ctx.sender,
@@ -718,6 +790,7 @@ function paidAction(
         inFlight: '',
         busyUntil: 0,
       });
+      countActivity(tx, { setupPublished: 1 });
     } else {
       const id = newId(tx);
       tx.db.postcard.insert({
@@ -729,7 +802,27 @@ function paidAction(
         starterKind: b!.seeded ? b!.starterKind : 'none',
         createdMs: now(tx),
       });
-      tx.db.authorship.insert({ id, setupOwner: b!.owner, replyOwner: tx.sender, hidden: false });
+      tx.db.authorship.insert({
+        id,
+        setupOwner: b!.owner,
+        replyOwner: tx.sender,
+        hidden: false,
+        setupActions: 0,
+        replyActions: 0,
+      });
+      const elapsed = Math.max(0, now(tx) - (b!.claimUntil - LEASE_MS));
+      const timing: Metric =
+        elapsed <= 30_000
+          ? 'completionLe30s'
+          : elapsed <= 120_000
+            ? 'completionLe120s'
+            : 'completionOver120s';
+      const source: Metric = !b!.seeded
+        ? 'peerCompleted'
+        : b!.starterKind === 'team'
+          ? 'teamCompleted'
+          : 'sampleCompleted';
+      countActivity(tx, { [source]: 1, [timing]: 1 });
       tx.db.bottle.id.update({
         ...tx.db.bottle.id.find(b!.id)!,
         cardId: id,
@@ -842,6 +935,7 @@ function assign(ctx: Tx, r: Round) {
     inFlight: '',
     busyUntil: 0,
   });
+  countActivity(ctx, { catchAssigned: 1 });
 }
 export const claim_bottle = db.reducer({ roundId: t.string() }, (ctx, { roundId }) => {
   ready(ctx);
@@ -1285,6 +1379,8 @@ export const resolve_report = db.reducer(
 );
 function purgeExpired(ctx: Tx) {
   const cutoff = now(ctx) - 30 * 86400000;
+  for (const row of ctx.db.activityDay.iter())
+    if (row.day <= dayOf(now(ctx)) - 30) ctx.db.activityDay.id.delete(row.id);
   for (const c of ctx.db.postcard.iter())
     if (c.createdMs < cutoff) {
       ctx.db.postcard.id.delete(c.id);

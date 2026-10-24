@@ -1,6 +1,7 @@
 import './csp-serialization';
 import { DbConnection } from './module_bindings';
 import { encodeDraft, decodeDraft } from './drafts';
+import type { CardAction } from '../../../packages/activity/index';
 import type {
   Round,
   Assignment,
@@ -46,6 +47,7 @@ const blank: Snapshot = {
 let state = blank;
 let connection: DbConnection | undefined;
 const listeners = new Set<() => void>();
+const reportedActions = new Set<string>();
 let queued = false;
 const database = import.meta.env.VITE_SPACETIMEDB_DATABASE || 'drift-local';
 const host =
@@ -209,6 +211,19 @@ function connect() {
     .build();
 }
 export const game = {
+  async cardAction(cardId: string, action: CardAction) {
+    if (!connection?.isActive || !state.identity) return;
+    const key = `${state.identity}:${cardId}:${action}`;
+    if (reportedActions.has(key)) return;
+    reportedActions.add(key);
+    try {
+      await connection.reducers.recordCardAction({ cardId, action });
+    } catch {
+      // Best effort: diagnostics never turn a successful reading/export into an error.
+      // The server also deduplicates, so a later view/reconnect can safely try again.
+      reportedActions.delete(key);
+    }
+  },
   async setHello(cardId: string, accepted: boolean) {
     if (!connection?.isActive) throw Error('Reconnect before changing your invitation.');
     await connection.reducers.setHelloIntent({ cardId, accepted });

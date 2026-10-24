@@ -112,6 +112,7 @@ try {
     'ai_budget',
     'ai_call',
     'id_allocator',
+    'activity_day',
   ]) {
     const denied = await new Promise<boolean>((resolve, reject) => {
       const timer = setTimeout(() => reject(Error('Private table probe timed out: ' + name)), 8000);
@@ -133,6 +134,7 @@ try {
   await assert.rejects(first.connection.reducers.setPause({ paused: true }));
   await assert.rejects(first.connection.procedures.adminAiUsage({}));
   await assert.rejects(first.connection.procedures.adminAiCalls({}));
+  await assert.rejects(first.connection.procedures.adminActivity({}));
   await assert.rejects(first.connection.reducers.setAiBudget({ limitMicros: 50_000_000n }));
   pass('A guest cannot invoke the owner pause control');
   const outsider = ownRound(first).id;
