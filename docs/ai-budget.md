@@ -41,7 +41,7 @@ Owner probes are diagnostics and do not require a guest Turnstile pass. They rem
 
 Seven new harness cases cover settlement, replay, concurrent holds, exhaustion before dispatch, unpriced models, malformed/late outputs, unknown usage, owner permissions, probes and retention. Pure pricing cases cover integer rates, cache buckets, long-context pricing and unsupported usage. Actual local network checks reject guest subscriptions to financial/allocator tables and guest calls to owner usage/budget procedures.
 
-`npm run cost:report` reprices saved live component-evaluation usage without making new calls. The current report observes 62 evaluation attempts, estimates $0.031378 for 61 with saved usage and leaves one attempt unknown because the earlier parser-failure path did not save its usage. This excludes application/owner calls and all other account use. The new server path captures usage before parsing; the evaluation runner also preserves available usage on future parser failures. The old missing usage has not been invented or backfilled.
+`npm run cost:report` reprices saved live component-evaluation usage without making new calls. The current report observes 80 evaluation attempts, estimates $0.064694 for 79 with saved usage and leaves one attempt unknown because the earlier parser-failure path did not save its usage. This excludes application/owner calls and all other account use. The component runner's existing 80-dispatch allowance is now exhausted. The new server path captures usage before parsing; the evaluation runner also preserves available usage on future parser failures. The old missing usage has not been invented or backfilled.
 
 ## Runtime ID collision found during validation
 

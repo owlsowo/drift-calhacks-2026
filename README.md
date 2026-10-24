@@ -8,7 +8,7 @@ Shake to catch another writer’s beginning, add a six-word ending and keep the 
 
 ## Current status
 
-Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness passes 51 transaction/privacy/failure/budget tests. Twenty-one rule/model-contract/gesture/draft/CSP/schedule/starter-export/pricing tests pass. Automated accessibility scans pass the tested writing, reply, reveal, hello, collection, shared-card, loading, pause and offline states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding pass local-browser smoke tests. The actual ten-writer network test also passes after fixing a runtime ID collision with a private transactional allocator. See `docs/evidence/ui-smoke.json`, `content-states.json`, `live-invariants.json` and `frontend-review.json` with screenshots.
+Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness passes 51 transaction/privacy/failure/budget tests. Twenty-two rule/model-contract/gesture/draft/CSP/schedule/starter-export/pricing tests pass. Automated accessibility scans pass the tested writing, reply, reveal, hello, collection, shared-card, loading, pause and offline states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding pass local-browser smoke tests. The actual ten-writer network test also passes after fixing a runtime ID collision with a private transactional allocator. See `docs/evidence/ui-smoke.json`, `content-states.json`, `live-invariants.json` and `frontend-review.json` with screenshots.
 
 The WeChat/QQ bottle-inspired shore supports cursor shaking, opt-in phone motion and keyboard/button alternatives. Water and moonlight ripple below a fixed horizon; the sea can be paused and stops when the page is hidden or reduced motion is requested. Caught notes loosen into one continuous creased sheet, settle flat and reveal the writing. Small native WebGL surfaces reuse the credited photographs; static sea and CSS note fallbacks work without WebGL. All photographic assets are human-made; see `docs/asset-sources.md`. Ten browser interaction checks cover sea pixel movement/pause, shaking, permissions, catch recovery, keyboard focus, reduced motion and graphics fallback using synthetic inputs. Physical-phone sensor behavior still needs verification.
 
@@ -79,6 +79,8 @@ An hourly private maintenance schedule enforces seven days for submitted request
 ## Competition evidence
 
 See `docs/competition.md` for the track plan and evidence gaps. The product targets a playful first interaction for first-time event attendees; this remains a hypothesis. Screenshots, automated test identities and starter content must never be represented as real pilot participation.
+
+The coach now requests short, everyday guidance using the actual theme and speaker. [The coaching checkpoint](docs/coach-evaluation.md) records nine real contexts, the strict word-count failures and final receiver revalidation. Seven of nine final-prompt hints were judged useful by Codex; two were generic. These are agent judgments, not human labels. The original moderation evidence is unchanged.
 
 The October 21 illustrated prototype and earlier planning documents informed direction. This implementation was started during the event on October 24, 2026. The older prototype’s code and scripted demo are not used as evidence of live functionality.
 
