@@ -37,14 +37,14 @@ Beginner is conditional on the team's eligibility. Notability, Commit Fellowship
 
 For each stage record: tool/product and why, approximate minutes, effectiveness rating 1–5, how the output reached the final project, and relevant friction/rework. Do not invent timing, initial Figma usage, interviews or measured time savings. A later design iteration is valid when described honestly.
 
-The actual stage log is complete in `docs/figma-stage-log.md`, with the same workflow represented in the native Slides deck. These are Codex estimates/ratings for a later iteration, not measured time savings or attendee feedback:
+The saved Figma/daily-UI iteration through `86683ac` is recorded in `docs/figma-stage-log.md`, with the original iteration shown in the native deck and a dated evening update in its opening-slide notes. Later code-only recovery work is recorded separately in `docs/workflow-notes-evening.md`. These are Codex estimates/ratings for a later iteration, not measured time savings or attendee feedback:
 
 | Stage | Actual tools and why | Approx. minutes | Rating 1–5 | Output used in Drift | Friction |
 | --- | --- | --- | --- | --- | --- |
-| Ideation | Owner references + existing app; Figma was not the original ideation tool | ~2 | 4 | Scoped empty/returned states | Late-stage scope only |
-| Prototyping | Figma Make | ~4 | 3 | Four inspectable states; compact empty note | First version too tall/opaque; cached frame |
-| Handoff | Make recommendation + code review | ~3 | 4 | Empty recovery and returned-story seal in `2544990` | Retained existing mesh rather than adopting timing blindly |
-| Code generation | Codex React/CSS; separate Make prototype | ~5 | 4 | Tested/deployed game update; native Slides/embed | ~10 additional active minutes for presentation work |
+| Ideation | Owner references + existing app; Figma was not the original ideation tool | ~3 | 4 | Scoped empty/returned states and daily hierarchy | Late-stage scope only |
+| Prototyping | Figma Make | ~8 | 3 | Five sample states, compact empty note and daily identity | Oversized first version, cached frame, attribution correction, daily credit limit |
+| Handoff | Make recommendation + code review | ~4 | 4 | Empty recovery, return seal and daily hierarchy in `2544990` / `5043061` | Retained existing mesh; rejected input truncation and autofill |
+| Code generation | Codex React/CSS; separate Make prototype | ~14 | 4 | Tested/deployed daily UI and return notice; native Slides/embed | ~10 additional active minutes for original presentation work |
 
 The detailed Figma brief lists Best Design, Most Creative, Best Figma Workflow and Best Stage Log, while current Devpost exposes one Best Figma Workflow Hack entry. Prepare the full artifact bundle; do not count four confirmed separate entry slots without clarification.
 

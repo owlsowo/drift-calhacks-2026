@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-24T23:32:19.606Z",
+  "checkedAt": "2026-10-24T23:48:07.687Z",
   "mode": "local SpacetimeDB with explicitly disabled AI checks; synthetic test inputs, no attendee pilot",
   "checks": [
     "Real database connection and responsive home at 360 / 1440 pixels",

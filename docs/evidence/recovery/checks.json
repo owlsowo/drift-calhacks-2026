@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-24T23:53:24.035Z",
+  "mode": "Isolated local sandbox, AI off, real database catch/skip with synthetic input. UI clock, lease/withheld-assignment projection and clipboard injected; server clock is unchanged.",
+  "checks": [
+    {
+      "engine": "Chrome",
+      "name": "A real skipped catch remains copyable in local earlier words, without duplicating or replacing the active draft"
+    },
+    {
+      "engine": "Chrome",
+      "name": "A short 390×430 viewport preserves the draft and reachable controls without horizontal overflow"
+    },
+    {
+      "engine": "Chrome",
+      "name": "Injected past-deadline/withheld-assignment UI disables paid actions, explains expiry and copies the retained ending"
+    },
+    {
+      "engine": "Chrome",
+      "name": "An injected daily reset exposes only this identity’s unexpired words, with copying available in the closed round and collection"
+    },
+    {
+      "engine": "WebKit",
+      "name": "A real skipped catch remains copyable in local earlier words, without duplicating or replacing the active draft"
+    },
+    {
+      "engine": "WebKit",
+      "name": "A short 390×430 viewport preserves the draft and reachable controls without horizontal overflow"
+    },
+    {
+      "engine": "WebKit",
+      "name": "Injected past-deadline/withheld-assignment UI disables paid actions, explains expiry and copies the retained ending"
+    },
+    {
+      "engine": "WebKit",
+      "name": "An injected daily reset exposes only this identity’s unexpired words, with copying available in the closed round and collection"
+    }
+  ],
+  "errors": [],
+  "limits": [
+    "No physical keyboard/device check",
+    "Not an actual ten-minute or overnight wait",
+    "Authoritative server expiry is covered separately by the module time-boundary tests"
+  ]
+}

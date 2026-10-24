@@ -99,6 +99,25 @@ function pruneDrafts() {
     storageUnavailable();
   }
 }
+export function localDrafts(identity: string) {
+  if (!identity) return [];
+  const prefix = `drift:draft:${identity}:`;
+  const keys = new Set(memory.keys());
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) keys.add(key);
+    }
+  } catch {
+    storageUnavailable();
+  }
+  return [...keys]
+    .filter((key) => key.startsWith(prefix))
+    .flatMap((key) => {
+      const text = saved(key);
+      return text.trim() ? [{ key, text }] : [];
+    });
+}
 function emit(patch: Partial<Snapshot> = {}) {
   if (connection?.isActive) {
     state = {
