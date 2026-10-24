@@ -45,3 +45,11 @@ The backend now requests everyday guidance that follows the actual scene/speaker
 Two real nine-call coaching runs exposed one strict-18-word rejection each; those failures remain recorded. The second run uses the final system prompt verbatim. Its nine saved outputs pass offline revalidation under the final receiver. Codex judged seven helpful and two generic; no complete game endings or contact echoes were observed. This is synthetic agent-reviewed evidence, not independent quality certification. See `docs/coach-evaluation.md`.
 
 A fixed owner-only Sonnet probe passed through the deployed parser and usage ledger, publishing no game content. Its recorded estimate is $0.001896 and measured server duration approximately 1.51 seconds; a single probe is not a latency benchmark. `docs/evidence/coach-hosted-usage.json` records the snapshot. The component evaluation allowance is now 80/80, with $0.064694 estimated for 79 usage-bearing attempts and one earlier unknown charge. It remains separate from application use.
+
+## Mobile payoff and WebKit release
+
+Frontend version `08aedf76-7afc-4798-8421-bc63599910fb` deploys `c3610daf0a2e96d71dbf50385e7442e5ca60be01`. The optional next-beginning invitation now follows the postcard and sharing controls on mobile, instead of appearing ahead of the completion title. The invitation is phrased as an optional question. No backend schema or data changed.
+
+The actual Playwright WebKit 27.2 engine passed seven local checks with iPhone viewport/touch configuration and a desktop view: moving/paused sea pixels, connected paper, draft/catch recovery, two-writer live return, PNG export, copied public links and explicit rendering/share failure cases. Six states passed the selected accessibility scans. Native-share cancellation/denial were injected adapters; physical iPhones, native keyboards, real sensors and OS share sheets remain unverified. Chrome's targeted catch-first flow passes five checks, including completion order. See `docs/browser-checks.md`.
+
+GitHub CI passed for the code commit. Read-only HTTPS fetches confirmed both deployed frontend assets match the tested local build byte for byte; their hashes are in `docs/evidence/mobile-layout-release.json`. This deployment check created no game content or paid model calls.

@@ -37,3 +37,5 @@ npm run test:catch-first
 Both commands create and clean their own local databases; they never run against the attendee database. The WebKit runner writes its report even on failure. It does not hide errors behind automatic retries or raise the model evaluation allowance.
 
 Report: `docs/evidence/webkit/checks.json`. Screenshots and the actual PNG export are in that directory. Chrome's targeted flow is recorded separately in `docs/evidence/catch-first.json`.
+
+The fix is deployed at the existing live URL. Cloudflare version `08aedf76-7afc-4798-8421-bc63599910fb` serves the JavaScript and CSS built from `c3610da`; read-only HTTPS comparisons matched both files byte for byte. `docs/evidence/mobile-layout-release.json` records their hashes. CI passed for that code commit. Backend schema/data were unchanged by this frontend deployment.
