@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
@@ -244,6 +244,11 @@ function App() {
     .sort((a, b) => b.card.createdMs - a.card.createdMs);
   const card = s.cards.find((c) => c.id === selected && !s.reported.some((r) => r.id === c.id));
   const ownership = s.ownership.find((o) => o.id === selected);
+  const cardId = card?.id;
+  const ownsVisibleCard = !!ownership && !ownership.hidden;
+  const recordOpen = useCallback(() => {
+    if (cardId && ownsVisibleCard && s.connected) void game.cardAction(cardId, 'open');
+  }, [cardId, ownsVisibleCard, s.connected]);
   const currentDraftKey = active
     ? `drift:draft:${s.identity}:${active.id}:${active.stage === 'reply' ? active.assignmentId : 'setup'}`
     : '';
@@ -809,6 +814,11 @@ function App() {
                             try {
                               const msg = await shareCard(card);
                               setToast(msg === 'Shared' ? 'Share sheet opened' : msg);
+                              if (ownership)
+                                void game.cardAction(
+                                  card.id,
+                                  msg === 'Shared' ? 'native_share_resolved' : 'link_copied',
+                                );
                             } catch (e) {
                               if ((e as Error).name !== 'AbortError') throw e;
                             }
@@ -825,6 +835,7 @@ function App() {
                           run('Making your image…', async () => {
                             await savePng(card);
                             setToast('Postcard image saved');
+                            if (ownership) void game.cardAction(card.id, 'png_requested');
                           })
                         }
                         disabled={!!busy}
@@ -838,6 +849,7 @@ function App() {
                           run('Copying…', async () => {
                             await copyText(cardText(card));
                             setToast('Story copied');
+                            if (ownership) void game.cardAction(card.id, 'words_copied');
                           })
                         }
                       >
@@ -917,7 +929,7 @@ function App() {
               </div>
               {card && (
                 <div className="reveal-art">
-                  <PaperNote key={card.id} postcard>
+                  <PaperNote key={card.id} postcard onOpen={recordOpen}>
                     <Postcard card={card} role={ownership?.role ?? 'public'} />
                   </PaperNote>
                   <div className="human-seal">
@@ -1085,6 +1097,11 @@ function App() {
           <p>
             Usage and cost records contain no story text or identity. Individual records expire
             after thirty days, except unresolved billing checks; totals remain.
+          </p>
+          <p>
+            Private daily totals count completed stories, first postcard opens and export/share
+            requests. We use existing card ownership to avoid counting repeats. These totals contain
+            no words or identities and expire after thirty days.
           </p>
           <p>
             AI guidance is optional and stays separate from your words. Starter content is always

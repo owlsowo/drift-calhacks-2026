@@ -919,3 +919,107 @@ describe('private AI budget and latency accounting', () => {
     expect(stats()).toMatchObject({ spentEstimateMicros: 61n, reservedMicros: 0n });
   });
 });
+
+describe('private daily activity diagnostics', () => {
+  const counts = (mode = 'sandbox') => {
+    const row = module.admin_activity(h.procedureContext(owner)).find((r) => r.mode === mode);
+    return row ? JSON.parse(row.counts) : {};
+  };
+  const completePeer = () => {
+    start(A);
+    setup(A);
+    tx(B, (c) => module.start_catching(c, {}));
+    expect(reply(B).ok).toBe(true);
+    return module.my_cards(h.viewContext(B))[0].id;
+  };
+  it('counts committed game transitions once through request replay and resumptions', () => {
+    const r = start(A);
+    start(A);
+    const args = {
+      roundId: r.id,
+      requestId: crypto.randomUUID(),
+      text: 'I challenged their shark to poker.',
+    };
+    expect(module.submit_setup(h.procedureContext(A), args).ok).toBe(true);
+    expect(module.submit_setup(h.procedureContext(A), args).ok).toBe(true);
+    tx(B, (c) => module.start_catching(c, {}));
+    tx(B, (c) => module.start_catching(c, {}));
+    h.clock.advance(TimeDuration.fromMillis(45_000));
+    const requestId = crypto.randomUUID();
+    expect(reply(B, requestId).ok).toBe(true);
+    expect(reply(B, requestId).ok).toBe(true);
+    expect(counts()).toMatchObject({
+      roundStarted: 2,
+      setupPublished: 1,
+      catchAssigned: 1,
+      peerCompleted: 1,
+      sampleCompleted: 0,
+      completionLe30s: 0,
+      completionLe120s: 1,
+      completionOver120s: 0,
+    });
+  });
+  it('deduplicates author/card/action reports and rejects outsiders, unknown tags and hidden cards', () => {
+    const cardId = completePeer();
+    const record = (who: any, action: string) =>
+      tx(who, (c) => module.record_card_action(c, { cardId, action }));
+    for (let i = 0; i < 2; i++) {
+      record(A, 'open');
+      record(B, 'open');
+      record(B, 'png_requested');
+      record(A, 'words_copied');
+      record(B, 'words_copied');
+      record(B, 'native_share_resolved');
+      record(B, 'link_copied');
+    }
+    expect(counts()).toMatchObject({
+      setupOpened: 1,
+      replyOpened: 1,
+      pngRequested: 1,
+      wordsCopied: 2,
+      nativeShareResolved: 1,
+      linkCopied: 1,
+    });
+    expect(() => record(C, 'open')).toThrow(/another writer/);
+    expect(() => record(A, '__proto__')).toThrow(/Unknown/);
+    const before = counts();
+    tx(A, (c) => module.hide_my_card(c, { cardId }));
+    expect(() => record(A, 'png_requested')).toThrow(/no longer available/);
+    expect(counts()).toEqual(before);
+    const aggregate = [...h.db.activityDay.iter()][0];
+    expect(Object.keys(aggregate).sort()).toEqual(['counts', 'day', 'id', 'mode']);
+    expect(aggregate.counts).not.toContain('octopus');
+    expect(aggregate.counts).not.toContain(h.viewContext(A).sender.toHexString());
+  });
+  it('keeps sample completions separate from peer returns', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    expect(claim(A).seeded).toBe(true);
+    expect(reply(A).ok).toBe(true);
+    expect(counts()).toMatchObject({
+      sampleCompleted: 1,
+      peerCompleted: 0,
+      teamCompleted: 0,
+      setupOpened: 0,
+    });
+  });
+  it('keeps sandbox/live configuration rows separate, owner-only and expiring', () => {
+    expect(module.admin_activity(h.procedureContext(owner))).toEqual([]);
+    start(A);
+    env.DRIFT_DEV_MODE = 'false';
+    start(B);
+    expect(counts('sandbox').roundStarted).toBe(1);
+    expect(counts('live').roundStarted).toBe(1);
+    expect(() => module.admin_activity(h.procedureContext(C))).toThrow(/Only the project owner/);
+    h.clock.advance(TimeDuration.fromMillis(30 * 86400000));
+    tx(owner, (c) => module.purge_old_data(c, {}));
+    expect([...h.db.activityDay.iter()]).toHaveLength(0);
+  });
+  it('rolls an empty catch back without recording a start or consuming a round', () => {
+    env.DRIFT_DEV_MODE = 'false';
+    expect(() => tx(A, (c) => module.start_catching(c, {}))).toThrow(/No bottles/);
+    expect([...h.db.round.iter()]).toHaveLength(0);
+    expect([...h.db.activityDay.iter()]).toHaveLength(0);
+  });
+});

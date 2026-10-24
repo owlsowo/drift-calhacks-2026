@@ -5,10 +5,12 @@ export function PaperNote({
   children,
   closed = false,
   postcard = false,
+  onOpen,
 }: {
   children: ReactNode;
   closed?: boolean;
   postcard?: boolean;
+  onOpen?: () => void;
 }) {
   const note = useRef<HTMLDivElement>(null);
   const [meshReady, setMeshReady] = useState(false);
@@ -21,6 +23,26 @@ export function PaperNote({
     const timer = setTimeout(() => setPhase('open'), NOTE_OPEN_MS);
     return () => clearTimeout(timer);
   }, [phase]);
+  useEffect(() => {
+    if (phase !== 'open' || !onOpen || typeof IntersectionObserver !== 'function') return;
+    let inView = false;
+    const visible = () => {
+      if (inView && document.visibilityState === 'visible') onOpen();
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting && entry.intersectionRatio >= 0.1;
+        visible();
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(note.current!);
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', visible);
+    };
+  }, [phase, onOpen]);
   useEffect(() => {
     if (!closed && phase === 'closed') setPhase('open');
   }, [closed, phase]);

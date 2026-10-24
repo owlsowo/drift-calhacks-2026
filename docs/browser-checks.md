@@ -10,7 +10,7 @@ The invitation now follows the postcard, sharing controls and return note. Its c
 
 ## Verified scope
 
-Seven WebKit checks cover:
+Eight WebKit checks cover:
 
 - Connection and layout at 390px and 1440px.
 - Actual moving sea pixels and stable paused pixels.
@@ -18,6 +18,7 @@ Seven WebKit checks cover:
 - Two identities receiving the same canonical postcard without refreshing; an actual downloadable 1080×1350 PNG, also visually inspected.
 - Completion layout with the payoff before the optional next contribution.
 - Share cancellation and denial using explicitly injected adapters; a copied canonical link opens for a third independent WebKit identity.
+- Private owner counters observe the two author opens and export/share reports, exclude cancelled native shares and public visitors, and deduplicate repeat actions. A resolved native-share adapter verifies that separate outcome.
 - Forced no-WebGL rendering with a photographed sea and readable CSS note fallback.
 
 Six captured states have no reported violations in the selected Axe WCAG 2 A/AA, 2.1 AA and 2.2 AA rules. No horizontal overflow or uncaught browser errors were reported. These checks do not establish complete accessibility. The catch-first Chrome check also passes all five checks at 360px/1440px after the fix.

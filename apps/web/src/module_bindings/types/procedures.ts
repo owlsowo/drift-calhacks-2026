@@ -6,6 +6,7 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all procedure arg schemas
+import * as AdminActivityProcedure from "../admin_activity_procedure";
 import * as AdminAiCallsProcedure from "../admin_ai_calls_procedure";
 import * as AdminAiUsageProcedure from "../admin_ai_usage_procedure";
 import * as AdminProbeClaudeProcedure from "../admin_probe_claude_procedure";
@@ -18,6 +19,8 @@ import * as SubmitReplyProcedure from "../submit_reply_procedure";
 import * as SubmitSetupProcedure from "../submit_setup_procedure";
 import * as VerifyShoreProcedure from "../verify_shore_procedure";
 
+export type AdminActivityArgs = __Infer<typeof AdminActivityProcedure.params>;
+export type AdminActivityResult = __Infer<typeof AdminActivityProcedure.returnType>;
 export type AdminAiCallsArgs = __Infer<typeof AdminAiCallsProcedure.params>;
 export type AdminAiCallsResult = __Infer<typeof AdminAiCallsProcedure.returnType>;
 export type AdminAiUsageArgs = __Infer<typeof AdminAiUsageProcedure.params>;

@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-24T22:34:31.081Z",
+  "checkedAt": "2026-10-24T23:03:58.565Z",
   "mode": "Actual desktop Playwright WebKit engine with iPhone viewport/touch emulation; local isolated SpacetimeDB, AI off, synthetic inputs",
   "status": "passed",
   "engine": "27.2",
@@ -12,6 +12,23 @@
     "secureContext": true,
     "pointerCoarse": true
   },
+  "activity": {
+    "roundStarted": 2,
+    "catchAssigned": 1,
+    "setupPublished": 1,
+    "peerCompleted": 1,
+    "teamCompleted": 0,
+    "sampleCompleted": 0,
+    "setupOpened": 1,
+    "replyOpened": 1,
+    "pngRequested": 1,
+    "wordsCopied": 1,
+    "nativeShareResolved": 1,
+    "linkCopied": 1,
+    "completionLe30s": 1,
+    "completionLe120s": 0,
+    "completionOver120s": 0
+  },
   "checks": [
     "Actual WebKit engine connects at iPhone 13 and desktop viewports with no horizontal overflow",
     "WebKit draws moving sea pixels and the pause control freezes them",
@@ -19,6 +36,7 @@
     "Two WebKit identities receive the same canonical postcard without refresh and export a 1080×1350 PNG",
     "Mobile completion keeps the title, postcard and sharing controls above the optional next-beginning invitation",
     "Injected native-share cancellation stays quiet; injected share denial copies a link a third WebKit identity can open",
+    "Private owner totals observe visible author opens and export/share outcomes, exclude hidden pages/cancellation/public viewers, and deduplicate repeats",
     "Forced WebGL unavailability leaves the photographed sea and readable CSS note fallback working"
   ],
   "errors": [],

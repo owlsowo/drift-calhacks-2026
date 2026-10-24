@@ -17,6 +17,21 @@ export const ActionResult = __t.object("ActionResult", {
 });
 export type ActionResult = __Infer<typeof ActionResult>;
 
+export const ActivityDay = __t.object("ActivityDay", {
+  id: __t.string(),
+  day: __t.u32(),
+  mode: __t.string(),
+  counts: __t.string(),
+});
+export type ActivityDay = __Infer<typeof ActivityDay>;
+
+export const ActivityInfo = __t.object("ActivityInfo", {
+  day: __t.u32(),
+  mode: __t.string(),
+  counts: __t.string(),
+});
+export type ActivityInfo = __Infer<typeof ActivityInfo>;
+
 export const AdminStatusInfo = __t.object("AdminStatusInfo", {
   dispatches: __t.u32(),
   cap: __t.u32(),
@@ -92,6 +107,8 @@ export const Authorship = __t.object("Authorship", {
   setupOwner: __t.option(__t.identity()),
   replyOwner: __t.identity(),
   hidden: __t.bool(),
+  setupActions: __t.u32(),
+  replyActions: __t.u32(),
 });
 export type Authorship = __Infer<typeof Authorship>;
 
