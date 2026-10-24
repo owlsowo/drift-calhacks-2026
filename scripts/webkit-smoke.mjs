@@ -180,6 +180,8 @@ try {
     'Optional writing invitation follows the payoff',
   );
   await button(B, 'My postcards 1').waitFor();
+  await button(B, 'Open returned postcard').waitFor();
+  await screen(B, 'returned-notice-1440');
   assert.equal(await A.locator('.human-seal').count(), 1);
   await screen(A, 'postcard-390');
   await download(A, 'postcard-export.png');
@@ -187,8 +189,7 @@ try {
     Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  await button(B, 'My postcards 1').click();
-  await B.locator('.collection-card').click();
+  await button(B, 'Open returned postcard').click();
   await B.getByText('Our lawyers would like another hand.', { exact: true }).waitFor();
   await B.locator('.postcard-paper.paper-open').waitFor();
   assert.equal(
@@ -201,6 +202,8 @@ try {
     document.dispatchEvent(new Event('visibilitychange'));
   });
   await waitForCount('setupOpened', 1);
+  assert.equal(await B.locator('.returned-notice').count(), 0);
+  pass('WebKit announces a new returned bottle and opens its postcard without a refresh');
   pass(
     'Two WebKit identities receive the same canonical postcard without refresh and export a 1080×1350 PNG',
   );
