@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-24T19:44:13.823Z",
+  "mode": "Isolated local database; synthetic pointer and motion events; no physical-phone verification or paid AI calls",
+  "checks": [
+    "Single-direction cursor movement does not activate a bottle",
+    "Deliberate cursor shaking starts one round",
+    "A failed catch stays on the shore with a visible error and permits another shake",
+    "Caught paper begins crumpled, unfolds, and leaves the real sea behind the readable note at both viewports",
+    "Finished postcard opens on paper over the same sea",
+    "Phone motion before opt-in and after denial does not activate; drag and buttons remain available",
+    "Opted-in synthetic phone shaking starts and catches once, survives writing, and reduced motion opens instantly",
+    "Keyboard Enter provides a complete gesture alternative"
+  ],
+  "errors": []
+}

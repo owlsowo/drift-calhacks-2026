@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-24T11:13:01.527Z",
+  "checkedAt": "2026-10-24T19:44:12.968Z",
   "environment": "isolated local SpacetimeDB sandbox",
   "aiChecks": false,
   "syntheticWriters": true,
@@ -15,10 +15,11 @@
     "B starts a round",
     "Focus editable six-word line",
     "B tosses a setup",
-    "A starts a round",
+    "A shakes the bottle to start a round",
     "Focus editable six-word line",
     "A tosses a setup",
-    "A catches B\u2019s setup",
+    "A shakes the bottle to catch B\u2019s setup",
+    "A unfolds the note over the sea",
     "Focus editable six-word line",
     "A seals the canonical postcard",
     "A downloads the real postcard image",
@@ -26,5 +27,6 @@
     "B reads the same canonical postcard"
   ],
   "errors": [],
-  "artifact": "local-sandbox-demo.mp4"
+  "artifact": "drift-local-demo.mp4",
+  "imageCredits": "docs/asset-sources.md and the in-app Image credits page list the human-made photographs, authors and Creative Commons licenses."
 }

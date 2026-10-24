@@ -25,7 +25,7 @@ async function capture(page, viewport, state, observation) {
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
     .analyze();
   assert.deepEqual(
-    a.violations.map((v) => v.id),
+    a.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) })),
     [],
   );
   evidence.push({ viewport, state, artifact: `${state}-${viewport}.png`, observation });
@@ -58,7 +58,7 @@ try {
     );
     holdHandshake = false;
     for (const socket of sockets) socket.connectToServer();
-    await page.waitForFunction(() => !document.querySelector('.home-copy button')?.disabled);
+    await page.waitForFunction(() => !document.querySelector('.shore-dock button')?.disabled);
     await page.getByRole('button', { name: 'Write my six words', exact: true }).click();
     await page.getByRole('textbox').fill('I taught the octopus insider trading.');
     pause(true);

@@ -30,7 +30,7 @@ const origin = process.env.DRIFT_WEB_URL || 'http://localhost:5173';
 async function ready(p) {
   await p.goto(origin);
   await p.getByRole('button', { name: 'Write my six words', exact: true }).waitFor();
-  await p.waitForFunction(() => !document.querySelector('.home-copy button').disabled);
+  await p.waitForFunction(() => !document.querySelector('.shore-dock button').disabled);
   await p.evaluate(() => document.fonts.ready);
 }
 async function screen(p, name) {
@@ -91,8 +91,10 @@ try {
   await start(B, 'I challenged their shark to poker.');
   pass('Two isolated identities submit their own six-word setups');
   await A.getByRole('button', { name: 'Catch a bottle', exact: true }).click();
+  await A.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await A.getByText('I challenged their shark to poker.', { exact: true }).waitFor();
   await B.getByRole('button', { name: 'Catch a bottle', exact: true }).click();
+  await B.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await B.getByText('I taught the octopus insider trading.', { exact: true }).waitFor();
   pass('Each identity catches the other writer, never itself');
   await A.getByRole('textbox').fill('Our lawyers would like another hand.');
@@ -225,6 +227,7 @@ try {
   await ready(sample);
   await start(sample, 'Our accountant finally grew eight arms.');
   await sample.getByRole('button', { name: 'Catch a bottle', exact: true }).click();
+  await sample.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await sample.getByText('SAMPLE STARTER · DEVELOPMENT FIXTURE', { exact: true }).waitFor();
   await sample.getByRole('textbox').fill('Your account has been permanently frozen.');
   await sample.getByRole('button', { name: 'Seal our postcard', exact: true }).click();

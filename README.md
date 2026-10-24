@@ -6,7 +6,9 @@ Write a setup, toss it, catch another writer’s setup, and write its ending. Yo
 
 ## Current status
 
-Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness currently passes 36 transaction/privacy/failure tests. Six rule/model-contract tests pass. Automated accessibility scans pass the tested writing, reply, reveal, hello, collection, shared-card, loading, pause and offline states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding have passed a real local-browser smoke test. See `docs/evidence/ui-smoke.json`, `content-states.json`, `live-invariants.json` and `frontend-review.json` with screenshots.
+Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness passes 36 transaction/privacy/failure tests. Ten rule/model-contract/gesture tests pass. Automated accessibility scans pass the tested writing, reply, reveal, hello, collection, shared-card, loading, pause and offline states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding pass local-browser smoke tests. See `docs/evidence/ui-smoke.json`, `content-states.json`, `live-invariants.json` and `frontend-review.json` with screenshots.
+
+The WeChat/QQ bottle-inspired shore supports cursor shaking, opt-in phone motion and keyboard/button alternatives. Caught notes begin as crumpled paper and unfold over a persistent sea. All photographic assets are human-made, sourced and credited in the interface; see `docs/asset-sources.md`. Eight browser interaction checks cover shaking, permission denial/grant, catch recovery, keyboard focus and reduced motion using synthetic inputs. Physical-phone sensor behavior still needs verification.
 
 **Not yet verified:** live Claude calls, hosted Maincloud deployment, actual phones, attendee outcomes, Figma/Mana/Notability use or sponsor eligibility. Local development is clearly marked and may explicitly disable model checks. This is never evidence of a live AI integration. No attendee pilot has been conducted.
 
@@ -51,6 +53,7 @@ npm run check:scripts
 npm run build
 npm run test:ui
 npm run test:a11y
+npm run test:shore
 npm run eval:models -- --dry-run
 ```
 

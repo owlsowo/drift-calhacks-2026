@@ -1,0 +1,13 @@
+# Drift image sources
+
+The interface uses human-made photographs and original web geometry. No AI-generated images are bundled.
+
+| Asset                             | Creator and source                                                                                                                                                                            | License                                                         | Changes                                                 |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------- |
+| sea-shore.jpg and moon-detail.jpg | Vyacheslav Argenberg, [Andaman Sea at night, Moonset, Moonlight](https://commons.wikimedia.org/wiki/File:Andaman_Sea_at_night,_Moonset,_Moonlight.jpg), 2009                                  | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)       | Cropped, resized, JPEG optimized; CSS wash over the sea |
+| paper-ball.png                    | Army1987, [Paperball.png](https://commons.wikimedia.org/wiki/File:Paperball.png), 2006                                                                                                        | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | Unchanged source image; CSS animation                   |
+| paper-texture.jpg                 | D Sharon Pruitt / Pink Sherbet Photography, [Free crumpled paper texture for layers](<https://commons.wikimedia.org/wiki/File:Free_crumpled_paper_texture_for_layers_(2978651767).jpg>), 2008 | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/)       | Resized and optimized; CSS tint                         |
+
+The paper ball remains available under its original share-alike license. The site’s Image credits page carries attribution and license links alongside the distributed assets.
+
+Interface references: [the owner's supplied WeChat video](https://www.bilibili.com/video/BV1PW411x7n4/), [classic WeChat screenshots](https://www.freedomwall.net/technews/revolutionize-your-mobile-messaging-and-calling-experience-with-wechat/), and [QQ Mail bottle imagery](https://www.woshipm.com/it/5063202.html). These inform the sea, distant lighthouse, bottom dock and note-opening ritual. No Tencent screenshot or video is distributed in the application. Bottle, lighthouse, dock and folding geometry are original SVG/CSS components.

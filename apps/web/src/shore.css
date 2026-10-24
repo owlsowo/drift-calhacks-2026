@@ -1,0 +1,1023 @@
+.shore {
+  --shore-ink: #ecedd8;
+  --shore-soft: #c6d7d8;
+  --shore-night: #102c43;
+  --shore-light: #e4dcac;
+  position: relative;
+  isolation: isolate;
+  min-height: 660px;
+  height: min(740px, calc(100svh - 155px));
+  overflow: hidden;
+  color: var(--shore-ink);
+  background: var(--shore-night);
+}
+.coast-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -3;
+}
+.shore::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, #0c203940 0%, transparent 65%);
+  z-index: -1;
+}
+.shore-heading {
+  position: absolute;
+  left: 44px;
+  right: 32px;
+  top: 32px;
+}
+.shore-edition {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--shore-soft);
+}
+.shore-heading h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(30px, 3.6vw, 48px);
+  letter-spacing: -0.035em;
+  font-weight: 400;
+  line-height: 1.12;
+  max-width: 650px;
+  margin: 0 0 12px;
+  color: var(--shore-ink);
+}
+.shore-heading > p:last-child {
+  color: var(--shore-soft);
+  margin: 0;
+  font-size: 14px;
+}
+.shore-prompt {
+  position: absolute;
+  left: 44px;
+  top: 194px;
+  width: 280px;
+}
+.shore-prompt > span {
+  font-size: 12px;
+  color: var(--shore-soft);
+}
+.shore-prompt > p {
+  font:
+    400 25px/1.28 'Fraunces',
+    serif;
+  margin: 12px 0;
+  text-wrap: balance;
+  color: var(--shore-ink);
+}
+.shore-prompt small {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--shore-soft);
+  display: block;
+  max-width: 265px;
+}
+.bottle-grip {
+  position: absolute;
+  top: 54%;
+  left: 56%;
+  width: 150px;
+  height: 244px;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 34px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  transform: translate(-50%, -50%) translate3d(var(--drag-x, 0px), var(--drag-y, 0px), 0)
+    rotate(var(--drag-angle, -17deg));
+  transition: transform 550ms cubic-bezier(0.2, 0.9, 0.25, 1.35);
+  filter: drop-shadow(0 15px 15px #071c3766);
+  z-index: 2;
+}
+.bottle-grip:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.bottle-grip:focus-visible {
+  outline: 2px solid var(--shore-light);
+  outline-offset: 8px;
+}
+.is-grabbed .bottle-grip {
+  transition: none;
+  cursor: grabbing;
+}
+.glass-bottle {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.glass-bottle .floating-bottle {
+  transform-origin: 90px 190px;
+  animation: shore-bob 5s ease-in-out infinite;
+}
+.is-grabbed .floating-bottle,
+.is-searching .floating-bottle {
+  animation-play-state: paused;
+}
+.bottle-spotlight {
+  position: absolute;
+  top: 44%;
+  left: 56%;
+  width: 340px;
+  height: 260px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, #9ddbc72b 0%, #90bcb80e 40%, transparent 70%);
+  pointer-events: none;
+}
+.bottle-ripple {
+  position: absolute;
+  left: 56%;
+  top: calc(54% + 105px);
+  width: 140px;
+  height: 18px;
+  transform: translateX(-50%);
+  border: 1px solid #afdcd344;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 9px #9ed4d009,
+    0 0 0 19px #9ed4d008;
+  pointer-events: none;
+}
+.shake-instruction {
+  position: absolute;
+  top: calc(54% + 144px);
+  left: 56%;
+  transform: translateX(-50%);
+  min-width: 270px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  color: var(--shore-ink);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.shake-meter {
+  flex: 0 0 100%;
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  height: 7px;
+  margin-top: 5px;
+}
+.shake-meter i {
+  width: 18px;
+  height: 3px;
+  background: #c4d8cb44;
+  border-radius: 2px;
+}
+.shake-meter i.full {
+  background: var(--shore-light);
+}
+.phone-shake {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  bottom: 170px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.phone-shake button {
+  color: var(--shore-ink);
+  min-height: 44px;
+  background: #173e51;
+  border: 1px solid #a4b6aa;
+  border-radius: 3px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.phone-shake span {
+  font-size: 12px;
+  max-width: 240px;
+  color: var(--shore-soft);
+}
+.shore-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 50px;
+  transform: translateX(-50%);
+  width: min(540px, calc(100% - 40px));
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 20px 12px;
+}
+.shore-dock::before {
+  content: '';
+  z-index: -1;
+  position: absolute;
+  top: 39px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(#879a98, #5c7375);
+  border-top: 2px solid #b4c0b1;
+  box-shadow:
+    0 5px 0 #34505a,
+    0 14px 20px #09273540;
+  transform: perspective(450px) rotateX(12deg);
+  transform-origin: bottom;
+}
+.dock-action {
+  border: none;
+  padding: 0 4px;
+  background: none;
+  color: #f2f0dd;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-height: 106px;
+  font-size: 12px;
+  line-height: 1.3;
+  text-shadow: 0 1px 3px #14323e;
+  border-radius: 2px;
+}
+.dock-action:disabled {
+  opacity: 0.5;
+}
+.dock-action:focus-visible {
+  outline-color: var(--shore-light);
+  outline-offset: 2px;
+}
+.dock-object {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 54px;
+  height: 62px;
+  filter: drop-shadow(0 4px 3px #0e304650);
+  transition: transform 180ms ease;
+}
+.dock-object > svg {
+  width: 42px;
+  height: 52px;
+  stroke-width: 1.4;
+}
+.dock-object .small-glass {
+  width: 39px;
+  height: 65px;
+}
+.dock-object .floating-bottle {
+  animation: none;
+}
+.dock-action:hover .dock-object {
+  transform: translateY(-4px);
+}
+.dock-primary .dock-object::before {
+  content: '';
+  position: absolute;
+  width: 68px;
+  height: 12px;
+  bottom: 0;
+  border-radius: 50%;
+  background: #e3e9b133;
+  box-shadow: 0 0 18px #e5efb44d;
+  z-index: -1;
+}
+.dock-object b {
+  position: absolute;
+  right: -4px;
+  top: 2px;
+  font:
+    600 11px/20px 'DM Sans',
+    sans-serif;
+  text-shadow: none;
+  width: 20px;
+  background: #e9deb8;
+  color: #1a3c48;
+  border-radius: 50%;
+}
+.shore-fine-print {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 10px;
+  margin: 0;
+  text-align: center;
+  color: #203f4a;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.shore-play {
+  display: block;
+  padding: 0;
+  margin: 0;
+}
+.shore-play > .play-margin {
+  display: none;
+}
+.shore-play > .writing-desk {
+  border: 0;
+  background: none;
+  padding: 0;
+  min-height: 0;
+  box-shadow: none;
+}
+.shore-shell .main {
+  margin-top: 0;
+}
+.shore-shell .site-header {
+  padding-bottom: 20px;
+}
+.shore-moon {
+  position: absolute;
+  top: 16%;
+  left: 72%;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: #ede4b8;
+  box-shadow: 0 0 28px 12px #f2dfa80c;
+  z-index: -2;
+}
+.mobile-lighthouse {
+  display: none;
+}
+@keyframes shore-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+@media (max-width: 700px) {
+  .shore {
+    min-height: 670px;
+    height: calc(100svh - 134px);
+  }
+  .shore-heading {
+    left: 23px;
+    right: 20px;
+    top: 24px;
+  }
+  .shore-edition {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+  .shore-heading h1 {
+    font-size: 30px;
+    max-width: 310px;
+  }
+  .shore-heading > p:last-child {
+    font-size: 12px;
+    max-width: 280px;
+    line-height: 1.6;
+  }
+  .shore-prompt {
+    top: 160px;
+    left: 23px;
+    width: 240px;
+  }
+  .shore-prompt > span {
+    font-size: 11px;
+  }
+  .shore-prompt > p {
+    font-size: 20px;
+    margin: 7px 0;
+  }
+  .shore-prompt small {
+    font-size: 11px;
+    line-height: 1.5;
+    max-width: 230px;
+  }
+  .coast-art {
+    width: 100%;
+  }
+  .distant-lighthouse {
+    display: none;
+  }
+  .mobile-lighthouse {
+    display: block;
+    position: absolute;
+    right: 3%;
+    bottom: 61%;
+    width: 50px;
+    height: 75px;
+    z-index: -2;
+  }
+  .shore-moon {
+    top: 32%;
+    left: 22%;
+    width: 15px;
+    height: 15px;
+  }
+  .bottle-grip {
+    left: 55%;
+    top: 57%;
+    width: 113px;
+    height: 182px;
+  }
+  .bottle-ripple {
+    left: 55%;
+    top: calc(57% + 77px);
+    width: 110px;
+    height: 13px;
+  }
+  .bottle-spotlight {
+    left: 55%;
+    top: 56%;
+    width: 250px;
+    height: 230px;
+  }
+  .shake-instruction {
+    left: 50%;
+    top: calc(57% + 109px);
+    font-size: 12px;
+  }
+  .shore-dock {
+    bottom: 41px;
+    width: calc(100% - 28px);
+    padding: 0 6px 10px;
+    gap: 0;
+  }
+  .dock-action {
+    font-size: 10px;
+    min-height: 98px;
+    padding: 0 2px;
+  }
+  .shore-fine-print {
+    font-size: 9px;
+    left: 20px;
+    right: 20px;
+    bottom: 7px;
+  }
+  .shore-home .phone-shake {
+    left: 14px;
+    right: 14px;
+    bottom: 150px;
+  }
+  .phone-shake {
+    bottom: 150px;
+    flex-direction: column;
+    gap: 0;
+  }
+  .phone-shake button {
+    font-size: 11px;
+    min-height: 38px;
+  }
+  .phone-shake span {
+    font-size: 10px;
+    text-align: center;
+  }
+  .phone-shake + .shore-dock {
+    bottom: 35px;
+  }
+  .shore-catch .bottle-grip {
+    top: 49%;
+    width: 136px;
+    height: 220px;
+  }
+  .shore-catch .bottle-ripple {
+    top: calc(49% + 94px);
+  }
+  .shore-catch .shake-instruction {
+    top: calc(49% + 132px);
+  }
+  .shore-shell .site-header {
+    padding-bottom: 17px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-bottle .floating-bottle {
+    animation: none;
+  }
+  .bottle-grip,
+  .dock-object {
+    transition: none;
+  }
+}
+
+/* The scenery is a sourced photograph. It stays behind every opened note. */
+.sea-world {
+  position: relative;
+  isolation: isolate;
+  max-width: none;
+  min-height: 100svh;
+  padding: 0;
+  color: #f0f0df;
+  background-color: #153744;
+}
+.ocean-world {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+  overflow: hidden;
+  background: #183845;
+}
+.ocean-photograph {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(#10365544, #17466133),
+    url('/assets/sea-shore.jpg') center center / cover;
+}
+.sea-world:not(.shore-shell) .ocean-photograph::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #082533a6;
+}
+.sea-world:not(.shore-shell) .moon-photograph {
+  left: 6%;
+}
+.sea-world .steps .current {
+  color: #fff3d8;
+}
+.sea-world .steps .complete > span {
+  color: #183e40;
+}
+.moon-photograph {
+  position: absolute;
+  width: 29px;
+  height: 29px;
+  object-fit: cover;
+  border-radius: 50%;
+  left: 26%;
+  top: 17%;
+  mix-blend-mode: screen;
+  filter: brightness(1.2);
+}
+.shore-lighthouse {
+  position: absolute;
+  right: 15%;
+  top: calc(32% - 47px);
+  width: 40px;
+  height: 48px;
+  opacity: 0.9;
+}
+.sea-world .site-header {
+  max-width: none;
+  padding: 0 28px;
+  margin: auto;
+  height: 70px;
+  border: 0;
+  gap: 26px;
+  background: linear-gradient(#313b43, #222e38);
+  color: #f5f2e2;
+}
+.sea-world .wordmark {
+  background: none;
+  font-size: 35px;
+  color: #f5f2e2;
+}
+.sea-world .wordmark span {
+  color: #bacac1;
+}
+.sea-world .site-header nav button {
+  color: #e3e6dc;
+}
+.sea-world .site-header nav button.nav-active {
+  border-color: #e8d8ab;
+  color: #fff7dc;
+}
+.sea-world .nav-count {
+  color: #254247;
+  background: #d7dec9;
+}
+.sea-world .main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 35px 26px 45px;
+}
+.sea-world .main.view-today {
+  max-width: none;
+  padding: 0;
+}
+.sea-world.shore-shell .main.view-play {
+  max-width: none;
+  padding: 0;
+}
+.sea-world .shore {
+  background: none;
+  min-height: 650px;
+  height: min(790px, calc(100svh - 120px));
+}
+.sea-world .shore::after {
+  background: linear-gradient(90deg, #0a25344d, transparent 70%);
+}
+.sea-world .shore-heading {
+  top: 34px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+.sea-world .shore-heading > p:last-child {
+  font-size: 13px;
+  margin: auto;
+  max-width: 400px;
+  color: #f0f0df;
+}
+.sea-world .shore-prompt {
+  top: 90px;
+  width: 245px;
+  left: 40px;
+}
+.sea-world .shore-prompt p {
+  font-size: 23px;
+}
+.sea-world .shore-prompt small {
+  color: #ecedde;
+}
+.sea-world .shore-fine-print {
+  color: #f2f1e1;
+  text-shadow: 0 1px 3px #10222c;
+}
+.sea-world .shore-dock::before {
+  background: linear-gradient(#53676d, #334f5b);
+  border-color: #95a5a0;
+}
+.sea-world .dock-action {
+  font-size: 12px;
+}
+.sea-world .bottle-grip {
+  top: 52%;
+  left: 52%;
+}
+.sea-world .bottle-ripple {
+  top: calc(52% + 105px);
+  left: 52%;
+}
+.sea-world .bottle-spotlight {
+  top: 51%;
+  left: 52%;
+}
+.sea-world .shake-instruction {
+  top: calc(52% + 145px);
+  left: 52%;
+}
+.sea-world .play-margin > .eyebrow,
+.sea-world .play-margin > p,
+.sea-world .margin-note,
+.sea-world .steps,
+.sea-world .reveal-copy > p,
+.sea-world .reveal-copy > .eyebrow,
+.sea-world .collection-heading .eyebrow,
+.sea-world .collection-total,
+.sea-world .waiting-section > p {
+  color: #e2e6d6;
+}
+.sea-world .play-margin h2,
+.sea-world .reveal-copy h1,
+.sea-world .collection h1,
+.sea-world .collection-empty h2,
+.sea-world .waiting-section h2 {
+  color: #fff7e5;
+}
+.sea-world .collection-empty p,
+.sea-world .collection-card > span {
+  color: #e5e8d8;
+}
+.sea-world .reveal-copy h1 em {
+  color: #e1d0a5;
+}
+.sea-world .reveal-copy .text-button,
+.sea-world .card-management button,
+.sea-world .return-note,
+.sea-world .human-seal,
+.sea-world .stamp-receipt,
+.sea-world .site-footer {
+  color: #e5e9d8;
+}
+.sea-world .share-actions .secondary {
+  background: #f0ead7;
+}
+.sea-world .share-actions .primary {
+  background: #f0ead7;
+  color: #173d43;
+  border-color: #f0ead7;
+  box-shadow: 0 3px 0 #172d36;
+}
+.sea-world .writing-desk {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.sea-world .postcard {
+  color: #183e40;
+}
+.sea-world .postcard .eyebrow,
+.sea-world .postcard .postcard-bottom {
+  color: #405c52;
+}
+.sea-world .connection-banner {
+  color: #183e40;
+}
+.sea-world.shore-shell .error-note {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  width: min(600px, calc(100% - 32px));
+  margin: 0;
+  box-shadow: 0 8px 30px #06192766;
+}
+.sea-world .reveal-art .postcard {
+  background:
+    linear-gradient(#f3ecd5da, #f3ecd5da),
+    url('/assets/paper-texture.jpg') center/cover;
+}
+.sea-world .reveal-art .postcard .card-half {
+  background: none;
+}
+.sea-world .collection-card .postcard {
+  background-color: #f6efdc;
+}
+.sea-world .site-footer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 18px 26px;
+  border-color: #d2dcca33;
+  background: #24363de8;
+  font-size: 11px;
+}
+.sea-world .site-footer a {
+  margin-left: 12px;
+}
+.sea-world .hello-panel {
+  color: #25453b;
+}
+.sea-world .hello-panel .text-button {
+  color: #25453b;
+}
+.sea-world .waiting-line {
+  background: #f1ecd9;
+  color: #183e40;
+  padding: 18px;
+}
+
+.paper-note {
+  position: relative;
+  perspective: 1100px;
+  min-width: 0;
+}
+.paper-content {
+  position: relative;
+  z-index: 1;
+  padding: 42px;
+  color: #183e40;
+  background:
+    linear-gradient(#f5eedbdb, #f5eedbdb),
+    url('/assets/paper-texture.jpg') center/cover;
+  box-shadow: 0 14px 45px #06192755;
+  border-radius: 1px 4px 2px 5px;
+}
+.paper-closed {
+  min-height: 540px;
+  display: grid;
+  place-items: center;
+}
+.paper-closed .paper-content {
+  display: none;
+}
+.open-bottle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  border: 0;
+  color: #fff3d8;
+  background: none;
+  padding: 35px;
+  font-family: 'Fraunces', serif;
+  font-size: 26px;
+}
+.open-bottle img {
+  width: 170px;
+  height: auto;
+  filter: drop-shadow(7px 15px 10px #071c3655);
+  transform: rotate(-12deg);
+  transition: transform 220ms ease;
+}
+.open-bottle:hover img {
+  transform: rotate(-6deg) translateY(-5px);
+}
+.open-bottle small {
+  font:
+    13px 'DM Sans',
+    sans-serif;
+  color: #e1e3d4;
+}
+.paper-unfolding {
+  min-height: 540px;
+}
+.paper-unfolding .paper-content {
+  animation: note-uncrumple 1250ms cubic-bezier(0.2, 0.65, 0.25, 1) both;
+}
+.paper-unfolding .paper-content > * {
+  opacity: 0;
+}
+.unfolding-ball {
+  position: absolute;
+  z-index: 4;
+  top: 40%;
+  left: 50%;
+  width: 170px;
+  height: auto;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  animation: crumple-release 660ms ease-out both;
+  pointer-events: none;
+}
+.paper-facets {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  overflow: hidden;
+  animation: note-uncrumple 1250ms cubic-bezier(0.2, 0.65, 0.25, 1) both;
+}
+.paper-facets span {
+  position: absolute;
+  width: 33.5%;
+  height: 33.5%;
+  left: calc(var(--col) * 33.33%);
+  top: calc(var(--row) * 33.33%);
+  background: linear-gradient(#f0e8d4b3, #f0e8d4b3), url('/assets/paper-texture.jpg');
+  background-size: 300% 300%;
+  background-position: calc(var(--col) * 50%) calc(var(--row) * 50%);
+  box-shadow: inset 0 0 20px #3d392b24;
+  animation: crease-open 1100ms cubic-bezier(0.2, 0.7, 0.2, 1) var(--delay) both;
+}
+.postcard-paper .paper-content {
+  padding: 0;
+  box-shadow: none;
+  background: none;
+}
+.postcard-paper.paper-unfolding {
+  min-height: 0;
+}
+@keyframes crumple-release {
+  0%,
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-12deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(8deg) scale(1.6);
+  }
+}
+@keyframes note-uncrumple {
+  0%,
+  15% {
+    clip-path: polygon(35% 30%, 62% 25%, 72% 49%, 58% 68%, 29% 60%, 24% 41%);
+    transform: scale(0.22) rotate(-11deg);
+    filter: brightness(0.7);
+  }
+  55% {
+    clip-path: polygon(9% 6%, 87% 0, 100% 78%, 80% 96%, 2% 88%, 0 28%);
+    transform: scale(0.8) rotate(3deg);
+    filter: brightness(0.9);
+  }
+  100% {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    transform: scale(1) rotate(0);
+    filter: brightness(1);
+  }
+}
+@keyframes crease-open {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translate(var(--fold-x), var(--fold-y)) rotateX(var(--fold-turn))
+      rotateY(var(--fold-turn)) scale(0.12);
+  }
+  35% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.75;
+    transform: translate(0, 0) rotateX(0) rotateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0) rotateX(0) rotateY(0) scale(1);
+  }
+}
+@media (max-width: 700px) {
+  .sea-world .site-header {
+    height: 68px;
+    padding: 0 18px;
+    gap: 15px;
+  }
+  .sea-world .wordmark {
+    font-size: 31px;
+  }
+  .sea-world .main {
+    padding: 25px 19px 32px;
+  }
+  .sea-world .shore {
+    min-height: 650px;
+    height: calc(100svh - 112px);
+  }
+  .sea-world .shore-heading {
+    top: 25px;
+    left: 20px;
+    right: 20px;
+  }
+  .sea-world .shore-heading > p:last-child {
+    font-size: 12px;
+    max-width: none;
+  }
+  .sea-world .shore-prompt {
+    top: 74px;
+    left: 23px;
+    width: 230px;
+  }
+  .sea-world .shore-prompt > p {
+    font-size: 21px;
+  }
+  .sea-world .shore-prompt small {
+    font-size: 11px;
+  }
+  .sea-world .dock-action {
+    font-size: 10px;
+  }
+  .sea-world .bottle-grip {
+    top: 49%;
+    left: 50%;
+    width: 125px;
+    height: 203px;
+  }
+  .sea-world .bottle-ripple {
+    top: calc(49% + 90px);
+    left: 50%;
+  }
+  .sea-world .bottle-spotlight {
+    top: 49%;
+    left: 50%;
+  }
+  .sea-world .shake-instruction {
+    top: calc(49% + 122px);
+    left: 50%;
+  }
+  .sea-world .phone-shake {
+    bottom: 143px;
+  }
+  .moon-photograph {
+    left: 24%;
+    top: 18%;
+    width: 20px;
+    height: 20px;
+  }
+  .shore-lighthouse {
+    right: 4%;
+    width: 35px;
+    height: 42px;
+    top: calc(32% - 41px);
+  }
+  .paper-content {
+    padding: 25px 21px;
+  }
+  .paper-closed,
+  .paper-unfolding {
+    min-height: 510px;
+  }
+  .sea-world .site-footer {
+    padding: 18px 19px;
+  }
+  .sea-world .site-footer > span:last-child {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .sea-world .reveal-copy > h1 {
+    font-size: 35px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .unfolding-ball,
+  .paper-facets {
+    display: none;
+  }
+  .paper-unfolding .paper-content {
+    animation: none;
+  }
+  .paper-unfolding .paper-content > * {
+    opacity: 1;
+  }
+  .open-bottle img {
+    transition: none;
+  }
+}

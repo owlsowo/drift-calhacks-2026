@@ -1,16 +1,13 @@
 {
   "contract": "docs/design-contract.md",
-  "targetViewports": [
-    "360x800",
-    "1440x1000"
-  ],
+  "targetViewports": ["360x800", "1440x1000", "390x844"],
   "accessibility": {
     "status": "pass",
-    "evidence": "ui-smoke.json records zero automated WCAG A/AA violations across home, empty collection, reply, reveal, hello, shared/hidden cards, collection and sample reveal; keyboard focus containment/restoration and reduced motion checked. content-states scans loading, pause and offline states. Manual screen inspection supplements automation; no assistive-technology user study."
+    "evidence": "Updated ui-smoke.json records zero automated WCAG A/AA violations across home, empty collection, reply, reveal, hello, shared/hidden cards, collection and sample reveal. accessibility.json checks the writing form and help dialog at both primary viewports. Keyboard focus containment/restoration and reduced motion pass; shore-interactions.json checks keyboard Enter, pointer shaking and synthetic mobile permission denial/grant. No physical-phone or assistive-technology user study."
   },
   "responsive": {
     "status": "pass",
-    "evidence": "All browser captures assert document width <= viewport. Rendered mobile and desktop home/reveal/error states inspected for legibility, wrapping and order; mobile postcard precedes sharing/hello controls."
+    "evidence": "All browser capture helpers assert document width <= viewport. Rendered 360x800 and 1440x1000 home, crumpled/open paper, reveal and errors inspected for wrapping, contrast and order. Simulated touch phone 390x844 shows the motion control above the dock without overlap."
   },
   "contentStates": {
     "loading": {
@@ -23,7 +20,7 @@
     },
     "error": {
       "status": "pass",
-      "evidence": "error-360x800.png and error-1440x1000.png: authoritative owner pause rejects a valid submission; draft remains. Offline captures separately show editable text with disabled submission. Blocked-storage captures name the loss-of-reload guarantee while the draft and request metadata remain usable in the current tab."
+      "evidence": "error-360x800.png and error-1440x1000.png: authoritative owner pause rejects a valid submission; draft remains. Offline captures separately show editable text with disabled submission. Blocked-storage captures name the loss-of-reload guarantee while the draft and request metadata remain usable in the current tab. shore-catch-error.png shows a failed synthetic catch as a visible shore alert; a subsequent deliberate shake succeeds."
     },
     "partial": {
       "status": "pass",
@@ -35,14 +32,14 @@
     },
     "permission": {
       "status": "pass",
-      "evidence": "shared-card-360.png shows no author hide control for a visitor; permission-360.png shows caller-only hiding after report; permission-1440.png shows unavailable permalink after actual author hiding. Private-table and owner-action checks in live-invariants.json."
+      "evidence": "shared-card-360.png shows no author hide control for a visitor; permission-360.png shows caller-only hiding after report; permission-1440.png shows unavailable permalink after actual author hiding. Private-table and owner-action checks in live-invariants.json. Phone-motion denial leaves drag/buttons usable; grant requires an explicit tap. Synthetic events before opt-in do not activate. See shore-interactions.json and phone-motion-denied.png. Physical sensor behavior remains untested."
     }
   },
   "renderedEvidence": [
     {
       "viewport": "360x800",
       "artifact": "home-360.png",
-      "observation": "Connected home has a clear setup/reply explanation, visible sandbox label and a primary writing action."
+      "observation": "Real moonlit-sea photograph, distant lighthouse and three-object dock frame a draggable bottle. Today\u2019s writing prompt remains visible. Sandbox provenance is explicit; no AI-generated imagery."
     },
     {
       "viewport": "360x800",
@@ -77,7 +74,7 @@
     {
       "viewport": "1440x1000",
       "artifact": "home-1440.png",
-      "observation": "Connected home has a clear setup/reply explanation, visible sandbox label and a primary writing action."
+      "observation": "Real moonlit-sea photograph, distant lighthouse and three-object dock frame a draggable bottle. Today\u2019s writing prompt remains visible. Sandbox provenance is explicit; no AI-generated imagery."
     },
     {
       "viewport": "1440x1000",
@@ -123,6 +120,36 @@
       "viewport": "360x800",
       "artifact": "hello-error-360.png",
       "observation": "A failed private invitation read shows a direct retry action without revealing a phrase; subsequent retry succeeds and removes the stale error."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "paper-crumpled.png",
+      "observation": "Caught note begins as a photographed crumpled ball over the darkened sea. Open bottle is the single next action."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "paper-unfolding.png",
+      "observation": "Rendered intermediate animation shows the crumpled ball releasing into a textured sheet; content stays inert until the opening finishes."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "paper-open-desktop.png",
+      "observation": "Opened photographed paper is legible; moonlit sea remains visible behind the writing flow."
+    },
+    {
+      "viewport": "390x844",
+      "artifact": "phone-motion-denied.png",
+      "observation": "Denied motion access names the fallback; dock and draggable bottle remain available."
+    },
+    {
+      "viewport": "390x844",
+      "artifact": "phone-motion-enabled.png",
+      "observation": "Motion control and enabled status fit above the dock. Synthetic events activate only after explicit opt-in."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "shore-catch-error.png",
+      "observation": "Catch transport failure stays on the sea with visible recoverable feedback; the next deliberate shake succeeds."
     }
   ]
 }
