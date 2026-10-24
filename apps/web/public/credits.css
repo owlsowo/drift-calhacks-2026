@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+  background: #f3eddf;
+  color: #243c3e;
+  font:
+    17px/1.7 Georgia,
+    serif;
+}
+main {
+  max-width: 700px;
+  margin: auto;
+  padding: 40px 24px 70px;
+}
+h1 {
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.15;
+  margin: 40px 0 24px;
+}
+h2 {
+  font-size: 25px;
+  font-weight: 400;
+  margin-top: 36px;
+}
+a {
+  color: #245e66;
+  text-underline-offset: 3px;
+}
+a:focus-visible {
+  outline: 3px solid #9a5a35;
+  outline-offset: 4px;
+}
+dt {
+  font-weight: bold;
+  margin-top: 28px;
+}
+dd {
+  margin: 8px 0 0;
+}

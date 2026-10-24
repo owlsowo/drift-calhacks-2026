@@ -31,6 +31,9 @@ import { savePng, shareCard, cardText, copyText } from './export';
 import './style.css';
 import { HelloPanel } from './HelloPanel';
 import { friendlyError } from './errors';
+import { Shore } from './Shore';
+import { Ocean } from './Ocean';
+import { PaperNote } from './PaperNote';
 
 function Bottle({ small = false }: { small?: boolean }) {
   return (
@@ -214,7 +217,7 @@ function App() {
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
-  const [draft, setDraft] = useState('');
+  const [draftState, setDraft] = useState({ key: '', text: '' });
   const [clock, setClock] = useState(Date.now());
   const [reveal, setReveal] = useState('');
   const heading = useRef<HTMLHeadingElement>(null);
@@ -241,6 +244,7 @@ function App() {
   const currentDraftKey = active
     ? `drift:draft:${s.identity}:${active.id}:${active.stage === 'reply' ? active.assignmentId : 'setup'}`
     : '';
+  const draft = draftState.key === currentDraftKey ? draftState.text : '';
   const count = words(draft).length;
   const dailyRounds = s.rounds.filter((r) => r.day === nowDay).length;
   // The server-finalized card marker awards one daily stamp, even if a card is later hidden.
@@ -259,7 +263,7 @@ function App() {
     return () => clearInterval(t);
   }, [s.clockOffsetMs]);
   useEffect(() => {
-    setDraft(currentDraftKey ? saved(currentDraftKey) : '');
+    setDraft({ key: currentDraftKey, text: currentDraftKey ? saved(currentDraftKey) : '' });
     setError('');
   }, [currentDraftKey]);
   useEffect(() => {
@@ -279,7 +283,7 @@ function App() {
   }, [view, active?.stage]);
   const changeDraft = (value: string) => {
     const limited = [...value].slice(0, 160).join('');
-    setDraft(limited);
+    setDraft({ key: currentDraftKey, text: limited });
     if (currentDraftKey) persist(currentDraftKey, limited);
   };
   const run = async (label: string, fn: () => Promise<unknown>) => {
@@ -344,15 +348,6 @@ function App() {
     }
   }, [s.rounds, reveal, view]);
   const controlsDisabled = !!busy || !s.connected;
-  const todayNumber = String((s.today?.day ?? nowDay) - 20749).padStart(2, '0');
-  const example: Card = {
-    id: 'example',
-    promptId: prompt?.id || '',
-    setup: prompt?.exampleSetup || 'I taught the octopus insider trading.',
-    reply: prompt?.exampleReply || 'Our accountants have questions for you.',
-    seeded: false,
-    createdMs: clock,
-  };
   const reset = new Date((nowDay + 1) * 86400000).toLocaleTimeString([], {
     hour: 'numeric',
     minute: '2-digit',
@@ -367,7 +362,10 @@ function App() {
       <a className="skip-link" href="#main">
         Skip to the game
       </a>
-      <div className="app-shell">
+      <div
+        className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}`}
+      >
+        <Ocean />
         <header className="site-header">
           <button
             className="wordmark"
@@ -428,105 +426,31 @@ function App() {
         )}
         <main id="main" className={`main view-${view}`}>
           {view === 'today' && (
-            <>
-              <div className="home-grid">
-                <section className="home-copy">
-                  <div className="edition">
-                    <span className="tiny-sun" /> TODAY’S BOTTLE{' '}
-                    <span className="edition-number">NO. {todayNumber}</span>
-                    {stampedToday && (
-                      <span className="daily-stamp">
-                        <Check size={11} /> STAMPED
-                      </span>
-                    )}
-                  </div>
-                  <h1 ref={heading} tabIndex={-1}>
-                    Six words from you.
-                    <br />
-                    Six from a <em>stranger.</em>
-                  </h1>
-                  <p className="intro">Make a tiny story neither of you could write alone.</p>
-                  <div className="daily-prompt">
-                    <span className="eyebrow">THE SITUATION</span>
-                    <h2>{prompt?.setup || 'A little story is washing ashore…'}</h2>
-                    <p>
-                      {prompt
-                        ? `Your second turn: ${prompt.reply}`
-                        : 'Then write another bottle’s six-word ending.'}
-                    </p>
-                  </div>
-                  <button
-                    className="button primary"
-                    onClick={begin}
-                    disabled={
-                      controlsDisabled ||
-                      !prompt ||
-                      (!active && dailyRounds >= 3) ||
-                      s.service?.paused
-                    }
-                  >
-                    {busy ? (
-                      <LoaderCircle className="spin" size={18} />
-                    ) : (
-                      <>
-                        {active
-                          ? 'Pick up where you left off'
-                          : dailyRounds >= 3
-                            ? 'All three stories are tucked away'
-                            : stampedToday
-                              ? 'Write another little story'
-                              : 'Write my six words'}
-                        <ArrowRight size={19} />
-                      </>
-                    )}
-                  </button>
-                  <p className="microcopy">
-                    About 2 minutes <span>·</span> No profile needed <span>·</span>{' '}
-                    {s.service?.sandbox ? 'Sample starters are labeled' : 'Both lines by humans'}
-                  </p>
-                </section>
-                <section className="home-art" aria-label="Example of a finished story">
-                  <Bottle />
-                  <div className="example-wrap">
-                    <Postcard card={example} example />
-                    <p className="hand-note">
-                      One small story. Two very different minds.
-                      <svg viewBox="0 0 90 35" aria-hidden="true">
-                        <path d="M3 4c25 25 51 30 80 4m-12 1 14-3-2 14" />
-                      </svg>
-                    </p>
-                  </div>
-                </section>
-              </div>
-              <section className="how-strip" aria-label="The three steps">
-                <div>
-                  <span>01</span>
-                  <p>
-                    <strong>Write a little.</strong>
-                    <br />
-                    Six words start the story.
-                  </p>
-                </div>
-                <div>
-                  <span>02</span>
-                  <p>
-                    <strong>Catch a stranger’s.</strong>
-                    <br />
-                    Your six words finish theirs.
-                  </p>
-                </div>
-                <div>
-                  <span>03</span>
-                  <p>
-                    <strong>Keep what you made.</strong>
-                    <br />A postcard worth passing on.
-                  </p>
-                </div>
-              </section>
-            </>
+            <Shore
+              mode="home"
+              prompt={prompt}
+              disabled={
+                controlsDisabled || !prompt || (!active && dailyRounds >= 3) || !!s.service?.paused
+              }
+              busy={busy}
+              actionLabel={
+                active
+                  ? 'Pick up where you left off'
+                  : dailyRounds >= 3
+                    ? 'All three stories are tucked away'
+                    : stampedToday
+                      ? 'Write another little story'
+                      : 'Write my six words'
+              }
+              onAction={begin}
+              onWrite={begin}
+              onCollection={() => setView('collection')}
+              count={mine.length}
+              headingRef={heading}
+            />
           )}
           {view === 'play' && prompt && (
-            <section className="play-layout">
+            <section className={`play-layout ${active?.stage === 'catch' ? 'shore-play' : ''}`}>
               <div className="play-margin">
                 <span className="eyebrow">TODAY’S LITTLE ADVENTURE</span>
                 <h2>{prompt.title}</h2>
@@ -571,37 +495,20 @@ function App() {
                     </button>
                   </div>
                 ) : active.stage === 'catch' ? (
-                  <div className="catch-state">
-                    <Bottle />
-                    <span className="eyebrow">YOUR WORDS ARE ON THEIR WAY</span>
-                    <h1 ref={heading} tabIndex={-1}>
-                      Something’s washing ashore.
-                    </h1>
-                    <p>
-                      Catch a six-word beginning.
-                      <br />
-                      Give it an ending only you could write.
-                    </p>
-                    <button
-                      className="button primary"
-                      disabled={controlsDisabled}
-                      onClick={() => run('Finding a bottle…', () => game.claim(active.id))}
-                    >
-                      {busy ? (
-                        <LoaderCircle className="spin" size={18} />
-                      ) : (
-                        <>
-                          Catch a bottle <ArrowRight size={18} />
-                        </>
-                      )}
-                    </button>
-                    <p className="microcopy">
-                      A labeled starter may help on a quiet tide. If none is available, your setup
-                      stays safe.
-                    </p>
-                  </div>
+                  <Shore
+                    mode="catch"
+                    prompt={prompt}
+                    disabled={controlsDisabled}
+                    busy={busy}
+                    actionLabel="Catch a bottle"
+                    onAction={() => run('Finding a bottle…', () => game.claim(active.id))}
+                    onWrite={begin}
+                    onCollection={() => setView('collection')}
+                    count={mine.length}
+                    headingRef={heading}
+                  />
                 ) : (
-                  <>
+                  <PaperNote key={currentDraftKey} closed={active.stage === 'reply' && !draft}>
                     <div className="desk-heading">
                       <span className="eyebrow">
                         {active.stage === 'write'
@@ -801,7 +708,7 @@ function App() {
                         own don’t count. Exactly six words, up to 160 characters.
                       </p>
                     </details>
-                  </>
+                  </PaperNote>
                 )}
               </div>
             </section>
@@ -941,7 +848,9 @@ function App() {
               </div>
               {card && (
                 <div className="reveal-art">
-                  <Postcard card={card} role={ownership?.role ?? 'public'} />
+                  <PaperNote key={card.id} postcard>
+                    <Postcard card={card} role={ownership?.role ?? 'public'} />
+                  </PaperNote>
                   <div className="human-seal">
                     <span>✓</span>{' '}
                     {card.seeded
@@ -1030,7 +939,10 @@ function App() {
           <span>A small moment of together.</span>
           <span>
             Fresh tide at {reset} <span className="footer-dot">·</span>{' '}
-            <button onClick={() => setModal('privacy')}>Privacy & care</button>
+            <button onClick={() => setModal('privacy')}>Privacy & care</button>{' '}
+            <a href="/credits.html" target="_blank" rel="noreferrer">
+              Image credits
+            </a>
           </span>
         </footer>
       </div>

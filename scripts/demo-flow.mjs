@@ -31,7 +31,7 @@ async function context() {
   const ctx = await browser.newContext({
     viewport: { width: 1280, height: 720 },
     acceptDownloads: true,
-    reducedMotion: 'reduce',
+    reducedMotion: 'no-preference',
     ...(!rehearsal
       ? { recordVideo: { dir: path.join(work, 'raw'), size: { width: 1280, height: 720 } } }
       : {}),
@@ -56,7 +56,7 @@ async function discover(page, stage) {
 }
 async function ready(page, label) {
   await page.goto(origin);
-  await page.waitForFunction(() => !document.querySelector('.home-copy button')?.disabled);
+  await page.waitForFunction(() => !document.querySelector('.shore-dock button')?.disabled);
   await page.evaluate(() => document.fonts.ready);
   assert.match(await page.locator('.sandbox-banner').innerText(), /AI checks are off/);
   await discover(page, label + ' / home');
@@ -112,6 +112,22 @@ async function type(page, text) {
   else await box.pressSequentially(text, { delay: 35 });
   await wait(700);
 }
+async function shake(page, label) {
+  await page.waitForFunction(() => !document.querySelector('.bottle-grip')?.disabled);
+  await page.locator('.bottle-grip').scrollIntoViewIfNeeded();
+  const box = await page.locator('.bottle-grip').boundingBox();
+  const x = box.x + box.width / 2,
+    y = box.y + box.height / 2;
+  await page.mouse.move(x, y, { steps: 15 });
+  await page.mouse.down();
+  for (const dx of [65, -65, 65, -65, 65]) {
+    await page.waitForTimeout(120);
+    await page.mouse.move(x + dx, y);
+  }
+  await page.mouse.up();
+  steps.push(label);
+  await wait(1200);
+}
 const button = (page, name) => page.getByRole('button', { name, exact: true });
 let success = false;
 try {
@@ -127,13 +143,18 @@ try {
   const A = await context();
   await ready(A.page, 'Step 1 · Write six words');
   await wait(2500);
-  await click(A.page, button(A.page, 'Write my six words'), 'A starts a round');
+  await shake(A.page, 'A shakes the bottle to start a round');
   await type(A.page, 'I taught the octopus insider trading.');
   await click(A.page, button(A.page, 'Toss my bottle'), 'A tosses a setup');
   await button(A.page, 'Catch a bottle').waitFor();
   await caption(A.page, 'Step 2 · Catch another writer’s setup');
   await discover(A.page, 'catch / approved setup is waiting');
-  await click(A.page, button(A.page, 'Catch a bottle'), 'A catches B’s setup');
+  await shake(A.page, 'A shakes the bottle to catch B’s setup');
+  await click(
+    A.page,
+    A.page.getByRole('button', { name: 'Open bottle', exact: false }),
+    'A unfolds the note over the sea',
+  );
   await A.page.getByText('I challenged their shark to poker.', { exact: true }).waitFor();
   await discover(A.page, 'reply / assignment and editable ending');
   await wait(2200);

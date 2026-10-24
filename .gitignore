@@ -6,3 +6,5 @@ dist/
 .spacetime/
 test-results/
 playwright-report/
+docs/evidence/shore-video/
+docs/evidence/shore-video.webm
