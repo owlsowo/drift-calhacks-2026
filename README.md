@@ -4,6 +4,8 @@
 
 [Play the deployed game](https://drift-game.drift-calhacks-2026-owlsowo.workers.dev/) · [Submission video draft and provenance](docs/video-handoff.md) · [Figma / Mana workflow artifacts](docs/workflow-checkpoint.md)
 
+[Judge handoff and local source snapshot](docs/judge-handoff.md) · [Current track/submission checklist](docs/submission-checklist.md)
+
 Shake to catch another writer’s beginning, add a six-word ending and keep the shared postcard. Then optionally toss your own beginning for the next person. A write-first route is also available. Your completed postcard appears immediately; its original author receives it live. The production design supports human-written team starters when peer inventory is empty. Current fallback lines are clearly labeled development samples; production will not silently use them. AI guidance never writes either creative line.
 
 ## Current status

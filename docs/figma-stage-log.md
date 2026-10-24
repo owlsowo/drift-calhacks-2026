@@ -25,4 +25,4 @@ Codex edited React/CSS in the existing repository; Figma Make generated the sepa
 - [Live game](https://drift-game.drift-calhacks-2026-owlsowo.workers.dev)
 - [Working code / private repository](https://github.com/owlsowo/drift-calhacks-2026)
 
-Education verification was visible in Figma. File sharing is Anyone/can view. The prototype is not published to Figma Community: the free plan required a separate Creator Agreement for that publication. It is available through file sharing. The final <=3-minute video and embedding these files in the actual Devpost submission remain to do.
+Education verification was visible in Figma. File sharing is Anyone/can view. The prototype is not published to Figma Community: the free plan required a separate Creator Agreement for that publication. It is available through file sharing. A 2:31 video draft with actual workflow screenshots is now complete for team review; upload and embedding the files in the actual Devpost submission remain. See `docs/video-handoff.md`.
