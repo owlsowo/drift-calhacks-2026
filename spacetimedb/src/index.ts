@@ -7,7 +7,7 @@ import {
   type ReducerCtx,
   type ProcedureCtx,
 } from 'spacetimedb/server';
-import { TimeDuration, type Infer } from 'spacetimedb';
+import { TimeDuration, ScheduleAt, type Infer } from 'spacetimedb';
 import {
   validateLine,
   normalize,
@@ -137,8 +137,29 @@ const reportResolution = table(
     resolvedMs: t.f64(),
   },
 );
+const maintenance = table(
+  { name: 'maintenance' },
+  { id: t.u64().primaryKey(), scheduledAt: t.scheduleAt() },
+);
+const shorePass = table(
+  { name: 'shore_pass' },
+  { owner: t.identity().primaryKey(), expiresMs: t.f64() },
+);
 const db = schema(
-  { round, bottle, postcard, authorship, request, report, config, today, hello, reportResolution },
+  {
+    round,
+    bottle,
+    postcard,
+    authorship,
+    request,
+    report,
+    config,
+    today,
+    hello,
+    reportResolution,
+    maintenance,
+    shorePass,
+  },
   {
     env: {
       ANTHROPIC_API_KEY: t.option(t.string()),
@@ -149,6 +170,8 @@ const db = schema(
       DRIFT_HELLO_ENABLED: t.option(t.string()),
       DRIFT_MEETING_SPOT: t.option(t.string()),
       DRIFT_MEETING_SPOT_VERIFIED: t.option(t.string()),
+      DRIFT_TURNSTILE_SECRET: t.option(t.string()),
+      DRIFT_TURNSTILE_HOSTNAME: t.option(t.string()),
     },
   },
 );
@@ -185,6 +208,11 @@ function currentClaim(ctx: Tx, r: Round) {
 function ready(ctx: Tx) {
   const c = ctx.db.config.id.find(0)!;
   if (c.paused) fail('The tide is taking a short break. Your draft is saved.');
+  if (
+    ctx.env.DRIFT_TURNSTILE_SECRET &&
+    (ctx.db.shorePass.owner.find(ctx.sender)?.expiresMs ?? 0) <= now(ctx)
+  )
+    fail('Your shore check expired. Verify again to keep the bottles human.');
   return c;
 }
 function admin(ctx: Tx) {
@@ -208,6 +236,8 @@ function promptJson(day: number) {
   return JSON.stringify(publicPrompt);
 }
 function refresh(ctx: Tx) {
+  if (!ctx.db.maintenance.id.find(0n))
+    ctx.db.maintenance.insert({ id: 0n, scheduledAt: ScheduleAt.interval(3600_000_000n) });
   const day = dayOf(now(ctx));
   const old = ctx.db.today.id.find(0);
   if (old?.day === day) return;
@@ -268,6 +298,39 @@ export const start_round = db.reducer((ctx) => {
 const response = t.row('ActionResult', { ok: t.bool(), message: t.string(), hint: t.string() });
 type Result = { ok: boolean; message: string; hint: string };
 const result = (ok: boolean, message = '', hint = ''): Result => ({ ok, message, hint });
+export const verify_shore = db.procedure({ token: t.string() }, response, (ctx, { token }) => {
+  const secret = ctx.env.DRIFT_TURNSTILE_SECRET;
+  if (!secret) return result(true);
+  if (ctx.withTx((tx) => (tx.db.shorePass.owner.find(tx.sender)?.expiresMs ?? 0) > now(tx)))
+    return result(true);
+  if (!token || token.length > 2048)
+    return result(false, 'Couldn’t verify this shore check. Try again.');
+  try {
+    const answer = ctx.http.fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      timeout: TimeDuration.fromMillis(10000),
+      body: JSON.stringify({ secret, response: token }),
+    });
+    if (!answer.ok) return result(false, 'Couldn’t verify this shore check. Try again.');
+    const data = JSON.parse(answer.text());
+    if (
+      data.success !== true ||
+      data.action !== 'drift' ||
+      !ctx.env.DRIFT_TURNSTILE_HOSTNAME ||
+      data.hostname !== ctx.env.DRIFT_TURNSTILE_HOSTNAME
+    )
+      return result(false, 'Couldn’t verify this shore check. Try again.');
+    return ctx.withTx((tx) => {
+      const pass = { owner: tx.sender, expiresMs: now(tx) + 3600000 };
+      if (tx.db.shorePass.owner.find(tx.sender)) tx.db.shorePass.owner.update(pass);
+      else tx.db.shorePass.insert(pass);
+      return result(true);
+    });
+  } catch {
+    return result(false, 'Couldn’t verify this shore check. Try again.');
+  }
+});
 
 function callClaude(ctx: Proc, kind: 'moderation' | 'nudge', payload: object): any {
   const key = ctx.env.ANTHROPIC_API_KEY;
@@ -904,8 +967,7 @@ export const resolve_report = db.reducer(
     else ctx.db.reportResolution.insert(row);
   },
 );
-export const purge_old_data = db.reducer((ctx) => {
-  admin(ctx);
+function purgeExpired(ctx: Tx) {
   const cutoff = now(ctx) - 30 * 86400000;
   for (const c of ctx.db.postcard.iter())
     if (c.createdMs < cutoff) {
@@ -924,7 +986,29 @@ export const purge_old_data = db.reducer((ctx) => {
     }
   for (const r of ctx.db.round.iter())
     if (r.day < dayOf(now(ctx)) - 30) ctx.db.round.id.delete(r.id);
+  // Hidden cards have already lost their public row. Clean these mappings too.
+  for (const a of ctx.db.authorship.iter())
+    if (!ctx.db.postcard.id.find(a.id)) {
+      ctx.db.authorship.id.delete(a.id);
+      ctx.db.hello.cardId.delete(a.id);
+    }
+  for (const h of ctx.db.hello.iter())
+    if (h.expiresMs <= now(ctx)) ctx.db.hello.cardId.delete(h.cardId);
+  for (const pass of ctx.db.shorePass.iter())
+    if (pass.expiresMs <= now(ctx)) ctx.db.shorePass.owner.delete(pass.owner);
+}
+export const purge_old_data = db.reducer((ctx) => {
+  admin(ctx);
+  purgeExpired(ctx);
 });
+export const maintenance_tick = db.reducer(
+  { onSchedule: maintenance },
+  { arg: maintenance.rowType },
+  (ctx) => {
+    purgeExpired(ctx);
+    refresh(ctx);
+  },
+);
 
 export const my_round = db.view(
   { name: 'my_round', public: true },
@@ -994,6 +1078,7 @@ const status = t.row('ServiceInfo', {
   sandbox: t.bool(),
   aiReady: t.bool(),
   helloEnabled: t.bool(),
+  botRequired: t.bool(),
 });
 export const service_status = db.anonymousView(
   { name: 'service_status', public: true },
@@ -1007,6 +1092,7 @@ export const service_status = db.anonymousView(
         sandbox: ctx.env.DRIFT_DEV_MODE === 'true',
         aiReady: !!ctx.env.ANTHROPIC_API_KEY,
         helloEnabled: helloEnabled(ctx.env),
+        botRequired: !!ctx.env.DRIFT_TURNSTILE_SECRET,
       },
     ];
   },
