@@ -3,7 +3,7 @@
   "targetViewports": ["360x800", "1440x1000", "390x844"],
   "accessibility": {
     "status": "pass",
-    "evidence": "Updated ui-smoke.json records zero automated WCAG A/AA violations across home, empty collection, reply, reveal, hello, shared/hidden cards, collection and sample reveal. accessibility.json checks the writing form and help dialog at both primary viewports. Keyboard focus containment/restoration and reduced motion pass; shore-interactions.json checks keyboard Enter, pointer shaking and synthetic mobile permission denial/grant. No physical-phone or assistive-technology user study."
+    "evidence": "Updated ui-smoke.json records zero automated WCAG A/AA violations across home, empty collection, reply, reveal, hello, shared/hidden cards, collection and sample reveal. accessibility.json checks the writing form and help dialog at both primary viewports. Keyboard focus containment/restoration and reduced motion pass; shore-interactions.json checks keyboard Enter, pointer shaking and synthetic mobile permission denial/grant. No physical-phone or assistive-technology user study. Updated motion checks compare actual sea pixels before/after pause, verify reduced-motion stillness and a synthetic hidden-tab event, and exercise the no-WebGL CSS fallback. The paper opens as one connected mesh; keyboard focus transfers from Open bottle to the readable heading."
   },
   "responsive": {
     "status": "pass",
@@ -129,7 +129,7 @@
     {
       "viewport": "1440x1000",
       "artifact": "paper-unfolding.png",
-      "observation": "Rendered intermediate animation shows the crumpled ball releasing into a textured sheet; content stays inert until the opening finishes."
+      "observation": "One continuous textured mesh opens from a compact crumple. Creases loosen unevenly, edges spread, and content remains inert until the sheet settles. No disconnected square pieces."
     },
     {
       "viewport": "1440x1000",
@@ -150,6 +150,16 @@
       "viewport": "1440x1000",
       "artifact": "shore-catch-error.png",
       "observation": "Catch transport failure stays on the sea with visible recoverable feedback; the next deliberate shake succeeds."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "paper-relaxing.png",
+      "observation": "Later animation frame shows one opening sheet with diminishing creases and uneven edges over the sea."
+    },
+    {
+      "viewport": "1280x720",
+      "artifact": "motion-fallback.png",
+      "observation": "With WebGL deliberately unavailable, the original sea photograph and CSS paper opening leave the writing flow usable."
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-24T19:44:12.968Z",
+  "checkedAt": "2026-10-24T20:09:07.393Z",
   "environment": "isolated local SpacetimeDB sandbox",
   "aiChecks": false,
   "syntheticWriters": true,
@@ -28,5 +28,6 @@
   ],
   "errors": [],
   "artifact": "drift-local-demo.mp4",
-  "imageCredits": "docs/asset-sources.md and the in-app Image credits page list the human-made photographs, authors and Creative Commons licenses."
+  "imageCredits": "See docs/asset-sources.md and the in-app Image credits page for human-made photographic sources and licenses.",
+  "motion": "Native water ripples under a fixed horizon and one continuous creased paper mesh. The recording captures the actual browser rendering."
 }
