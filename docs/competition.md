@@ -27,6 +27,10 @@ Confirmed published sources disagree: the organizer guide includes Anthropic, Sp
 
 Do not add finance, payments, web scraping, an extra database, or a runtime coding agent merely to claim more integrations. The current project has no essential role for those services. Gemini is conditional on a distinct useful feature, rather than duplicate moderation.
 
+Rechecked October 24 around 04:20 PDT: the organizer guide and Figma brief retain their previously recorded modification times. The public rules page adds conduct requirements but does not resolve entry limits or stacking. The shortlist remains unchanged.
+
+Additional routes reviewed: Microsoft asks for a production-minded AI agent with customer understanding and measurable usefulness; the current social game is a weak competitive fit without changing its purpose. Fetch’s [event hackpack](https://www.fetch.ai/events/hackathons/calhacks-13-0/hackpack) requires an Agentverse/ACP workflow fully usable inside ASI:One and a public repository. That conflicts with the requested private repository and custom game experience. Snowflake would duplicate the existing model role. None is a default addition.
+
 ## Sources
 
 - [Organizer guide](https://docs.google.com/document/d/1RQrueC9wm5u8uxtWSC2gadIchp05hVayhGUrIjxT9dE/edit)

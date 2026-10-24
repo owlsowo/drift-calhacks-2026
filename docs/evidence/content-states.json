@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-24T11:04:27.275Z",
+  "checkedAt": "2026-10-24T11:16:02.968Z",
   "mode": "isolated local sandbox; synthetic fault injection",
   "evidence": [
     {
@@ -27,6 +27,12 @@
       "observation": "Restored subscription resumes the same identity and draft; a new submission completes after reconnection."
     },
     {
+      "viewport": "360x800",
+      "state": "storage-unavailable",
+      "artifact": "storage-unavailable-360x800.png",
+      "observation": "Blocked browser storage is named honestly; draft and immutable request metadata remain in memory within the current tab."
+    },
+    {
       "viewport": "1440x1000",
       "state": "loading",
       "artifact": "loading-1440x1000.png",
@@ -49,6 +55,12 @@
       "state": "reconnected",
       "artifact": "reconnected-1440x1000.png",
       "observation": "Restored subscription resumes the same identity and draft; a new submission completes after reconnection."
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "storage-unavailable",
+      "artifact": "storage-unavailable-1440x1000.png",
+      "observation": "Blocked browser storage is named honestly; draft and immutable request metadata remain in memory within the current tab."
     }
   ]
 }

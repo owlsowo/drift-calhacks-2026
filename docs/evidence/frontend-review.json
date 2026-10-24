@@ -23,7 +23,7 @@
     },
     "error": {
       "status": "pass",
-      "evidence": "error-360x800.png and error-1440x1000.png: authoritative owner pause rejects a valid submission; draft remains. Offline captures separately show editable text with disabled submission."
+      "evidence": "error-360x800.png and error-1440x1000.png: authoritative owner pause rejects a valid submission; draft remains. Offline captures separately show editable text with disabled submission. Blocked-storage captures name the loss-of-reload guarantee while the draft and request metadata remain usable in the current tab."
     },
     "partial": {
       "status": "pass",
@@ -108,6 +108,16 @@
       "viewport": "1440x1000",
       "artifact": "offline-1440x1000.png",
       "observation": "Reconnection status remains visible with the saved draft."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "storage-unavailable-360x800.png",
+      "observation": "Storage failures are visible and the draft label says kept in this tab; in-memory request metadata survives another read and submission works."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "storage-unavailable-1440x1000.png",
+      "observation": "Storage failures are visible and the draft label says kept in this tab; in-memory request metadata survives another read and submission works."
     }
   ]
 }

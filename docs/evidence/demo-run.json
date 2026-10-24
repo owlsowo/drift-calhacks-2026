@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-24T11:13:01.527Z",
+  "environment": "isolated local SpacetimeDB sandbox",
+  "aiChecks": false,
+  "syntheticWriters": true,
+  "authoredVia": "browser UI automation",
+  "inputLines": [
+    "I challenged their shark to poker.",
+    "I taught the octopus insider trading.",
+    "Our lawyers would like another hand."
+  ],
+  "preparation": "Writer B contributed a setup before Writer A\u2019s clip began.",
+  "edit": "Writer A\u2019s flow followed by Writer B\u2019s overlapping live-return view from the same run. No generated application frames or model outputs.",
+  "steps": [
+    "B starts a round",
+    "Focus editable six-word line",
+    "B tosses a setup",
+    "A starts a round",
+    "Focus editable six-word line",
+    "A tosses a setup",
+    "A catches B\u2019s setup",
+    "Focus editable six-word line",
+    "A seals the canonical postcard",
+    "A downloads the real postcard image",
+    "B opens the live returned postcard",
+    "B reads the same canonical postcard"
+  ],
+  "errors": [],
+  "artifact": "local-sandbox-demo.mp4"
+}

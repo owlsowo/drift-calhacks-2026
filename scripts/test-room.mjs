@@ -4,7 +4,7 @@ import net from 'node:net';
 const root = path.resolve(new URL('../', import.meta.url).pathname);
 process.chdir(root);
 const mode = process.argv[2] || 'ui';
-if (!['ui', 'a11y', 'live', 'states'].includes(mode)) throw Error('Unknown test mode.');
+if (!['ui', 'a11y', 'live', 'states', 'demo'].includes(mode)) throw Error('Unknown test mode.');
 const room = `drift-test-${mode}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 const env = {
   ...process.env,
@@ -69,9 +69,15 @@ try {
         ? 'accessibility.mjs'
         : mode === 'states'
           ? 'content-states.mjs'
-          : 'live-invariants.ts';
+          : mode === 'demo'
+            ? 'demo-flow.mjs'
+            : 'live-invariants.ts';
   const runner = mode === 'live' ? ['--import', 'tsx', `scripts/${file}`] : [`scripts/${file}`];
-  const child = spawn(process.execPath, runner, { cwd: root, env, stdio: 'inherit' });
+  const child = spawn(process.execPath, [...runner, ...process.argv.slice(3)], {
+    cwd: root,
+    env,
+    stdio: 'inherit',
+  });
   const code = await new Promise((resolve) => child.once('exit', resolve));
   if (code !== 0) process.exitCode = Number(code) || 1;
 } finally {

@@ -11,3 +11,5 @@ The moderation set includes harmless fictional absurdity, contact details, targe
 The nudge set checks grounding inputs and mechanical constraints. Automated validation cannot establish that a hint is helpful or never effectively writes an ending. Read each output and record useful/not useful, grounded/not grounded, and answer-writing/not answer-writing in the result's manual-review fields. Compare candidate models on the same cases before changing defaults.
 
 Never describe dry runs, mock HTTP tests, or unreviewed output as successful live model evaluation.
+
+Use `--kind nudge --limit 14` to run only the 14 nudge cases, or `--ids nudge-1,nudge-injection --limit 2` for a named subset. Dry runs print the exact selected IDs before spending. Filters do not raise the lifetime cap. To compare Haiku and Sonnet, run the same nudge subset with `NUDGE_MODEL=claude-haiku-5-5` and `NUDGE_MODEL=claude-sonnet-5-5`; keep each output and inspect both against the same criteria. Labels and model outputs still need review, and repeated calls may vary.
