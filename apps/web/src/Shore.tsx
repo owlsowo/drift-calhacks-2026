@@ -92,6 +92,7 @@ export function Shore({
   onCollection,
   count,
   returnedCount = 0,
+  empty = false,
   hasOutgoing = true,
   headingRef,
 }: {
@@ -105,10 +106,15 @@ export function Shore({
   onCollection: () => void;
   count: number;
   returnedCount?: number;
+  empty?: boolean;
   hasOutgoing?: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
 }) {
   const grip = useRef<HTMLButtonElement>(null);
+  const emptyHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (empty) emptyHeading.current?.focus();
+  }, [empty]);
   const meter = useRef(new ShakeMeter());
   const pointer = useRef<
     { id: number; x: number; y: number; anchorX: number; anchorY: number } | undefined
@@ -232,7 +238,7 @@ export function Shore({
   }
   return (
     <section
-      className={`shore shore-${mode} ${dragging ? 'is-grabbed' : ''} ${busy ? 'is-searching' : ''}`}
+      className={`shore shore-${mode} ${empty ? 'shore-empty' : ''} ${dragging ? 'is-grabbed' : ''} ${busy ? 'is-searching' : ''}`}
       aria-label={mode === 'catch' ? 'Catch a bottle on the moonlit shore' : 'Drift bottle shore'}
     >
       <div className="shore-heading">
@@ -247,7 +253,28 @@ export function Shore({
             : 'A little daily nonsense from someone else.'}
         </p>
       </div>
-      {mode === 'home' && (
+      {empty && (
+        <div className="quiet-tide-note">
+          <div role="status">
+            <h2 ref={emptyHeading} tabIndex={-1}>
+              The water is quiet.
+            </h2>
+            <p>No bottles just now. Leave six words for the next stranger.</p>
+          </div>
+          <div className="quiet-tide-actions">
+            {!(mode === 'catch' && hasOutgoing) && (
+              <button disabled={disabled} onClick={() => void onWrite()}>
+                Toss a beginning
+              </button>
+            )}
+            <button disabled={disabled} onClick={() => void activate()}>
+              Try again
+            </button>
+          </div>
+          {mode === 'catch' && hasOutgoing && <small>Your beginning is safe on the tide.</small>}
+        </div>
+      )}
+      {mode === 'home' && !empty && (
         <div className="shore-prompt">
           <span>Today’s beginning</span>
           <p>{prompt?.setup || 'A little story is washing ashore…'}</p>
@@ -383,6 +410,18 @@ export function Shore({
                 stroke="#e1e7d8"
               />
               <path d="M16 42v15m16-14v16m16-17v15" stroke="#5f7b7d" />
+              {returnedCount > 0 && (
+                <g className="returned-seal">
+                  <path d="m35 14-3 15 6-3 4 5 1-17" fill="#ae4e3f" />
+                  <circle cx="38" cy="13" r="7" fill="#a9473a" stroke="#eac1a2" />
+                  <path
+                    d="M36 10h2a3 3 0 0 1 0 6h-2z"
+                    stroke="#fff0cb"
+                    strokeWidth="1.3"
+                    fill="none"
+                  />
+                </g>
+              )}
             </svg>
             {count > 0 && <b>{count}</b>}
           </span>

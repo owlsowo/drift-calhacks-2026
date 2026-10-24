@@ -1,4 +1,5 @@
 import { messages, modelRequest, parseModelResponse } from '../../packages/ai-contracts/index';
+import { teamStartersFor } from '../../packages/starter-content/index';
 import {
   schema,
   table,
@@ -625,11 +626,13 @@ function assign(ctx: Tx, r: Round) {
       !excluded.has(b.id),
   );
   if (!found) {
-    const humanWritten = ctx.env.DRIFT_STARTERS_HUMAN_WRITTEN === 'true';
+    const approved =
+      ctx.env.DRIFT_STARTERS_HUMAN_WRITTEN === 'true' ? teamStartersFor(r.promptId) : [];
+    const humanWritten = approved.length > 0;
     if (!humanWritten && ctx.env.DRIFT_DEV_MODE !== 'true')
       fail('No bottles are available just now. Your setup is safe; try again later.');
     const prompt = promptForDay(r.day);
-    const available = prompt.starters
+    const available = (humanWritten ? approved : prompt.starters)
       .map((text, index) => ({ text, index }))
       .filter((s) => !excluded.has('seed:' + s.index));
     if (!available.length)
@@ -1021,12 +1024,19 @@ export const purge_old_data = db.reducer((ctx) => {
   admin(ctx);
   purgeExpired(ctx);
 });
-export const retire_bottle = db.reducer({bottleId:t.string()},(ctx,{bottleId})=> {
+export const retire_bottle = db.reducer({ bottleId: t.string() }, (ctx, { bottleId }) => {
   admin(ctx);
-  const b=ctx.db.bottle.id.find(bottleId);
-  if(!b)return;
-  if(b.cardId)fail('Only unpublished bottles can be retired.');
-  ctx.db.bottle.id.update({...b,hidden:true,text:'',claimRound:'',claimUntil:0,claimVersion:b.claimVersion+1});
+  const b = ctx.db.bottle.id.find(bottleId);
+  if (!b) return;
+  if (b.cardId) fail('Only unpublished bottles can be retired.');
+  ctx.db.bottle.id.update({
+    ...b,
+    hidden: true,
+    text: '',
+    claimRound: '',
+    claimUntil: 0,
+    claimVersion: b.claimVersion + 1,
+  });
 });
 export const maintenance_tick = db.reducer(
   { onSchedule: maintenance },
@@ -1094,7 +1104,7 @@ export const my_outgoing = db.view(
     const rows = [];
     for (const r of ctx.db.round.owner.filter(ctx.sender)) {
       const b = ctx.db.bottle.id.find(r.setupId);
-      if (b&&!b.hidden) rows.push({ id: b.id, text: b.text, cardId: b.cardId, day: b.day });
+      if (b && !b.hidden) rows.push({ id: b.id, text: b.text, cardId: b.cardId, day: b.day });
     }
     return rows;
   },

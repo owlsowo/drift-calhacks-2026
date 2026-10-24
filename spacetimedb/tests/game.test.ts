@@ -75,13 +75,16 @@ beforeEach(() => {
   tx(owner, (c) => module.init(c, {}));
 });
 describe('authoritative game state', () => {
-  it('only the owner can retire an unpublished bottle and revoke an in-progress claim',()=> {
-    start(A);setup(A);const bottleId=active(A).setupId;
-    tx(B,c=>module.start_catching(c,{}));
-    expect(()=>tx(C,c=>module.retire_bottle(c,{bottleId}))).toThrow(/owner/);
-    tx(owner,c=>module.retire_bottle(c,{bottleId}));
+  it('only the owner can retire an unpublished bottle and revoke an in-progress claim', () => {
+    start(A);
+    setup(A);
+    const bottleId = active(A).setupId;
+    tx(B, (c) => module.start_catching(c, {}));
+    expect(() => tx(C, (c) => module.retire_bottle(c, { bottleId }))).toThrow(/owner/);
+    tx(owner, (c) => module.retire_bottle(c, { bottleId }));
     expect(module.my_outgoing(h.viewContext(A))).toHaveLength(0);
-    expect(claim(B)).toBeUndefined();expect(reply(B).ok).toBe(false);
+    expect(claim(B)).toBeUndefined();
+    expect(reply(B).ok).toBe(false);
     expect([...h.db.postcard.iter()]).toHaveLength(0);
   });
   it('catch-first gives a real postcard before inviting the same round to toss a beginning', () => {
@@ -682,12 +685,14 @@ describe('starter provenance', () => {
     expect(active(A).stage).toBe('catch');
     expect(h.db.bottle.id.find(active(A).setupId)).not.toBeNull();
   });
-  it('uses the team label only after explicit owner attestation', () => {
+  it('an environment attestation cannot relabel bundled development samples as human', () => {
     start(A);
     setup(A);
     delete env.DRIFT_DEV_MODE;
     env.DRIFT_STARTERS_HUMAN_WRITTEN = 'true';
+    expect(() => catchBottle(A)).toThrow(/No bottles are available/);
+    env.DRIFT_DEV_MODE = 'true';
     catchBottle(A);
-    expect(claim(A).starterKind).toBe('team');
+    expect(claim(A).starterKind).toBe('sample');
   });
 });
