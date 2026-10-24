@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-24T23:34:24.250Z",
+  "sourceCommit": "86683ac7982f7ada2ab566412c94e29e21881736",
+  "cloudflareVersion": "4ddc210d-893a-4c17-88a5-08f11874b64a",
+  "assets": [
+    {
+      "asset": "/assets/index-DHb7Yf1t.js",
+      "sha256": "cdea56fbb4f62b746c26e3058063b6d08aaa386ec37fef75d96fe785e2938747",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-vCrLh-ZA.css",
+      "sha256": "80106dde88c09b297efe281af967e8596cd82e9fd99200a5e11d9e0cc4d269db",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend-only returned-story notice and catch-first help. No backend migration or paid calls. 22 local Chrome checks and nine WebKit checks use synthetic inputs; no attendee/physical-phone claim."
+}

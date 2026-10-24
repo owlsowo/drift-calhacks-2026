@@ -37,6 +37,8 @@ Packaging is local only. It does not upload code, grant judge access or make the
 
 The first verified snapshot is `drift-source-7b51ca3.zip`: 159 files, 572,127 bytes, pinned to `7b51ca32c477becc48c923e239deffe50a603109`. It passed fresh npm installs for both packages, the frontend build, server typecheck and an actual Spacetime module build after extraction with no env files. `docs/evidence/source-snapshot.json` records the commands, results and archive hash. No model call or database publish was needed. A separate local 6 MB team review pack includes the source ZIP plus the video, poster, captions and writeups; its checks cover local links, media/source hashes and ZIP integrity. Neither ZIP is uploaded by this checkpoint.
 
+The current product snapshot is `drift-source-86683ac.zip`, pinned to `86683ac7982f7ada2ab566412c94e29e21881736`: 170 files, 593,053 bytes, including private activity diagnostics, daily UI polish and the return notice. It also passed fresh root/server installs, frontend build, server typecheck and actual Spacetime module build with no env files or publishing. `docs/evidence/return-source-snapshot.json` records the hash and checks. Earlier bundles remain historical snapshots; do not describe them as the latest product source.
+
 ## Evidence limits and remaining team work
 
 The recorded gameplay uses synthetic identities in a local sandbox with AI off. Real hosted Claude evidence is separately labeled. Evaluation labels and coaching judgments are synthetic/agent-reviewed; no attendee pilot, independent moderation-quality study or measured social benefit is established. Desktop WebKit with an iPhone viewport does not verify physical phones, motion sensors, mobile keyboards or OS share sheets.
