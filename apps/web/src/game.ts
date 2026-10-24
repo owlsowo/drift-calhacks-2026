@@ -14,6 +14,7 @@ export type Snapshot = {
   connecting: boolean;
   error: string;
   identity: string;
+  clockOffsetMs: number;
   rounds: Round[];
   assignments: Assignment[];
   ownership: OwnedCard[];
@@ -29,6 +30,7 @@ const blank: Snapshot = {
   connecting: true,
   error: '',
   identity: '',
+  clockOffsetMs: 0,
   rounds: [],
   assignments: [],
   ownership: [],
@@ -86,6 +88,16 @@ function schedule() {
     emit();
   });
 }
+async function syncClock(conn: DbConnection) {
+  const start = Date.now();
+  try {
+    const server = await conn.procedures.serverTime({});
+    const offset = server - (start + Date.now()) / 2;
+    if (connection === conn && conn.isActive) emit({ clockOffsetMs: offset });
+  } catch {
+    /* The server still enforces all deadlines if clock synchronization fails. */
+  }
+}
 function connect() {
   if (connection) return;
   connection = DbConnection.builder()
@@ -132,10 +144,17 @@ function connect() {
           'SELECT * FROM my_hello',
           'SELECT * FROM my_reported_cards',
         ]);
+      void syncClock(conn);
     })
     .onAutomaticReconnect((_conn, identity, token) => {
       persist(tokenKey, token);
-      emit({ identity: identity.toHexString(), connected: true, connecting: false, error: '' });
+      emit({
+        identity: identity.toHexString(),
+        connected: false,
+        connecting: true,
+        error: 'Restoring your bottle…',
+      });
+      if (connection) void syncClock(connection);
     })
     .onConnectError(() =>
       emit({
@@ -181,7 +200,8 @@ export const game = {
     await connection.reducers.startRound({});
   },
   async refresh() {
-    if (connection?.isActive) await connection.reducers.refreshDay({});
+    if (connection?.isActive)
+      await Promise.all([connection.reducers.refreshDay({}), syncClock(connection)]);
   },
   async claim(roundId: string) {
     await connection!.reducers.claimBottle({ roundId });

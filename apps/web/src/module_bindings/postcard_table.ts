@@ -17,4 +17,5 @@ export default __t.row({
   reply: __t.string(),
   seeded: __t.bool(),
   createdMs: __t.f64().name("created_ms"),
+  starterKind: __t.string().name("starter_kind"),
 });

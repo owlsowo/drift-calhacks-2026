@@ -17,7 +17,38 @@ const [action, ...extra] = process.argv.slice(2);
 mkdirSync('.spacetime', { recursive: true });
 let args = [];
 const env = { ...process.env };
-if (action === 'publish-local') {
+if (['publish-test', 'delete-test', 'pause-test', 'resume-test'].includes(action)) {
+  const name = extra[0];
+  if (!/^drift-test-[a-z0-9-]+$/.test(name || ''))
+    throw Error('Test databases must use the drift-test- namespace.');
+  env.ANTHROPIC_API_KEY = '';
+  env.DRIFT_DEV_MODE = 'true';
+  env.DRIFT_STARTERS_HUMAN_WRITTEN = 'false';
+  env.DRIFT_HELLO_ENABLED = env.DRIFT_TEST_HELLO === 'true' ? 'true' : 'false';
+  env.DRIFT_MEETING_SPOT = 'Synthetic test meeting point — not an event location';
+  env.DRIFT_MEETING_SPOT_VERIFIED = env.DRIFT_TEST_HELLO === 'true' ? 'true' : 'false';
+  args =
+    action === 'pause-test' || action === 'resume-test'
+      ? [
+          'call',
+          name,
+          'set_pause',
+          action === 'pause-test' ? 'true' : 'false',
+          '--server',
+          'http://127.0.0.1:3000',
+        ]
+      : action === 'publish-test'
+        ? [
+            'publish',
+            name,
+            '--server',
+            'http://127.0.0.1:3000',
+            '--module-path',
+            'spacetimedb',
+            '--yes=skip-login',
+          ]
+        : ['delete', name, '--server', 'http://127.0.0.1:3000', '--yes'];
+} else if (action === 'publish-local') {
   env.DRIFT_DEV_MODE = env.ANTHROPIC_API_KEY ? 'false' : 'true';
   args = [
     'publish',
@@ -49,12 +80,17 @@ else if (action === 'publish') {
 // Keep the account's default CLI login for authenticated hosted publishing.
 // Local identity/config stays in the task workspace when using the bundled CLI.
 const localConfig = path.resolve(root, '../work/spacetime-cli/cli.toml');
-const config =
-  action === 'publish-local'
-    ? [
-        '--config-path',
-        existsSync(localConfig) ? localConfig : path.resolve(root, '.spacetime/cli.toml'),
-      ]
-    : [];
+const config = [
+  'publish-local',
+  'publish-test',
+  'delete-test',
+  'pause-test',
+  'resume-test',
+].includes(action)
+  ? [
+      '--config-path',
+      existsSync(localConfig) ? localConfig : path.resolve(root, '.spacetime/cli.toml'),
+    ]
+  : [];
 const child = spawnSync(executable, [...config, ...args], { stdio: 'inherit', env });
 process.exit(child.status ?? 1);

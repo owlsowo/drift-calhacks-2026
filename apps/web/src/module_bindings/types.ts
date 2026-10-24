@@ -17,12 +17,23 @@ export const ActionResult = __t.object("ActionResult", {
 });
 export type ActionResult = __Infer<typeof ActionResult>;
 
+export const AdminStatusInfo = __t.object("AdminStatusInfo", {
+  dispatches: __t.u32(),
+  cap: __t.u32(),
+  paused: __t.bool(),
+  openReports: __t.u32(),
+  reviewSubmissions: __t.u32(),
+  failedModelCalls: __t.u32(),
+});
+export type AdminStatusInfo = __Infer<typeof AdminStatusInfo>;
+
 export const Assignment = __t.object("Assignment", {
   id: __t.string(),
   text: __t.string(),
   seeded: __t.bool(),
   leaseMs: __t.f64(),
   roundId: __t.string(),
+  starterKind: __t.string(),
 });
 export type Assignment = __Infer<typeof Assignment>;
 
@@ -47,6 +58,7 @@ export const Bottle = __t.object("Bottle", {
   claimUntil: __t.f64(),
   cardId: __t.string(),
   hidden: __t.bool(),
+  starterKind: __t.string(),
 });
 export type Bottle = __Infer<typeof Bottle>;
 
@@ -124,6 +136,7 @@ export const Postcard = __t.object("Postcard", {
   reply: __t.string(),
   seeded: __t.bool(),
   createdMs: __t.f64(),
+  starterKind: __t.string(),
 });
 export type Postcard = __Infer<typeof Postcard>;
 
@@ -135,6 +148,21 @@ export const Report = __t.object("Report", {
   createdMs: __t.f64(),
 });
 export type Report = __Infer<typeof Report>;
+
+export const ReportQueueItem = __t.object("ReportQueueItem", {
+  id: __t.string(),
+  reason: __t.string(),
+  content: __t.string(),
+  createdMs: __t.f64(),
+});
+export type ReportQueueItem = __Infer<typeof ReportQueueItem>;
+
+export const ReportResolution = __t.object("ReportResolution", {
+  reportId: __t.string(),
+  decision: __t.string(),
+  resolvedMs: __t.f64(),
+});
+export type ReportResolution = __Infer<typeof ReportResolution>;
 
 export const ReportedCard = __t.object("ReportedCard", {
   id: __t.string(),

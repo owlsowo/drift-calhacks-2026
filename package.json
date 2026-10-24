@@ -6,16 +6,17 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "db:publish:local": "node scripts/spacetime.mjs publish-local",
     "db:publish": "node scripts/spacetime.mjs publish",
     "db:generate": "node scripts/spacetime.mjs generate",
-    "test:ui": "node scripts/ui-smoke.mjs",
+    "test:ui": "node scripts/test-room.mjs ui",
     "test:server": "vitest run",
-    "test:a11y": "node scripts/accessibility.mjs",
+    "test:a11y": "node scripts/test-room.mjs a11y",
     "eval:models": "tsx scripts/eval-models.ts",
-    "test:live": "tsx scripts/live-invariants.ts"
+    "test:live": "node scripts/test-room.mjs live",
+    "test:states": "node scripts/test-room.mjs states"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",

@@ -13,7 +13,7 @@ try {
       reducedMotion: 'reduce',
     });
     const page = await context.newPage();
-    await page.goto('http://localhost:5173');
+    await page.goto(process.env.DRIFT_WEB_URL || 'http://localhost:5173');
     await page.waitForFunction(() => !document.querySelector('.home-copy button')?.disabled);
     await page.evaluate(() => document.fonts.ready);
     for (const state of ['home', 'how', 'write']) {

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { words, validateLine, PROMPTS, dayOf } from './index.ts';
-test('all human-reviewed event content meets the same six-word rule', () => {
+test('configured examples and development starters meet the same six-word rule', () => {
   for (const p of PROMPTS)
     for (const s of [p.exampleSetup, p.exampleReply, ...p.starters])
       assert.equal(validateLine(s), null, s);

@@ -63,7 +63,7 @@ try {
   );
   await Promise.all(writers.map((c) => c.connection.reducers.startRound({})));
   await Promise.all(writers.map((c) => waitFor(() => !!ownRound(c))));
-  await Promise.all(
+  const setupResults = await Promise.all(
     writers.map((c, i) =>
       c.connection.procedures.submitSetup({
         roundId: ownRound(c).id,
@@ -71,6 +71,9 @@ try {
         text: `I gave octopus ${i} tax advice.`,
       }),
     ),
+  );
+  setupResults.forEach((response, i) =>
+    assert.equal(response.ok, true, `Writer ${i}: ${response.message}`),
   );
   await Promise.all(writers.map((c) => waitFor(() => ownRound(c).stage === 'catch')));
   await Promise.all(
@@ -95,7 +98,16 @@ try {
   );
   assert.equal(ownRound(first).id, ownRound(twin).id);
   pass('Two concurrent tabs sharing an identity resume exactly one active round');
-  for (const name of ['round', 'bottle', 'request', 'report', 'authorship', 'hello', 'config']) {
+  for (const name of [
+    'round',
+    'bottle',
+    'request',
+    'report',
+    'report_resolution',
+    'authorship',
+    'hello',
+    'config',
+  ]) {
     const denied = await new Promise<boolean>((resolve, reject) => {
       const timer = setTimeout(() => reject(Error('Private table probe timed out: ' + name)), 8000);
       first.connection

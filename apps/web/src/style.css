@@ -713,12 +713,12 @@ a {
   align-items: center;
 }
 .caught-note .eyebrow {
-  font-size: 8px;
-  color: #617558;
+  font-size: 9px;
+  color: #43563c;
 }
 .lease {
-  font-size: 9px;
-  color: #6f7f62;
+  font-size: 10px;
+  color: #43563c;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1572,11 +1572,11 @@ a {
     margin-bottom: 10px;
   }
   .caught-note .eyebrow {
-    font-size: 6.5px;
+    font-size: 9px;
     letter-spacing: 0.1em;
   }
   .caught-note .lease {
-    font-size: 8px;
+    font-size: 10px;
   }
   .caught-note p {
     font-size: 23px;
@@ -1947,4 +1947,61 @@ a {
   width: 1px;
   height: 1px;
   opacity: 0;
+}
+
+@media (max-width: 740px) {
+  .reveal-layout {
+    gap: 0;
+  }
+  .reveal-copy {
+    display: contents;
+  }
+  .reveal-copy > .eyebrow {
+    order: 0;
+  }
+  .reveal-copy > h1 {
+    order: 1;
+  }
+  .reveal-copy > p {
+    order: 2;
+  }
+  .reveal-art {
+    order: 3;
+    grid-row: auto;
+    margin-bottom: 25px;
+  }
+  .reveal-copy > .share-actions {
+    order: 4;
+    margin-top: 0;
+  }
+  .reveal-copy > .card-management {
+    order: 5;
+    margin-top: 8px;
+  }
+  .reveal-copy > .hello-panel {
+    order: 6;
+  }
+  .reveal-copy > .return-note {
+    order: 7;
+    margin-top: 20px;
+  }
+  .reveal-copy > .back-link {
+    order: 8;
+  }
+}
+
+@media (max-width: 740px) {
+  .card-management button,
+  .text-button {
+    min-height: 44px;
+  }
+  .icon-button.help {
+    width: 44px;
+    height: 44px;
+  }
+  .word-rules summary {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+  }
 }

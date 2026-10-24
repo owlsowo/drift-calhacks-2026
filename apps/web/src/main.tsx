@@ -30,6 +30,7 @@ import { words, dayOf, type Prompt, type Card } from '../../../packages/game-rul
 import { savePng, shareCard, cardText, copyText } from './export';
 import './style.css';
 import { HelloPanel } from './HelloPanel';
+import { friendlyError } from './errors';
 
 function Bottle({ small = false }: { small?: boolean }) {
   return (
@@ -110,6 +111,7 @@ function Postcard({
     <article
       className={`postcard ${example ? 'example-card' : ''}`}
       aria-label={example ? 'Example postcard' : 'Your completed postcard'}
+      data-card-id={card.id}
     >
       <div className="postcard-top">
         <span className="eyebrow">{example ? 'A LITTLE EXAMPLE' : 'A LITTLE STORY, TOGETHER'}</span>
@@ -130,7 +132,9 @@ function Postcard({
         <span className="eyebrow">
           01 /{' '}
           {card.seeded
-            ? 'THE DRIFT TEAM’S SETUP'
+            ? card.starterKind === 'team'
+              ? 'THE DRIFT TEAM’S SETUP'
+              : 'A SAMPLE STARTER'
             : role === 'setup'
               ? 'YOUR SETUP'
               : 'A STRANGER’S SETUP'}
@@ -150,7 +154,11 @@ function Postcard({
         <p>{card.reply}</p>
       </div>
       <div className="postcard-bottom">
-        <span>TWO PEOPLE. TWELVE WORDS.</span>
+        <span>
+          {card.seeded && card.starterKind !== 'team'
+            ? 'A SAMPLE BEGINNING. YOUR ENDING.'
+            : 'TWO PEOPLE. TWELVE WORDS.'}
+        </span>
         <span className="card-wave">∿∿∿</span>
       </div>
     </article>
@@ -167,8 +175,18 @@ function Modal({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    ref.current?.showModal();
-    return () => ref.current?.close();
+    const dialog = ref.current;
+    const trigger = document.activeElement as HTMLElement | null;
+    dialog?.showModal();
+    return () => {
+      dialog?.close();
+      requestAnimationFrame(() => {
+        const destination = trigger?.isConnected
+          ? trigger
+          : document.querySelector<HTMLElement>('main h1');
+        destination?.focus();
+      });
+    };
   }, []);
   return (
     <dialog
@@ -213,8 +231,10 @@ function App() {
   const assignment = s.assignments.find((a) => a.roundId === active?.id);
   const mine = s.ownership
     .filter((o) => !o.hidden)
-    .map((o) => ({ card: s.cards.find((c) => c.id === o.id), role: o.role }))
-    .filter((x): x is { card: Card; role: string } => !!x.card)
+    .flatMap((o) => {
+      const card = s.cards.find((c) => c.id === o.id);
+      return card ? [{ card, role: o.role }] : [];
+    })
     .sort((a, b) => b.card.createdMs - a.card.createdMs);
   const card = s.cards.find((c) => c.id === selected && !s.reported.some((r) => r.id === c.id));
   const ownership = s.ownership.find((o) => o.id === selected);
@@ -227,13 +247,17 @@ function App() {
   const stampedToday = s.rounds.some((r) => r.day === nowDay && !!r.cardId);
   const stampedDays = new Set(s.rounds.filter((r) => !!r.cardId).map((r) => r.day)).size;
   const waiting = s.outgoing.filter((o) => !o.cardId && o.day === nowDay);
-  const remaining = active ? Math.max(0, Math.ceil((active.leaseMs - clock) / 1000)) : 0;
+  const remaining = active
+    ? Math.max(0, Math.min(600, Math.ceil((active.leaseMs - clock) / 1000)))
+    : 0;
   const checksExhausted =
     active && (active.stage === 'write' ? active.setupAttempts : active.replyAttempts) >= 3;
   useEffect(() => {
-    const t = setInterval(() => setClock(Date.now()), 1000);
+    const update = () => setClock(Date.now() + s.clockOffsetMs);
+    update();
+    const t = setInterval(update, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [s.clockOffsetMs]);
   useEffect(() => {
     setDraft(currentDraftKey ? saved(currentDraftKey) : '');
     setError('');
@@ -251,15 +275,6 @@ function App() {
     }
   }, []);
   useEffect(() => {
-    if (view !== 'play') return;
-    const done = s.rounds.find((r) => r.stage === 'done' && r.cardId && r.cardId === reveal);
-    if (done) {
-      setSelected(done.cardId);
-      setView('card');
-      setReveal('');
-    }
-  }, [s.rounds, view, reveal]);
-  useEffect(() => {
     heading.current?.focus();
   }, [view, active?.stage]);
   const changeDraft = (value: string) => {
@@ -274,7 +289,7 @@ function App() {
     try {
       await fn();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went adrift. Your draft is saved.');
+      setError(friendlyError(e));
     } finally {
       setBusy('');
     }
@@ -282,6 +297,7 @@ function App() {
   async function begin() {
     await run('Opening your bottle…', async () => {
       await game.start();
+      setReveal('');
       setView('play');
     });
   }
@@ -290,7 +306,19 @@ function App() {
     await run(
       active.stage === 'write' ? 'Checking your six words…' : 'Sealing your postcard…',
       async () => {
-        await game.paid(active.stage === 'write' ? 'setup' : 'reply', active.id, draft);
+        if (active.stage === 'reply') setReveal('pending:' + active.id);
+        try {
+          await game.paid(active.stage === 'write' ? 'setup' : 'reply', active.id, draft);
+        } catch (error) {
+          const completed = game.snapshot().rounds.find((r) => r.id === active.id)?.cardId;
+          if (active.stage === 'reply' && completed) {
+            setSelected(completed);
+            setView('card');
+            setError('');
+            return;
+          }
+          throw error;
+        }
         if (active.stage === 'reply') {
           // Find by live state, because procedure and subscription may arrive in either order.
           const find = () => game.snapshot().rounds.find((r) => r.id === active.id)?.cardId;
@@ -306,14 +334,15 @@ function App() {
     );
   }
   useEffect(() => {
-    if (!reveal.startsWith('pending:')) return;
+    if (view !== 'play' || !reveal.startsWith('pending:')) return;
     const round = s.rounds.find((r) => r.id === reveal.slice(8));
     if (round?.cardId) {
       setSelected(round.cardId);
       setView('card');
       setReveal('');
+      setError('');
     }
-  }, [s.rounds, reveal]);
+  }, [s.rounds, reveal, view]);
   const controlsDisabled = !!busy || !s.connected;
   const todayNumber = String((s.today?.day ?? nowDay) - 20749).padStart(2, '0');
   const example: Card = {
@@ -377,7 +406,7 @@ function App() {
             LOCAL SANDBOX <span>•</span>{' '}
             {s.service.aiReady
               ? 'Claude checks configured'
-              : 'AI checks are off. Team starters are labeled.'}
+              : 'AI checks are off. Sample fixtures are labeled.'}
           </div>
         )}
         {!s.connected && (
@@ -442,8 +471,8 @@ function App() {
                     )}
                   </button>
                   <p className="microcopy">
-                    About 2 minutes <span>·</span> No profile needed <span>·</span> Both lines by
-                    humans
+                    About 2 minutes <span>·</span> No profile needed <span>·</span>{' '}
+                    {s.service?.sandbox ? 'Sample starters are labeled' : 'Both lines by humans'}
                   </p>
                 </section>
                 <section className="home-art" aria-label="Example of a finished story">
@@ -557,7 +586,8 @@ function App() {
                       )}
                     </button>
                     <p className="microcopy">
-                      If the sea is quiet, a labeled team starter keeps you playing.
+                      A labeled starter may help on a quiet tide. If none is available, your setup
+                      stays safe.
                     </p>
                   </div>
                 ) : (
@@ -580,7 +610,9 @@ function App() {
                         <div>
                           <span className="eyebrow">
                             {assignment.seeded
-                              ? 'WRITTEN BY THE DRIFT TEAM'
+                              ? assignment.starterKind === 'team'
+                                ? 'WRITTEN BY THE DRIFT TEAM'
+                                : 'SAMPLE STARTER · DEVELOPMENT FIXTURE'
                               : 'WRITTEN BY ANOTHER WRITER'}
                           </span>
                           <span className={`lease ${remaining < 60 ? 'urgent' : ''}`}>
@@ -771,17 +803,20 @@ function App() {
                 </span>
                 <h1 ref={heading} tabIndex={-1}>
                   {card ? (
-                    ownership ? (
+                    card.seeded && card.starterKind !== 'team' ? (
+                      <>
+                        A little beginning.
+                        <br /> <em>A new ending.</em>
+                      </>
+                    ) : ownership ? (
                       <>
                         Well, look what
-                        <br />
-                        <em>we made.</em>
+                        <br /> <em>we made.</em>
                       </>
                     ) : (
                       <>
                         Two strangers.
-                        <br />
-                        <em>One little story.</em>
+                        <br /> <em>One little story.</em>
                       </>
                     )
                   ) : !s.connected ? (
@@ -792,9 +827,11 @@ function App() {
                 </h1>
                 <p>
                   {card
-                    ? ownership
-                      ? 'Two little lines. One story that belongs to both of you.'
-                      : 'Six words from each writer. A tiny collaboration, shared with you.'
+                    ? card.seeded && card.starterKind !== 'team'
+                      ? 'A development sample, finished with your own six words.'
+                      : ownership
+                        ? 'Two little lines. One story that belongs to both of you.'
+                        : 'Six words from each writer. A tiny collaboration, shared with you.'
                     : !s.connected
                       ? 'Opening this postcard. Your connection needs a moment.'
                       : 'It may have been hidden by an author, or the link may be incomplete.'}
@@ -897,7 +934,9 @@ function App() {
                   <div className="human-seal">
                     <span>✓</span>{' '}
                     {card.seeded
-                      ? 'A team-written beginning. A human ending.'
+                      ? card.starterKind === 'team'
+                        ? 'A team-written beginning. A human ending.'
+                        : 'A sample beginning. A writer’s ending.'
                       : 'Made by two humans. Kept by both.'}
                   </div>
                   {ownership?.role === 'reply' && (
@@ -999,7 +1038,8 @@ function App() {
             </li>
             <li>
               <strong>Finish another bottle.</strong> Catch someone else’s setup and add a six-word
-              ending. A team-written starter helps when the sea is quiet.
+              ending. A labeled starter may help when the sea is quiet. Samples are marked in the
+              sandbox.
             </li>
             <li>
               <strong>Keep the postcard.</strong> Save or share what you made. Someone may finish
@@ -1007,8 +1047,10 @@ function App() {
             </li>
           </ol>
           <p>
-            Up to three rounds a day. One skip each round. Both creative lines are always
-            human-written.
+            Up to three rounds a day. One skip each round.{' '}
+            {s.service?.sandbox
+              ? 'Sample starters are for development.'
+              : 'Both creative lines are human-written.'}
           </p>
           <button className="button primary" onClick={() => setModal(null)}>
             I’m in <ArrowRight size={18} />
@@ -1036,7 +1078,7 @@ function App() {
             scheduled.
           </p>
           <p>
-            AI guidance is optional and stays separate from your words. Team starters are always
+            AI guidance is optional and stays separate from your words. Starter content is always
             labeled.
           </p>
         </Modal>
@@ -1096,7 +1138,7 @@ function App() {
                       reason,
                     );
                     setModal(null);
-                    if (view === 'card') setView('collection');
+                    if (view === 'card' && ownership) setView('collection');
                     setToast('Reported. Thank you for looking out.');
                   })
                 }

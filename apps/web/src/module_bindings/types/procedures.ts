@@ -6,15 +6,24 @@
 import { type Infer as __Infer } from "spacetimedb";
 
 // Import all procedure arg schemas
+import * as AdminReportsProcedure from "../admin_reports_procedure";
+import * as AdminStatusProcedure from "../admin_status_procedure";
 import * as GetHelloProcedure from "../get_hello_procedure";
 import * as RequestNudgeProcedure from "../request_nudge_procedure";
+import * as ServerTimeProcedure from "../server_time_procedure";
 import * as SubmitReplyProcedure from "../submit_reply_procedure";
 import * as SubmitSetupProcedure from "../submit_setup_procedure";
 
+export type AdminReportsArgs = __Infer<typeof AdminReportsProcedure.params>;
+export type AdminReportsResult = __Infer<typeof AdminReportsProcedure.returnType>;
+export type AdminStatusArgs = __Infer<typeof AdminStatusProcedure.params>;
+export type AdminStatusResult = __Infer<typeof AdminStatusProcedure.returnType>;
 export type GetHelloArgs = __Infer<typeof GetHelloProcedure.params>;
 export type GetHelloResult = __Infer<typeof GetHelloProcedure.returnType>;
 export type RequestNudgeArgs = __Infer<typeof RequestNudgeProcedure.params>;
 export type RequestNudgeResult = __Infer<typeof RequestNudgeProcedure.returnType>;
+export type ServerTimeArgs = __Infer<typeof ServerTimeProcedure.params>;
+export type ServerTimeResult = __Infer<typeof ServerTimeProcedure.returnType>;
 export type SubmitReplyArgs = __Infer<typeof SubmitReplyProcedure.params>;
 export type SubmitReplyResult = __Infer<typeof SubmitReplyProcedure.returnType>;
 export type SubmitSetupArgs = __Infer<typeof SubmitSetupProcedure.params>;
