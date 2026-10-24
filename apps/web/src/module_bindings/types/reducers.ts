@@ -13,10 +13,12 @@ import PurgeOldDataReducer from "../purge_old_data_reducer";
 import RefreshDayReducer from "../refresh_day_reducer";
 import ReportContentReducer from "../report_content_reducer";
 import ResolveReportReducer from "../resolve_report_reducer";
+import RetireBottleReducer from "../retire_bottle_reducer";
 import SetDispatchCapReducer from "../set_dispatch_cap_reducer";
 import SetHelloIntentReducer from "../set_hello_intent_reducer";
 import SetPauseReducer from "../set_pause_reducer";
 import SkipBottleReducer from "../skip_bottle_reducer";
+import StartCatchingReducer from "../start_catching_reducer";
 import StartRoundReducer from "../start_round_reducer";
 
 export type AbandonRoundParams = __Infer<typeof AbandonRoundReducer>;
@@ -26,9 +28,11 @@ export type PurgeOldDataParams = __Infer<typeof PurgeOldDataReducer>;
 export type RefreshDayParams = __Infer<typeof RefreshDayReducer>;
 export type ReportContentParams = __Infer<typeof ReportContentReducer>;
 export type ResolveReportParams = __Infer<typeof ResolveReportReducer>;
+export type RetireBottleParams = __Infer<typeof RetireBottleReducer>;
 export type SetDispatchCapParams = __Infer<typeof SetDispatchCapReducer>;
 export type SetHelloIntentParams = __Infer<typeof SetHelloIntentReducer>;
 export type SetPauseParams = __Infer<typeof SetPauseReducer>;
 export type SkipBottleParams = __Infer<typeof SkipBottleReducer>;
+export type StartCatchingParams = __Infer<typeof StartCatchingReducer>;
 export type StartRoundParams = __Infer<typeof StartRoundReducer>;
 

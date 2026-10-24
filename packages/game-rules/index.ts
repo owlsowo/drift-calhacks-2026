@@ -56,9 +56,73 @@ export const PROMPTS = [
       'Our navigation system only speaks poetry.',
     ],
   },
+  {
+    id: 'lecture',
+    title: 'Attendance, spiritually',
+    scene: 'Present in body. Elsewhere in spirit.',
+    setup: 'Why did you miss the lecture?',
+    reply: 'Write the attendance office’s six-word response.',
+    exampleSetup: 'Lecture started. My brain stayed home.',
+    exampleReply: 'Attendance recorded. Consciousness remains completely optional.',
+    starters: [
+      'Lecture started. My brain stayed home.',
+      'My professor accidentally assigned us happiness.',
+    ],
+  },
+  {
+    id: 'roommate',
+    title: 'A note on the fridge',
+    scene: 'The apartment has some concerns.',
+    setup: 'What has your roommate done now?',
+    reply: 'Write the roommate’s six-word defense.',
+    exampleSetup: 'My roommate keeps microwaving the forks.',
+    exampleReply: 'Management regrets promoting him to chef.',
+    starters: [
+      'My roommate keeps microwaving the forks.',
+      'Our refrigerator keeps reviewing my choices.',
+    ],
+  },
+  {
+    id: 'sleep',
+    title: 'Negotiating with your alarm',
+    scene: 'The snooze button has unionized.',
+    setup: 'Why did your sleep schedule resign?',
+    reply: 'Write its six-word resignation notice.',
+    exampleSetup: 'My alarm clock joined a union.',
+    exampleReply: 'Negotiations resume after my third coffee.',
+    starters: ['My alarm clock joined a union.', 'My pillow has rejected my resignation.'],
+  },
+  {
+    id: 'cafeteria',
+    title: 'Today’s very special soup',
+    scene: 'Please do not feed the lunch.',
+    setup: 'What went wrong at the cafeteria?',
+    reply: 'Write the chef’s six-word explanation.',
+    exampleSetup: 'The cafeteria soup looked at me.',
+    exampleReply: 'Please stop making eye contact, sir.',
+    starters: [
+      'The cafeteria soup looked at me.',
+      'Their vending machine accepted emotional damages.',
+    ],
+  },
+  {
+    id: 'groupchat',
+    title: 'This could have been a message',
+    scene: 'The group project is going wonderfully.',
+    setup: 'What happened in the group chat?',
+    reply: 'Write the team leader’s six-word announcement.',
+    exampleSetup: 'Our group chat elected the printer.',
+    exampleReply: 'It has already requested another extension.',
+    starters: [
+      'Our group chat elected the printer.',
+      'Our shared document developed trust issues.',
+    ],
+  },
 ] as const;
 export function promptForDay(day: number) {
-  return PROMPTS[((day % 2) + 2) % 2];
+  const anchor = dayOf(Date.parse('2026-10-24T00:00:00Z'));
+  const index = (((day - anchor) % PROMPTS.length) + PROMPTS.length) % PROMPTS.length;
+  return PROMPTS[index];
 }
 export type Prompt = (typeof PROMPTS)[number];
 export type Card = {

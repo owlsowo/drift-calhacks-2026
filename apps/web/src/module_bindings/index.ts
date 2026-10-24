@@ -41,10 +41,12 @@ import PurgeOldDataReducer from "./purge_old_data_reducer";
 import RefreshDayReducer from "./refresh_day_reducer";
 import ReportContentReducer from "./report_content_reducer";
 import ResolveReportReducer from "./resolve_report_reducer";
+import RetireBottleReducer from "./retire_bottle_reducer";
 import SetDispatchCapReducer from "./set_dispatch_cap_reducer";
 import SetHelloIntentReducer from "./set_hello_intent_reducer";
 import SetPauseReducer from "./set_pause_reducer";
 import SkipBottleReducer from "./skip_bottle_reducer";
+import StartCatchingReducer from "./start_catching_reducer";
 import StartRoundReducer from "./start_round_reducer";
 
 // Import all procedure arg schemas
@@ -154,10 +156,12 @@ const reducersSchema = __reducers(
   __reducerSchema("refresh_day", RefreshDayReducer),
   __reducerSchema("report_content", ReportContentReducer),
   __reducerSchema("resolve_report", ResolveReportReducer),
+  __reducerSchema("retire_bottle", RetireBottleReducer),
   __reducerSchema("set_dispatch_cap", SetDispatchCapReducer),
   __reducerSchema("set_hello_intent", SetHelloIntentReducer),
   __reducerSchema("set_pause", SetPauseReducer),
   __reducerSchema("skip_bottle", SkipBottleReducer),
+  __reducerSchema("start_catching", StartCatchingReducer),
   __reducerSchema("start_round", StartRoundReducer),
 );
 

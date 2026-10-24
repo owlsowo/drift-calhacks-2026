@@ -97,13 +97,13 @@ try {
   await shake(page, [25, 50, 75, 100, 125]);
   assert.equal(await page.locator('.shore-home').count(), 1);
   pass('Single-direction cursor movement does not activate a bottle');
-  await shake(page);
+  await page.getByRole('button', { name: 'Write my six words', exact: true }).click();
   await page.locator('.paper-open textarea').waitFor();
   const roundCount = await page.evaluate(
     async () => (await import('/src/game.ts')).game.snapshot().rounds.length,
   );
   assert.equal(roundCount, 1);
-  pass('Deliberate cursor shaking starts one round');
+  pass('Write-first remains available alongside the new catch-first entry');
   await page.getByRole('textbox').fill('I taught the octopus insider trading.');
   await page.getByRole('button', { name: 'Toss my bottle', exact: true }).click();
   await page.getByRole('button', { name: 'Catch a bottle', exact: true }).waitFor();
@@ -191,6 +191,7 @@ try {
   await phone.getByRole('button', { name: 'Turn phone shake off', exact: true }).waitFor();
   await screen(phone, 'phone-motion-enabled.png');
   await phoneShake(phone);
+  await phone.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await phone.getByRole('textbox').waitFor();
   assert.equal(await phone.locator('.paper-unfolding').count(), 0);
   await phoneShake(phone);
@@ -198,6 +199,9 @@ try {
     await phone.evaluate(async () => (await import('/src/game.ts')).game.snapshot().rounds.length),
     1,
   );
+  await phone.getByRole('textbox').fill('Your account has been permanently frozen.');
+  await phone.getByRole('button', { name: 'Seal our postcard', exact: true }).click();
+  await phone.getByRole('button', { name: 'Toss my own bottle', exact: true }).click();
   await phone.getByRole('textbox').fill('I challenged their shark to poker.');
   await phone.getByRole('button', { name: 'Toss my bottle', exact: true }).click();
   await phone.getByRole('button', { name: 'Turn phone shake off', exact: true }).waitFor();
@@ -214,9 +218,7 @@ try {
   const keyboard = await browser.newContext({ reducedMotion: 'reduce' });
   const keyPage = await keyboard.newPage();
   await ready(keyPage);
-  await keyPage
-    .getByRole('button', { name: 'Shake the bottle to start writing', exact: true })
-    .focus();
+  await keyPage.getByRole('button', { name: 'Write my six words', exact: true }).focus();
   await keyPage.keyboard.press('Enter');
   await keyPage.getByRole('textbox').waitFor();
   await keyPage.getByRole('textbox').fill('I taught the octopus insider trading.');

@@ -91,6 +91,8 @@ export function Shore({
   onWrite,
   onCollection,
   count,
+  returnedCount = 0,
+  hasOutgoing = true,
   headingRef,
 }: {
   mode: 'home' | 'catch';
@@ -102,6 +104,8 @@ export function Shore({
   onWrite: () => Promise<unknown>;
   onCollection: () => void;
   count: number;
+  returnedCount?: number;
+  hasOutgoing?: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
 }) {
   const grip = useRef<HTMLButtonElement>(null);
@@ -237,8 +241,10 @@ export function Shore({
         </h1>
         <p>
           {mode === 'catch'
-            ? 'Your beginning is on its way. Catch someone else’s.'
-            : 'Six words from you. Six from a stranger.'}
+            ? hasOutgoing
+              ? 'Your beginning is on its way. Catch someone else’s.'
+              : 'A different little beginning is out there.'
+            : 'A little daily nonsense from someone else.'}
         </p>
       </div>
       {mode === 'home' && (
@@ -260,7 +266,7 @@ export function Shore({
         aria-label={
           mode === 'catch'
             ? 'Shake the bottle to catch a story'
-            : 'Shake the bottle to start writing'
+            : 'Shake the bottle to catch a story'
         }
         disabled={disabled}
         onPointerDown={down}
@@ -314,12 +320,18 @@ export function Shore({
         <button
           className={`dock-action ${mode === 'home' ? 'dock-primary' : ''}`}
           onClick={() => void onWrite()}
-          disabled={disabled || mode === 'catch'}
+          disabled={disabled || (mode === 'catch' && hasOutgoing)}
         >
           <span className="dock-object">
             <GlassBottle small />
           </span>
-          <span>{mode === 'home' ? actionLabel : 'Your beginning is sent'}</span>
+          <span>
+            {mode === 'home'
+              ? actionLabel
+              : hasOutgoing
+                ? 'Your beginning is sent'
+                : 'Toss a bottle instead'}
+          </span>
         </button>
         <button
           className={`dock-action ${mode === 'catch' ? 'dock-primary' : ''}`}
@@ -347,9 +359,12 @@ export function Shore({
               <ellipse cx="32" cy="7" rx="4" ry="3" fill="#f9edac" />
             </svg>
           </span>
-          <span>{mode === 'catch' ? 'Catch a bottle' : 'Shake to begin'}</span>
+          <span>{mode === 'catch' ? 'Catch a bottle' : 'Pick up a bottle'}</span>
         </button>
-        <button className="dock-action" onClick={onCollection}>
+        <button
+          className={`dock-action ${returnedCount ? 'dock-returned' : ''}`}
+          onClick={onCollection}
+        >
           <span className="dock-object">
             <svg viewBox="0 0 64 64" aria-hidden="true">
               <g fill="#b5d9ca" stroke="#e0e9cd">
@@ -371,13 +386,13 @@ export function Shore({
             </svg>
             {count > 0 && <b>{count}</b>}
           </span>
-          <span>View my postcards</span>
+          <span>{returnedCount ? 'Your bottle came back' : 'View my postcards'}</span>
         </button>
       </div>
       <p className="shore-fine-print">
         {mode === 'catch'
-          ? 'A labeled starter may help on a quiet tide. Your own setup stays safe.'
-          : 'Write a beginning, catch another, then keep your postcard.'}{' '}
+          ? 'No bottle yet? Try again, or leave a beginning of your own.'
+          : 'Catch a beginning. Add six words. Leave a bottle for someone else.'}{' '}
         Buttons and keyboard work too.
       </p>
     </section>

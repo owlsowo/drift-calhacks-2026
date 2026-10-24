@@ -254,6 +254,9 @@ function App() {
   const stampedToday = s.rounds.some((r) => r.day === nowDay && !!r.cardId);
   const stampedDays = new Set(s.rounds.filter((r) => !!r.cardId).map((r) => r.day)).size;
   const waiting = s.outgoing.filter((o) => !o.cardId && o.day === nowDay);
+  const returnedToday = mine.filter(
+    (o) => o.role === 'setup' && dayOf(o.card.createdMs) === nowDay,
+  ).length;
   const remaining = active
     ? Math.max(0, Math.min(600, Math.ceil((active.leaseMs - clock) / 1000)))
     : 0;
@@ -309,6 +312,13 @@ function App() {
       setView('play');
     });
   }
+  async function beginCatch() {
+    await run('Finding a bottle…', async () => {
+      await game.startCatching();
+      setReveal('');
+      setView('play');
+    });
+  }
   async function submit() {
     if (!active) return;
     await run(
@@ -337,6 +347,9 @@ function App() {
           } else {
             setReveal('pending:' + active.id);
           }
+        } else if (active.cardId) {
+          setView('today');
+          setToast('Your bottle is out at sea.');
         }
       },
     );
@@ -449,10 +462,11 @@ function App() {
                       ? 'Write another little story'
                       : 'Write my six words'
               }
-              onAction={begin}
+              onAction={beginCatch}
               onWrite={begin}
               onCollection={() => setView('collection')}
               count={mine.length}
+              returnedCount={returnedToday}
               headingRef={heading}
             />
           )}
@@ -463,20 +477,39 @@ function App() {
                 <h2>{prompt.title}</h2>
                 <p>{prompt.scene}</p>
                 <ol className="steps">
-                  <li className={active?.stage === 'write' ? 'current' : 'complete'}>
-                    <span>{active?.stage === 'write' ? '1' : <Check size={15} />}</span>Your six
-                    words
-                  </li>
-                  <li
-                    className={
-                      active?.stage === 'catch' || active?.stage === 'reply' ? 'current' : ''
-                    }
-                  >
-                    <span>2</span>Their story, your ending
-                  </li>
-                  <li>
-                    <span>3</span>A postcard, together
-                  </li>
+                  {active && !active.setupId && (active.stage === 'reply' || active.cardId) ? (
+                    <>
+                      <li className="complete">
+                        <span>
+                          <Check size={15} />
+                        </span>
+                        Their beginning
+                      </li>
+                      <li className={active.stage === 'reply' ? 'current' : 'complete'}>
+                        <span>2</span>Your six-word ending
+                      </li>
+                      <li className={active.stage === 'write' ? 'current' : ''}>
+                        <span>3</span>Pass a bottle on
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className={active?.stage === 'write' ? 'current' : 'complete'}>
+                        <span>{active?.stage === 'write' ? '1' : <Check size={15} />}</span>Your six
+                        words
+                      </li>
+                      <li
+                        className={
+                          active?.stage === 'catch' || active?.stage === 'reply' ? 'current' : ''
+                        }
+                      >
+                        <span>2</span>Their story, your ending
+                      </li>
+                      <li>
+                        <span>3</span>A postcard, together
+                      </li>
+                    </>
+                  )}
                 </ol>
                 <div className="margin-note">
                   <Waves size={24} />
@@ -504,6 +537,7 @@ function App() {
                 ) : active.stage === 'catch' ? (
                   <Shore
                     mode="catch"
+                    hasOutgoing={!!active.setupId}
                     prompt={prompt}
                     disabled={controlsDisabled}
                     busy={busy}
@@ -512,6 +546,7 @@ function App() {
                     onWrite={begin}
                     onCollection={() => setView('collection')}
                     count={mine.length}
+                    returnedCount={returnedToday}
                     headingRef={heading}
                   />
                 ) : (
@@ -837,6 +872,30 @@ function App() {
                           : 'Every story is better with another human.'}
                       </p>
                     </div>
+                    {active?.stage === 'write' && active.cardId === card.id && (
+                      <div className="pass-it-on">
+                        <p>A stranger left a beginning for you. Leave one for the next person.</p>
+                        <button
+                          className="button primary"
+                          onClick={begin}
+                          disabled={controlsDisabled}
+                        >
+                          Toss my own bottle <ArrowRight size={17} />
+                        </button>
+                        <button
+                          className="text-button"
+                          disabled={controlsDisabled}
+                          onClick={() =>
+                            run('Keeping your postcard…', async () => {
+                              await game.abandon(active.id);
+                              setView('today');
+                            })
+                          }
+                        >
+                          Keep this story. Maybe later.
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
                 <button className="text-button back-link" onClick={() => setView('today')}>
