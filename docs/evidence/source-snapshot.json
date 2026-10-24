@@ -1,0 +1,70 @@
+{
+  "sourceCommit": "7b51ca32c477becc48c923e239deffe50a603109",
+  "archive": "drift-source-7b51ca3.zip",
+  "bytes": 572127,
+  "sha256": "43b5a10915021eedc9211712af243a5b7337a77ea4629f6a64cae9b0586b64b0",
+  "files": 159,
+  "checks": [
+    "Pinned commit resolved",
+    "Only regular tracked files packaged",
+    "Private/runtime paths excluded or refused",
+    "Credential signature/value scan passed",
+    "Required build/attribution files present",
+    "ZIP CRC and every file hash verified"
+  ],
+  "cleanInstallBuild": {
+    "checkedAt": "2026-10-24T22:45:01.294313+00:00",
+    "passed": true,
+    "scope": "Extracted source ZIP, fresh npm dependencies in both packages, no env files, frontend build, server typecheck and actual Spacetime module build. No model calls or database publishing.",
+    "steps": [
+      {
+        "command": [
+          "npm",
+          "ci"
+        ],
+        "exitCode": 0,
+        "seconds": 2.031
+      },
+      {
+        "command": [
+          "npm",
+          "ci",
+          "--prefix",
+          "spacetimedb"
+        ],
+        "exitCode": 0,
+        "seconds": 0.453
+      },
+      {
+        "command": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "exitCode": 0,
+        "seconds": 1.811
+      },
+      {
+        "command": [
+          "npm",
+          "run",
+          "check:server"
+        ],
+        "exitCode": 0,
+        "seconds": 0.73
+      },
+      {
+        "command": [
+          "node",
+          "scripts/spacetime.mjs",
+          "build",
+          "--module-path",
+          "spacetimedb"
+        ],
+        "exitCode": 0,
+        "seconds": 0.969
+      }
+    ]
+  },
+  "publication": "Local artifact only; private repository visibility unchanged"
+}

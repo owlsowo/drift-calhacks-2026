@@ -35,6 +35,8 @@ Extract the ZIP, run `npm ci` and `npm ci --prefix spacetimedb`, then `npm run b
 
 Packaging is local only. It does not upload code, grant judge access or make the repository public. The team still needs to arrange an approved judge access route and include the GitHub link in its submission.
 
+The first verified snapshot is `drift-source-7b51ca3.zip`: 159 files, 572,127 bytes, pinned to `7b51ca32c477becc48c923e239deffe50a603109`. It passed fresh npm installs for both packages, the frontend build, server typecheck and an actual Spacetime module build after extraction with no env files. `docs/evidence/source-snapshot.json` records the commands, results and archive hash. No model call or database publish was needed. A separate local 6 MB team review pack includes the source ZIP plus the video, poster, captions and writeups; its checks cover local links, media/source hashes and ZIP integrity. Neither ZIP is uploaded by this checkpoint.
+
 ## Evidence limits and remaining team work
 
 The recorded gameplay uses synthetic identities in a local sandbox with AI off. Real hosted Claude evidence is separately labeled. Evaluation labels and coaching judgments are synthetic/agent-reviewed; no attendee pilot, independent moderation-quality study or measured social benefit is established. Desktop WebKit with an iPhone viewport does not verify physical phones, motion sensors, mobile keyboards or OS share sheets.

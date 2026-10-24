@@ -58,6 +58,7 @@ Real-phone checks, independent moderation review and human-written starter prepa
 **Mana:** We used Mana to build Drift Bottle Kitchen, a working app for preparing human-written six-word starters. It tracks seven themes, review progress, validation and export provenance without generating lines or contacting our live game. We exercised an actual draft through Drift's CLI; it validated as a draft and was refused for installation. Mana reports 48 core and 15 UI checks; we separately checked the real input/export gates and removed all synthetic content. It cannot prove authorship or replace moderation; human inventory is still empty.
 
 ## Links
+- Image attribution: real photographs by Vyacheslav Argenberg (CC BY 4.0), Army1987 (CC BY-SA 3.0), and D Sharon Pruitt / Pink Sherbet Photography (CC BY 2.0); [sources, licenses and image changes](https://drift-game.drift-calhacks-2026-owlsowo.workers.dev/credits.html).
 - Live game: https://drift-game.drift-calhacks-2026-owlsowo.workers.dev
 - Private code: https://github.com/owlsowo/drift-calhacks-2026
 - Figma Make: https://www.figma.com/make/4Sk3BHNmaGuxH17B36jAxP/Drift-Bottle-Interaction-Prototype
