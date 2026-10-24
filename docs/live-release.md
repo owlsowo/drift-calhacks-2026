@@ -79,3 +79,13 @@ GitHub CI passed for `86683ac` (run `40143261226`). All 22 Chrome two-writer che
 The new source snapshot `drift-source-86683ac.zip` contains 170 files (593,053 bytes) and passes fresh root/server installs, frontend build, server typecheck and Spacetime module build after extraction without env files. `return-source-snapshot.json` records the pinned source and archive hash. This is a local review artifact; repo privacy and judge access remain separate.
 
 A refreshed local review pack, `drift-review-pack-86683ac.zip` (6,313,708 bytes / 21 files), combines that source snapshot with the existing labeled 2:31 video, current workflow notes and release evidence. Relative Markdown file links, media/source hashes, credential patterns/known values and ZIP integrity passed. `current-review-pack.json` records its hash. The earlier video is explicitly distinguished from tonight's newer UI. Nothing was uploaded or submitted.
+
+## Draft/deadline recovery release
+
+Frontend version `f5c8e71b-aaa6-4a29-a6a9-2468d886394d` deploys `8b98334`. Expiry feedback no longer depends on the assignment panel, earlier local words are recoverable by identity/round without replacing the active draft, and the closed-round view uses photographed paper for contrast. Skipped and closed-round drafts remain copyable, including from memory when browser storage is blocked. Old progress steps are hidden; the fresh-day action catches first. No backend schema/data or provider integration changed.
+
+CI passed (run `40144625518`), as did 57 module tests, 22 Chrome two-writer checks, twelve content-state captures and eight targeted Chrome/WebKit recovery checks. Recovery fixtures explicitly inject the UI clock, lease/withheld-assignment projection and clipboard; the real server transition is separately covered by the module test clock. There is no physical-phone or overnight-wait claim. Both hosted entry assets match the tested build (`draft-recovery-release.json`).
+
+The 605,259-byte / 177-file source snapshot `drift-source-8b98334.zip` passes fresh root/server installs and frontend/server builds after extraction without env files or publishing. `recovery-source-snapshot.json` records its hash. The earlier source/review bundles remain historical checkpoints, while the private GitHub main contains the current code.
+
+The current local team review pack is `drift-review-pack-8b98334.zip`, 6,501,633 bytes / 24 files. It combines the clean-build source snapshot, current recovery notes/screenshots and existing labeled 2:31 video. Source/media hashes, relative Markdown file links, credential scans and ZIP integrity pass; `current-review-pack.json` records the result. Packaging did not upload code, change repo visibility or submit an entry.

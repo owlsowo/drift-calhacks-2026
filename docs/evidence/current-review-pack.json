@@ -1,15 +1,15 @@
 {
-  "sourceCommit": "86683ac7982f7ada2ab566412c94e29e21881736",
-  "archive": "drift-review-pack-86683ac.zip",
-  "bytes": 6313708,
-  "sha256": "8527e018114103e075a513dbae4ec02341fa21af220d87169d853bce38b85027",
-  "files": 21,
+  "sourceCommit": "8b9833408e9971d6e1f0561e2fb1b7b34560ce7d",
+  "archive": "drift-review-pack-8b98334.zip",
+  "bytes": 6501633,
+  "sha256": "14d56c92aad79ca4f565eb1b348bd6cdf50aa3724cf3e6ae7edba36e0aafd57b",
+  "files": 24,
   "checks": [
-    "Source snapshot hash and clean-build result verified",
+    "Pinned source hash and clean-build result verified",
     "Video/edit hashes match original evidence",
-    "All relative Markdown file links resolve",
+    "Relative Markdown file links resolve",
     "Credential signature/value scan passed",
-    "ZIP CRC and all review artifact hashes verified"
+    "ZIP CRC and all review file hashes verified"
   ],
-  "publication": "Local artifact only; nothing uploaded or submitted; repository remains private."
+  "publication": "Local artifact only; repo stays private; nothing uploaded or submitted."
 }
