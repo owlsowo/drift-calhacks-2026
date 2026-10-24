@@ -1,0 +1,477 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { ConnectionId, Timestamp, TimeDuration } from 'spacetimedb';
+import {
+  createModuleTestHarness,
+  TestAuth,
+  TestClock,
+  type TestHttpResponder,
+} from 'spacetimedb/server/test-utils';
+import db, * as module from '../src/index';
+const env: Record<string, string> = { DRIFT_DEV_MODE: 'true' };
+(globalThis as any).__driftTestEnv = env;
+const auth = (id: number) =>
+  TestAuth.fromJwtPayload(
+    JSON.stringify({ iss: 'https://drift.test', sub: String(id), aud: ['drift'] }),
+    new ConnectionId(BigInt(id)),
+  );
+const owner = TestAuth.internal(),
+  A = auth(1),
+  B = auth(2),
+  C = auth(3);
+let h: ReturnType<typeof createModuleTestHarness<typeof db.schemaType>>;
+const clock = () =>
+  new TestClock(new Timestamp(BigInt(Date.parse('2026-10-24T10:00:00Z')) * 1000n));
+const tx = (a: any, fn: (ctx: any) => void) => h.withReducerTx(a, fn);
+const view = (a: any) => module.my_round(h.viewContext(a));
+const active = (a: any) => view(a).find((r) => r.stage !== 'done')!;
+const start = (a: any) => {
+  tx(a, (c) => module.start_round(c, {}));
+  return active(a);
+};
+const setup = (a: any, text = 'I taught the octopus insider trading.') =>
+  module.submit_setup(h.procedureContext(a), {
+    roundId: active(a).id,
+    requestId: crypto.randomUUID(),
+    text,
+  });
+const catchBottle = (a: any) => {
+  const roundId = active(a).id;
+  return tx(a, (c) => module.claim_bottle(c, { roundId }));
+};
+const skip = (a: any) => {
+  const roundId = active(a).id;
+  return tx(a, (c) => module.skip_bottle(c, { roundId }));
+};
+const report = (a: any) => {
+  const roundId = active(a).id;
+  return tx(a, (c) => module.report_content(c, { roundId, cardId: '', reason: 'other' }));
+};
+const claim = (a: any) => module.my_assignment(h.viewContext(a))[0];
+const reply = (
+  a: any,
+  id = crypto.randomUUID(),
+  text = 'Your account has been permanently frozen.',
+) =>
+  module.submit_reply(h.procedureContext(a), {
+    roundId: (active(a) || view(a).at(-1)!).id,
+    requestId: id,
+    text,
+  });
+const modelResponse = (data: object, stopReason = 'end_turn') => ({
+  code: 200,
+  headers: { entries: [] },
+  version: { tag: 'Http11' as const },
+  body: JSON.stringify({
+    stop_reason: stopReason,
+    content: [{ type: 'text', text: JSON.stringify(data) }],
+  }),
+});
+const modelCtx = (a: any, responder: TestHttpResponder<typeof db.schemaType>) =>
+  h.procedureContextBuilder(a).http(responder).build();
+beforeEach(() => {
+  for (const k of Object.keys(env)) delete env[k];
+  env.DRIFT_DEV_MODE = 'true';
+  h = createModuleTestHarness(db, module, { clock: clock(), rngSeed: 71 });
+  tx(owner, (c) => module.init(c, {}));
+});
+describe('authoritative game state', () => {
+  it('resumes the same round, keeps private views scoped, and excludes self assignment', () => {
+    start(A);
+    start(A);
+    expect(view(A)).toHaveLength(1);
+    expect(view(B)).toHaveLength(0);
+    expect(setup(A).ok).toBe(true);
+    catchBottle(A);
+    expect(claim(A).seeded).toBe(true);
+    expect(claim(B)).toBeUndefined();
+    const aid = active(A).id;
+    expect(() => tx(B, (c) => module.claim_bottle(c, { roundId: aid }))).toThrow(/another writer/);
+  });
+  it('two claimants cannot hold the same bottle', () => {
+    for (const a of [A, B, C]) {
+      start(a);
+      setup(a);
+    }
+    catchBottle(A);
+    catchBottle(B);
+    const a = claim(A),
+      b = claim(B);
+    expect(a.id).not.toBe(b.id);
+    expect(a.text).toBeTruthy();
+    expect(b.text).toBeTruthy();
+  });
+  it('publishes a single card and returns it only to its real authors', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B, 'I challenged their shark to poker.');
+    catchBottle(B);
+    const id = crypto.randomUUID();
+    expect(reply(B, id).ok).toBe(true);
+    expect(reply(B, id).ok).toBe(true);
+    expect([...h.db.postcard.iter()]).toHaveLength(1);
+    expect(module.my_cards(h.viewContext(A))).toHaveLength(1);
+    expect(module.my_cards(h.viewContext(B))).toHaveLength(1);
+    expect(module.my_cards(h.viewContext(C))).toHaveLength(0);
+  });
+  it('rejects changed content with a reused request id', () => {
+    start(A);
+    const id = crypto.randomUUID();
+    const args = {
+      roundId: active(A).id,
+      requestId: id,
+      text: 'I taught the octopus insider trading.',
+    };
+    expect(module.submit_setup(h.procedureContext(A), args).ok).toBe(true);
+    expect(() =>
+      module.submit_setup(h.procedureContext(A), {
+        ...args,
+        text: 'I challenged their shark to poker.',
+      }),
+    ).toThrow(/different text/);
+  });
+  it('withholds an expired claim and never renews it across reset', () => {
+    h.clock.set(new Timestamp(BigInt(Date.parse('2026-10-24T23:58:00Z')) * 1000n));
+    start(A);
+    setup(A);
+    catchBottle(A);
+    const deadline = claim(A).leaseMs;
+    h.clock.advance(TimeDuration.fromMillis(180000));
+    tx(A, (c) => module.start_round(c, {}));
+    expect(claim(A).leaseMs).toBe(deadline);
+    h.clock.advance(TimeDuration.fromMillis(8 * 60000));
+    expect(() => reply(A)).toThrow(/drifted on/);
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+  });
+  it('enforces one skip, keeps exclusions, and gives reporting a free release', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    const first = claim(A).id;
+    skip(A);
+    catchBottle(A);
+    expect(claim(A).id).not.toBe(first);
+    expect(() => skip(A)).toThrow(/used your skip/);
+    report(A);
+    expect(active(A).skips).toBe(1);
+    expect(active(A).stage).toBe('catch');
+  });
+  it('restricts hide and pause to authorized callers', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B);
+    catchBottle(B);
+    reply(B);
+    const card = [...h.db.postcard.iter()][0];
+    expect(() => tx(C, (c) => module.hide_my_card(c, { cardId: card.id }))).toThrow(/two authors/);
+    expect(() => tx(C, (c) => module.set_pause(c, { paused: true }))).toThrow(/project owner/);
+    tx(A, (c) => module.hide_my_card(c, { cardId: card.id }));
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+    expect(module.my_cards(h.viewContext(B))[0].hidden).toBe(true);
+  });
+  it('enforces three rounds per day and a global dispatch cap', () => {
+    for (let i = 0; i < 3; i++) {
+      start(A);
+      setup(A);
+      catchBottle(A);
+      reply(A);
+    }
+    expect(() => start(A)).toThrow(/Three little stories/);
+    tx(owner, (c) => {
+      const cfg = c.db.config.id.find(0)!;
+      c.db.config.id.update({ ...cfg, dispatchCap: cfg.dispatches });
+    });
+    start(B);
+    expect(() => setup(B)).toThrow(/allowance/);
+  });
+});
+describe('two-phase model boundary', () => {
+  it('checks the actual combined setup and reply before publication', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B, 'I challenged their shark to poker.');
+    catchBottle(B);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const roundId = active(B).id;
+    let dispatches = 0;
+    const ctx = modelCtx(B, (_test, req, body) => {
+      dispatches++;
+      expect(req.uri).toBe('https://api.anthropic.com/v1/messages');
+      const input = JSON.parse(new TextDecoder().decode(body));
+      expect(input.model).toBe('claude-haiku-5-5');
+      const user = JSON.parse(input.messages[0].content);
+      expect(user.setup).toBe('I taught the octopus insider trading.');
+      expect(user.reply).toBe('Your account has been permanently frozen.');
+      return modelResponse({ decision: 'allow', reason: 'safe' });
+    });
+    const args = {
+      roundId,
+      requestId: crypto.randomUUID(),
+      text: 'Your account has been permanently frozen.',
+    };
+    expect(module.submit_reply(ctx, args).ok).toBe(true);
+    expect(module.submit_reply(ctx, args).ok).toBe(true);
+    expect(dispatches).toBe(1);
+    expect([...h.db.postcard.iter()]).toHaveLength(1);
+  });
+  it.each(['refusal', 'max_tokens'])('withholds %s responses and preserves the round', (stop) => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const ctx = modelCtx(A, () => modelResponse({ decision: 'allow', reason: 'safe' }, stop));
+    expect(
+      module.submit_setup(ctx, {
+        roundId: active(A).id,
+        requestId: crypto.randomUUID(),
+        text: 'I taught the octopus insider trading.',
+      }).ok,
+    ).toBe(false);
+    expect(active(A).stage).toBe('write');
+    expect([...h.db.bottle.iter()]).toHaveLength(0);
+    expect(active(A).inFlight).toBe('');
+  });
+  it.each([
+    { decision: 'allow', reason: 'abuse' },
+    { decision: 'allow', reason: 'safe', extra: 'unexpected' },
+    { decision: 'allow' },
+    { decision: 'unknown', reason: 'safe' },
+  ])('withholds malformed or contradictory moderation %j', (bad) => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const ctx = modelCtx(A, () => modelResponse(bad));
+    expect(
+      module.submit_setup(ctx, {
+        roundId: active(A).id,
+        requestId: crypto.randomUUID(),
+        text: 'I taught the octopus insider trading.',
+      }).ok,
+    ).toBe(false);
+    expect([...h.db.bottle.iter()]).toHaveLength(0);
+  });
+  it('does not apply a late answer after reporting cancels the assignment', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const roundId = active(A).id;
+    const ctx = modelCtx(A, () => {
+      tx(A, (c) => module.report_content(c, { roundId, cardId: '', reason: 'other' }));
+      return modelResponse({ decision: 'allow', reason: 'safe' });
+    });
+    expect(
+      module.submit_reply(ctx, {
+        roundId,
+        requestId: crypto.randomUUID(),
+        text: 'Your account has been permanently frozen.',
+      }).ok,
+    ).toBe(false);
+    expect(active(A).stage).toBe('catch');
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+  });
+  it('rechecks deadlines after an external call', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const roundId = active(A).id;
+    const ctx = modelCtx(A, () => {
+      h.clock.advance(TimeDuration.fromMillis(11 * 60000));
+      return modelResponse({ decision: 'allow', reason: 'safe' });
+    });
+    expect(
+      module.submit_reply(ctx, {
+        roundId,
+        requestId: crypto.randomUUID(),
+        text: 'Your account has been permanently frozen.',
+      }).ok,
+    ).toBe(false);
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+  });
+  it('honors an emergency pause that occurs during a call', () => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const ctx = modelCtx(A, () => {
+      tx(owner, (c) => module.set_pause(c, { paused: true }));
+      return modelResponse({ decision: 'allow', reason: 'safe' });
+    });
+    expect(
+      module.submit_setup(ctx, {
+        roundId: active(A).id,
+        requestId: crypto.randomUUID(),
+        text: 'I taught the octopus insider trading.',
+      }).ok,
+    ).toBe(false);
+    expect([...h.db.bottle.iter()]).toHaveLength(0);
+  });
+  it('grounds nudges in the assignment and private draft without publishing', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const roundId = active(A).id;
+    const assigned = claim(A).text;
+    const ctx = modelCtx(A, (_test, _req, body) => {
+      const payload = JSON.parse(new TextDecoder().decode(body));
+      expect(payload.model).toBe('claude-sonnet-5-5');
+      const input = JSON.parse(payload.messages[0].content);
+      expect(input.setup).toBe(assigned);
+      expect(input.draft).toBe('Our lawyers');
+      return modelResponse({
+        kind: 'nudge',
+        hint: 'Consider combining poker language with seafood.',
+      });
+    });
+    const value = module.request_nudge(ctx, {
+      roundId,
+      requestId: crypto.randomUUID(),
+      text: 'Our lawyers',
+    });
+    expect(value.ok).toBe(true);
+    expect(value.hint).toContain('Consider');
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+    expect(active(A).nudges).toBe(1);
+  });
+  it('rejects an answer-writing nudge and charges its dispatched attempt', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const ctx = modelCtx(A, () =>
+      modelResponse({ kind: 'nudge', hint: 'Our lawyers would like another hand.' }),
+    );
+    expect(
+      module.request_nudge(ctx, { roundId: active(A).id, requestId: crypto.randomUUID(), text: '' })
+        .ok,
+    ).toBe(false);
+    expect(active(A).hint).toBe('');
+    expect(active(A).nudges).toBe(1);
+  });
+});
+describe('private mutual hello', () => {
+  function enableHello() {
+    env.DRIFT_HELLO_ENABLED = 'true';
+    env.DRIFT_MEETING_SPOT_VERIFIED = 'true';
+    env.DRIFT_MEETING_SPOT = 'Synthetic test meeting point';
+  }
+  function makeCard() {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B);
+    catchBottle(B);
+    reply(B);
+    return [...h.db.postcard.iter()][0].id;
+  }
+  function intent(a: any, cardId: string, accepted: boolean) {
+    tx(a, (ctx) => module.set_hello_intent(ctx, { cardId, accepted }));
+  }
+  const details = (a: any, cardId: string) => module.get_hello(h.procedureContext(a), { cardId });
+  it('stays disabled without a verified meeting point', () => {
+    const cardId = makeCard();
+    env.DRIFT_HELLO_ENABLED = 'true';
+    env.DRIFT_MEETING_SPOT = 'Synthetic test meeting point';
+    expect(() => intent(A, cardId, true)).toThrow(/not available/);
+  });
+  it('keeps one-sided choices and recognition words private', () => {
+    enableHello();
+    const cardId = makeCard();
+    intent(A, cardId, true);
+    expect(details(A, cardId)).toMatchObject({ mutual: false, phrase: '', spot: '' });
+    expect(details(B, cardId)).toMatchObject({ mutual: false, phrase: '', spot: '' });
+    expect(module.my_hello(h.viewContext(B))[0]).toMatchObject({ optedIn: false, mutual: false });
+    expect(Object.keys(module.my_hello(h.viewContext(A))[0])).not.toContain('phrase');
+    expect(() => details(C, cardId)).toThrow(/two writers/);
+    expect(() => intent(C, cardId, true)).toThrow(/two writers/);
+  });
+  it('releases the same private phrase only after both authors accept', () => {
+    enableHello();
+    const cardId = makeCard();
+    intent(A, cardId, true);
+    intent(B, cardId, true);
+    const a = details(A, cardId),
+      b = details(B, cardId);
+    expect(a.mutual).toBe(true);
+    expect(a.phrase.split(' ')).toHaveLength(2);
+    expect(a).toEqual(b);
+    expect(a.spot).toBe('Synthetic test meeting point');
+    expect(JSON.stringify(h.db.postcard.id.find(cardId))).not.toContain(a.phrase);
+  });
+  it('withdrawal revokes access for both authors', () => {
+    enableHello();
+    const cardId = makeCard();
+    intent(A, cardId, true);
+    intent(B, cardId, true);
+    intent(A, cardId, false);
+    expect(details(B, cardId)).toMatchObject({ mutual: false, phrase: '', spot: '' });
+    expect(module.my_hello(h.viewContext(B))[0].mutual).toBe(false);
+  });
+  it('enforces expiry when accessed without relying on cleanup', () => {
+    enableHello();
+    const cardId = makeCard();
+    intent(A, cardId, true);
+    intent(B, cardId, true);
+    h.clock.advance(TimeDuration.fromMillis(10 * 60000 + 1));
+    expect(details(A, cardId)).toMatchObject({ mutual: false, phrase: '', spot: '' });
+    expect(() => intent(A, cardId, true)).toThrow(/expired/);
+  });
+  it('hiding a card cancels its invitation', () => {
+    enableHello();
+    const cardId = makeCard();
+    intent(A, cardId, true);
+    intent(B, cardId, true);
+    tx(A, (ctx) => module.hide_my_card(ctx, { cardId }));
+    expect(h.db.hello.cardId.find(cardId)).toBeNull();
+    expect(() => details(B, cardId)).toThrow(/two writers/);
+  });
+  it('does not offer invitations on team starters', () => {
+    enableHello();
+    start(A);
+    setup(A);
+    catchBottle(A);
+    reply(A);
+    const cardId = [...h.db.postcard.iter()][0].id;
+    expect(module.my_hello(h.viewContext(A))).toHaveLength(0);
+    expect(() => intent(A, cardId, true)).toThrow(/two writers/);
+  });
+});
+describe('viewer reporting', () => {
+  it('hides a reported share card only for its reporter, without granting publication control', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B);
+    catchBottle(B);
+    reply(B);
+    const cardId = [...h.db.postcard.iter()][0].id;
+    tx(C, (ctx) => module.report_content(ctx, { roundId: '', cardId, reason: 'other' }));
+    tx(C, (ctx) => module.report_content(ctx, { roundId: '', cardId, reason: 'other' }));
+    expect(h.db.postcard.id.find(cardId)).not.toBeNull();
+    expect([...h.db.report.iter()]).toHaveLength(1);
+    expect(module.my_reported_cards(h.viewContext(C))).toEqual([{ id: cardId }]);
+    expect(module.my_reported_cards(h.viewContext(A))).toHaveLength(0);
+    expect(() => tx(C, (ctx) => module.hide_my_card(ctx, { cardId }))).toThrow(/two authors/);
+  });
+  it('bounds distinct reports per identity per UTC day', () => {
+    start(A);
+    setup(A);
+    start(B);
+    setup(B);
+    catchBottle(B);
+    reply(B);
+    const cardId = [...h.db.postcard.iter()][0].id;
+    tx(C, (ctx) => {
+      for (let i = 0; i < 20; i++)
+        ctx.db.report.insert({
+          id: crypto.randomUUID(),
+          owner: ctx.sender,
+          target: 'synthetic-' + i,
+          reason: 'other',
+          createdMs: Number(ctx.timestamp.microsSinceUnixEpoch) / 1000,
+        });
+    });
+    expect(() =>
+      tx(C, (ctx) => module.report_content(ctx, { roundId: '', cardId, reason: 'other' })),
+    ).toThrow(/report limit/);
+  });
+});
