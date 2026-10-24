@@ -1,6 +1,14 @@
 import { messages, modelRequest, parseModelResponse } from '../../packages/ai-contracts/index';
 import { teamStartersFor } from '../../packages/starter-content/index';
 import {
+  DEFAULT_BUDGET_MICROS,
+  MAX_BUDGET_MICROS,
+  PRICE_VERSION,
+  quoteRequest,
+  priceUsage,
+  percentile,
+} from '../../packages/ai-costs/index';
+import {
   schema,
   table,
   t,
@@ -94,6 +102,7 @@ const request = table(
     state: t.string(),
     result: t.string(),
     createdMs: t.f64(),
+    costId: t.string().default(''),
   },
 );
 const report = table(
@@ -146,6 +155,41 @@ const shorePass = table(
   { name: 'shore_pass' },
   { owner: t.identity().primaryKey(), expiresMs: t.f64() },
 );
+const idAllocator = table({ name: 'id_allocator' }, { id: t.u32().primaryKey(), next: t.u64() });
+const aiBudget = table(
+  { name: 'ai_budget' },
+  {
+    id: t.u32().primaryKey(),
+    limitMicros: t.u64(),
+    spentMicros: t.u64(),
+    reservedMicros: t.u64(),
+    startedMs: t.f64(),
+    olderDispatches: t.u32(),
+  },
+);
+// Financial diagnostics contain no story text, owner identity, prompt or contact details.
+// Only the short-lived request row maps this random ID back to a participant.
+const aiCall = table(
+  { name: 'ai_call' },
+  {
+    id: t.string().primaryKey(),
+    operation: t.string(),
+    model: t.string(),
+    priceVersion: t.string(),
+    requestBytes: t.u32(),
+    reservedMicros: t.u64(),
+    heldMicros: t.u64(),
+    estimatedMicros: t.u64(),
+    inputTokens: t.u32(),
+    outputTokens: t.u32(),
+    state: t.string(),
+    outcome: t.string(),
+    createdMs: t.f64(),
+    finishedMs: t.f64(),
+    elapsedMs: t.f64(),
+    durationKnown: t.bool(),
+  },
+);
 const db = schema(
   {
     round,
@@ -160,6 +204,9 @@ const db = schema(
     reportResolution,
     maintenance,
     shorePass,
+    aiBudget,
+    aiCall,
+    idAllocator,
   },
   {
     env: {
@@ -185,6 +232,15 @@ const now = (ctx: { timestamp: { microsSinceUnixEpoch: bigint } }) =>
   Number(ctx.timestamp.microsSinceUnixEpoch) / 1000;
 const same = (a: { toHexString(): string }, b: { toHexString(): string }) =>
   a.toHexString() === b.toHexString();
+function newId(ctx: Tx) {
+  // Runtime UUID entropy can repeat for simultaneous reducer timestamps. A durable
+  // transactional suffix makes IDs unique even when that entropy collides.
+  const counter = ctx.db.idAllocator.id.find(0) ?? { id: 0, next: 0n };
+  const next = { ...counter, next: counter.next + 1n };
+  if (ctx.db.idAllocator.id.find(0)) ctx.db.idAllocator.id.update(next);
+  else ctx.db.idAllocator.insert(next);
+  return `${ctx.newUuidV4().toString()}-${counter.next.toString(36)}`;
+}
 function fail(message: string): never {
   throw new SenderError(message);
 }
@@ -228,8 +284,101 @@ function saveRound(ctx: Tx, r: Round) {
   ctx.db.round.id.update(r);
 }
 function finishRequest(ctx: Tx, id: string, result: object, state = 'finished') {
-  const q = ctx.db.request.id.find(id)!;
+  const q = ctx.db.request.id.find(id);
+  if (!q) return;
+  if (q.costId)
+    finishAiOutcome(
+      ctx,
+      q.costId,
+      state === 'finished' ? ((result as Result).ok ? 'accepted' : 'not_published') : state,
+    );
   ctx.db.request.id.update({ ...q, state, result: JSON.stringify(result) });
+}
+
+function budgetFor(ctx: Tx) {
+  return (
+    ctx.db.aiBudget.id.find(0) ??
+    ctx.db.aiBudget.insert({
+      id: 0,
+      limitMicros: DEFAULT_BUDGET_MICROS,
+      spentMicros: 0n,
+      reservedMicros: 0n,
+      startedMs: now(ctx),
+      olderDispatches: ctx.db.config.id.find(0)!.dispatches,
+    })
+  );
+}
+type ModelWork = ReturnType<typeof modelRequest>;
+function reserveAiCall(ctx: Tx, operation: string, work: ModelWork | undefined) {
+  const c = ctx.db.config.id.find(0)!;
+  if (c.dispatches >= c.dispatchCap)
+    fail('Today’s story-check allowance is used up. Your draft is saved.');
+  const quote = work ? quoteRequest(work) : { reservedMicros: 0n, requestBytes: 0 };
+  const budget = budgetFor(ctx);
+  if (
+    quote.reservedMicros > 0n &&
+    budget.spentMicros + budget.reservedMicros + quote.reservedMicros > budget.limitMicros
+  )
+    fail('The tide’s story-check budget is taking a break. Your draft is saved.');
+  ctx.db.aiBudget.id.update({
+    ...budget,
+    reservedMicros: budget.reservedMicros + quote.reservedMicros,
+  });
+  ctx.db.config.id.update({ ...c, dispatches: c.dispatches + 1 });
+  const id = newId(ctx);
+  ctx.db.aiCall.insert({
+    id,
+    operation,
+    model: work?.model ?? 'sandbox',
+    priceVersion: PRICE_VERSION,
+    requestBytes: quote.requestBytes,
+    reservedMicros: quote.reservedMicros,
+    heldMicros: quote.reservedMicros,
+    estimatedMicros: 0n,
+    inputTokens: 0,
+    outputTokens: 0,
+    state: work ? 'pending' : 'sandbox',
+    outcome: 'pending',
+    createdMs: now(ctx),
+    finishedMs: 0,
+    elapsedMs: 0,
+    durationKnown: false,
+  });
+  return id;
+}
+function settleAiUsage(ctx: Tx, id: string, usage: unknown) {
+  const row = ctx.db.aiCall.id.find(id);
+  if (!row || row.state === 'settled' || row.state === 'reconciled') return;
+  const cost = priceUsage(row.model, usage);
+  if (cost) {
+    const budget = budgetFor(ctx);
+    ctx.db.aiBudget.id.update({
+      ...budget,
+      reservedMicros: budget.reservedMicros - row.heldMicros,
+      spentMicros: budget.spentMicros + cost.estimatedMicros,
+    });
+  }
+  ctx.db.aiCall.id.update({
+    ...row,
+    ...(cost ?? {}),
+    heldMicros: cost ? 0n : row.heldMicros,
+    state: cost ? 'settled' : 'uncertain',
+    finishedMs: now(ctx),
+    elapsedMs: Math.max(0, now(ctx) - row.createdMs),
+    durationKnown: true,
+  });
+}
+function finishAiOutcome(ctx: Tx, id: string, outcome: string) {
+  const row = ctx.db.aiCall.id.find(id);
+  if (!row) return;
+  ctx.db.aiCall.id.update({
+    ...row,
+    outcome,
+    state: row.state === 'pending' ? 'uncertain' : row.state,
+    finishedMs: row.finishedMs || now(ctx),
+    elapsedMs: row.durationKnown ? row.elapsedMs : Math.max(0, now(ctx) - row.createdMs),
+    durationKnown: true,
+  });
 }
 
 function promptJson(day: number) {
@@ -274,7 +423,7 @@ function startRound(ctx: Tx, initialStage: 'write' | 'catch') {
   if (today.length >= ROUNDS_PER_DAY)
     fail('Three little stories is today’s limit. Come back after the tide turns.');
   return ctx.db.round.insert({
-    id: ctx.newUuidV4().toString(),
+    id: newId(ctx),
     owner: ctx.sender,
     day,
     promptId: promptForDay(day).id,
@@ -341,17 +490,19 @@ export const verify_shore = db.procedure({ token: t.string() }, response, (ctx, 
   }
 });
 
-function callClaude(ctx: Proc, kind: 'moderation' | 'nudge', payload: object): any {
+function callClaude(
+  ctx: Proc,
+  kind: 'moderation' | 'nudge',
+  work: ModelWork | undefined,
+  costId: string,
+): any {
   const key = ctx.env.ANTHROPIC_API_KEY;
   if (!key) {
     if (kind === 'moderation' && ctx.env.DRIFT_DEV_MODE === 'true')
       return { decision: 'allow', reason: 'safe' };
     throw Error('Claude is not configured.');
   }
-  const model =
-    kind === 'nudge'
-      ? ctx.env.NUDGE_MODEL || 'claude-sonnet-5-5'
-      : ctx.env.MODERATION_MODEL || 'claude-haiku-5-5';
+  if (!work) throw Error('Missing reserved model request.');
   const res = ctx.http.fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -360,10 +511,12 @@ function callClaude(ctx: Proc, kind: 'moderation' | 'nudge', payload: object): a
       'anthropic-version': '2023-06-01',
     },
     timeout: TimeDuration.fromMillis(18000),
-    body: JSON.stringify(modelRequest(kind, payload, model)),
+    body: JSON.stringify(work),
   });
   if (!res.ok) throw Error('provider_http_' + res.status);
   const body = JSON.parse(res.text());
+  // Meter valid provider usage even if parsing the creative/moderation output fails.
+  ctx.withTx((tx) => settleAiUsage(tx, costId, body.usage));
   return parseModelResponse(kind, body);
 }
 
@@ -394,6 +547,8 @@ function paidAction(
           : result(false, 'That request is still pending or uncertain. Your draft is saved.'),
         round: undefined,
         bottle: undefined,
+        work: undefined,
+        costId: '',
       };
     }
     const c = ready(tx);
@@ -417,9 +572,21 @@ function paidAction(
           ? 'AI guidance is not connected yet. You can still write your ending.'
           : 'Story checks aren’t connected yet. Your draft is saved.',
       );
-    if (c.dispatches >= c.dispatchCap)
-      fail('Today’s story-check allowance is used up. Your draft is saved.');
-    tx.db.config.id.update({ ...c, dispatches: c.dispatches + 1 });
+    const kind = operation === 'nudge' ? 'nudge' : 'moderation';
+    const prompt = promptForDay(r.day);
+    const work = tx.env.ANTHROPIC_API_KEY
+      ? modelRequest(
+          kind,
+          {
+            instructions: { setup: prompt.setup, reply: prompt.reply },
+            setup: operation === 'setup' ? text : b!.text,
+            ...(operation === 'reply' ? { reply: text } : {}),
+            ...(operation === 'nudge' ? { draft: text } : {}),
+          },
+          kind === 'nudge' ? tx.env.NUDGE_MODEL : tx.env.MODERATION_MODEL,
+        )
+      : undefined;
+    const costId = reserveAiCall(tx, operation, work);
     tx.db.request.insert({
       id: qid,
       owner: tx.sender,
@@ -430,6 +597,7 @@ function paidAction(
       state: 'dispatched',
       result: '',
       createdMs: now(tx),
+      costId,
     });
     saveRound(tx, {
       ...r,
@@ -439,19 +607,19 @@ function paidAction(
       replyAttempts: r.replyAttempts + (operation === 'reply' ? 1 : 0),
       nudges: r.nudges + (operation === 'nudge' ? 1 : 0),
     });
-    return { cached: undefined, round: r, bottle: b };
+    return { cached: undefined, round: r, bottle: b, work, costId };
   });
   if (reservation.cached) return reservation.cached;
   const r = reservation.round!;
   const b = reservation.bottle;
   let checked: any;
   try {
-    checked = callClaude(ctx, operation === 'nudge' ? 'nudge' : 'moderation', {
-      instructions: promptForDay(r.day),
-      setup: operation === 'setup' ? text : b!.text,
-      ...(operation === 'reply' ? { reply: text } : {}),
-      ...(operation === 'nudge' ? { draft: text } : {}),
-    });
+    checked = callClaude(
+      ctx,
+      operation === 'nudge' ? 'nudge' : 'moderation',
+      reservation.work,
+      reservation.costId,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
     const code = /^provider_http_\d{3}$/.test(message)
@@ -472,6 +640,7 @@ function paidAction(
     const q = tx.db.request.id.find(qid)!;
     // Persisted dispatches are never automatically reissued. Late results cannot mutate a new assignment.
     if (
+      !q ||
       q.state !== 'dispatched' ||
       current.inFlight !== qid ||
       current.version !== r.version ||
@@ -526,7 +695,7 @@ function paidAction(
       return value;
     }
     if (operation === 'setup') {
-      const id = tx.newUuidV4().toString();
+      const id = newId(tx);
       tx.db.bottle.insert({
         id,
         owner: tx.sender,
@@ -550,7 +719,7 @@ function paidAction(
         busyUntil: 0,
       });
     } else {
-      const id = tx.newUuidV4().toString();
+      const id = newId(tx);
       tx.db.postcard.insert({
         id,
         promptId: r.promptId,
@@ -639,7 +808,7 @@ function assign(ctx: Tx, r: Round) {
       fail('No bottles are available just now. Your setup is safe; try again later.');
     const seed = available[ctx.random.integerInRange(0, available.length - 1)];
     found = {
-      id: ctx.newUuidV4().toString(),
+      id: newId(ctx),
       owner: undefined,
       day: r.day,
       promptId: r.promptId,
@@ -744,7 +913,7 @@ function recordReport(ctx: Tx, target: string, reason: string) {
   if (previous.filter((r) => dayOf(r.createdMs) === dayOf(now(ctx))).length >= 20)
     fail('You’ve reached today’s report limit. The team can help with anything else.');
   ctx.db.report.insert({
-    id: ctx.newUuidV4().toString(),
+    id: newId(ctx),
     owner: ctx.sender,
     target,
     reason,
@@ -940,6 +1109,130 @@ export const admin_status = db.procedure(adminStatusInfo, (ctx) =>
     };
   }),
 );
+const aiStatusInfo = t.row('AiStatusInfo', {
+  priceVersion: t.string(),
+  startedMs: t.f64(),
+  olderDispatches: t.u32(),
+  budgetMicros: t.u64(),
+  spentEstimateMicros: t.u64(),
+  reservedMicros: t.u64(),
+  retainedCalls: t.u32(),
+  settledCalls: t.u32(),
+  uncertainCalls: t.u32(),
+  pendingCalls: t.u32(),
+  sandboxCalls: t.u32(),
+  inputTokens: t.u64(),
+  outputTokens: t.u64(),
+  measuredCalls: t.u32(),
+  p50Ms: t.f64(),
+  p95Ms: t.f64(),
+});
+export const admin_ai_usage = db.procedure(aiStatusInfo, (ctx) =>
+  ctx.withTx((tx) => {
+    admin(tx);
+    const budget = budgetFor(tx);
+    const rows = [...tx.db.aiCall.iter()];
+    const measured = rows
+      .filter((r) => r.model !== 'sandbox' && r.durationKnown)
+      .map((r) => r.elapsedMs);
+    return {
+      priceVersion: PRICE_VERSION,
+      startedMs: budget.startedMs,
+      olderDispatches: budget.olderDispatches,
+      budgetMicros: budget.limitMicros,
+      spentEstimateMicros: budget.spentMicros,
+      reservedMicros: budget.reservedMicros,
+      retainedCalls: rows.length,
+      settledCalls: rows.filter((r) => r.state === 'settled' || r.state === 'reconciled').length,
+      uncertainCalls: rows.filter((r) => r.state === 'uncertain').length,
+      pendingCalls: rows.filter((r) => r.state === 'pending').length,
+      sandboxCalls: rows.filter((r) => r.state === 'sandbox').length,
+      inputTokens: rows.reduce((sum, r) => sum + BigInt(r.inputTokens), 0n),
+      outputTokens: rows.reduce((sum, r) => sum + BigInt(r.outputTokens), 0n),
+      measuredCalls: measured.length,
+      p50Ms: percentile(measured, 0.5),
+      p95Ms: percentile(measured, 0.95),
+    };
+  }),
+);
+export const admin_ai_calls = db.procedure(t.array(aiCall.rowType), (ctx) =>
+  ctx.withTx((tx) => {
+    admin(tx);
+    return [...tx.db.aiCall.iter()].sort((a, b) => b.createdMs - a.createdMs).slice(0, 50);
+  }),
+);
+export const set_ai_budget = db.reducer({ limitMicros: t.u64() }, (ctx, { limitMicros }) => {
+  admin(ctx);
+  if (limitMicros > MAX_BUDGET_MICROS) fail('Use an AI budget of at most $50.');
+  const budget = budgetFor(ctx);
+  ctx.db.aiBudget.id.update({ ...budget, limitMicros });
+});
+export const reconcile_ai_call = db.reducer(
+  { costId: t.string(), chargedMicros: t.u64() },
+  (ctx, { costId, chargedMicros }) => {
+    admin(ctx);
+    const row = ctx.db.aiCall.id.find(costId);
+    if (!row) fail('This cost record is unavailable.');
+    if (row.state === 'reconciled' && row.estimatedMicros === chargedMicros) return;
+    if (!['pending', 'uncertain'].includes(row.state))
+      fail('Only uncertain or stalled billing can be reconciled.');
+    if (now(ctx) - row.createdMs < 60_000)
+      fail('Keep the hold until the call is at least one minute old.');
+    if (chargedMicros > MAX_BUDGET_MICROS) fail('Use a reconciled amount of at most $50.');
+    const budget = budgetFor(ctx);
+    ctx.db.aiBudget.id.update({
+      ...budget,
+      reservedMicros: budget.reservedMicros - row.heldMicros,
+      spentMicros: budget.spentMicros + chargedMicros,
+    });
+    ctx.db.aiCall.id.update({
+      ...row,
+      state: 'reconciled',
+      heldMicros: 0n,
+      estimatedMicros: chargedMicros,
+      finishedMs: row.finishedMs || now(ctx),
+    });
+  },
+);
+// A fixed synthetic owner health check verifies the real provider without publishing a test bottle.
+export const admin_probe_claude = db.procedure({ kind: t.string() }, response, (ctx, { kind }) => {
+  const reserved = ctx.withTx((tx) => {
+    admin(tx);
+    if (!['moderation', 'nudge'].includes(kind)) fail('Choose moderation or nudge.');
+    if (!tx.env.ANTHROPIC_API_KEY) fail('Story checks are not connected.');
+    if (
+      [...tx.db.aiCall.iter()].some(
+        (r) => r.operation.startsWith('probe_') && r.createdMs + 60_000 > now(tx),
+      )
+    )
+      fail('Keep owner health checks at least one minute apart.');
+    const work = modelRequest(
+      kind as 'moderation' | 'nudge',
+      {
+        instructions: {
+          setup: 'Why were you banned from the aquarium?',
+          reply: 'Write the aquarium’s official response.',
+        },
+        setup: 'I challenged their shark to poker.',
+        ...(kind === 'nudge' ? { draft: '' } : {}),
+      },
+      kind === 'nudge' ? tx.env.NUDGE_MODEL : tx.env.MODERATION_MODEL,
+    );
+    return { work, costId: reserveAiCall(tx, 'probe_' + kind, work) };
+  });
+  try {
+    const checked = callClaude(ctx, kind as 'moderation' | 'nudge', reserved.work, reserved.costId);
+    ctx.withTx((tx) => finishAiOutcome(tx, reserved.costId, 'probe_valid'));
+    return result(
+      true,
+      'Synthetic provider check completed; nothing was published.',
+      checked.hint ?? '',
+    );
+  } catch {
+    ctx.withTx((tx) => finishAiOutcome(tx, reserved.costId, 'probe_error'));
+    return result(false, 'We couldn’t finish that synthetic provider check.');
+  }
+});
 const reportQueueItem = t.row('ReportQueueItem', {
   id: t.string(),
   reason: t.string(),
@@ -1000,6 +1293,11 @@ function purgeExpired(ctx: Tx) {
     }
   for (const q of ctx.db.request.iter())
     if (q.createdMs < now(ctx) - 7 * 86400000) ctx.db.request.id.delete(q.id);
+  // Completed anonymous cost rows expire after 30 days; totals survive. Unknown holds
+  // remain until owner reconciliation and contain no text or participant identity.
+  for (const row of ctx.db.aiCall.iter())
+    if (row.createdMs < cutoff && row.heldMicros === 0n && row.state !== 'pending')
+      ctx.db.aiCall.id.delete(row.id);
   for (const b of ctx.db.bottle.iter())
     if (b.day < dayOf(now(ctx)) - 7) ctx.db.bottle.id.delete(b.id);
   for (const r of ctx.db.report.iter())

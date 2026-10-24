@@ -1083,6 +1083,10 @@ function App() {
             drafts expire seven days after their latest edit.
           </p>
           <p>
+            Usage and cost records contain no story text or identity. Individual records expire
+            after thirty days, except unresolved billing checks; totals remain.
+          </p>
+          <p>
             AI guidance is optional and stays separate from your words. Starter content is always
             labeled.
           </p>

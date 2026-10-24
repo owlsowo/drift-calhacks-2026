@@ -27,6 +27,56 @@ export const AdminStatusInfo = __t.object("AdminStatusInfo", {
 });
 export type AdminStatusInfo = __Infer<typeof AdminStatusInfo>;
 
+export const AiBudget = __t.object("AiBudget", {
+  id: __t.u32(),
+  limitMicros: __t.u64(),
+  spentMicros: __t.u64(),
+  reservedMicros: __t.u64(),
+  startedMs: __t.f64(),
+  olderDispatches: __t.u32(),
+});
+export type AiBudget = __Infer<typeof AiBudget>;
+
+export const AiCall = __t.object("AiCall", {
+  id: __t.string(),
+  operation: __t.string(),
+  model: __t.string(),
+  priceVersion: __t.string(),
+  requestBytes: __t.u32(),
+  reservedMicros: __t.u64(),
+  heldMicros: __t.u64(),
+  estimatedMicros: __t.u64(),
+  inputTokens: __t.u32(),
+  outputTokens: __t.u32(),
+  state: __t.string(),
+  outcome: __t.string(),
+  createdMs: __t.f64(),
+  finishedMs: __t.f64(),
+  elapsedMs: __t.f64(),
+  durationKnown: __t.bool(),
+});
+export type AiCall = __Infer<typeof AiCall>;
+
+export const AiStatusInfo = __t.object("AiStatusInfo", {
+  priceVersion: __t.string(),
+  startedMs: __t.f64(),
+  olderDispatches: __t.u32(),
+  budgetMicros: __t.u64(),
+  spentEstimateMicros: __t.u64(),
+  reservedMicros: __t.u64(),
+  retainedCalls: __t.u32(),
+  settledCalls: __t.u32(),
+  uncertainCalls: __t.u32(),
+  pendingCalls: __t.u32(),
+  sandboxCalls: __t.u32(),
+  inputTokens: __t.u64(),
+  outputTokens: __t.u64(),
+  measuredCalls: __t.u32(),
+  p50Ms: __t.f64(),
+  p95Ms: __t.f64(),
+});
+export type AiStatusInfo = __Infer<typeof AiStatusInfo>;
+
 export const Assignment = __t.object("Assignment", {
   id: __t.string(),
   text: __t.string(),
@@ -95,6 +145,12 @@ export const HelloDetails = __t.object("HelloDetails", {
   expiresMs: __t.f64(),
 });
 export type HelloDetails = __Infer<typeof HelloDetails>;
+
+export const IdAllocator = __t.object("IdAllocator", {
+  id: __t.u32(),
+  next: __t.u64(),
+});
+export type IdAllocator = __Infer<typeof IdAllocator>;
 
 export const Maintenance = __t.object("Maintenance", {
   id: __t.u64(),
@@ -185,6 +241,7 @@ export const Request = __t.object("Request", {
   state: __t.string(),
   result: __t.string(),
   createdMs: __t.f64(),
+  costId: __t.string(),
 });
 export type Request = __Infer<typeof Request>;
 

@@ -68,6 +68,11 @@ const modelResponse = (data: object, stopReason = 'end_turn') => ({
 });
 const modelCtx = (a: any, responder: TestHttpResponder<typeof db.schemaType>) =>
   h.procedureContextBuilder(a).http(responder).build();
+const pricedResponse = (data: object, usage: object = { input_tokens: 513, output_tokens: 19 }) => {
+  const response = modelResponse(data);
+  response.body = JSON.stringify({ ...JSON.parse(response.body), usage });
+  return response;
+};
 beforeEach(() => {
   for (const k of Object.keys(env)) delete env[k];
   env.DRIFT_DEV_MODE = 'true';
@@ -75,6 +80,29 @@ beforeEach(() => {
   tx(owner, (c) => module.init(c, {}));
 });
 describe('authoritative game state', () => {
+  it('server IDs remain unique when reducer UUID entropy collides', () => {
+    const collided = { toString: () => '00000000-0000-4000-8000-000000000000' };
+    const collisionContext = (ctx: any) =>
+      new Proxy(
+        {},
+        {
+          get: (_target, key) =>
+            key === 'newUuidV4' ? () => collided : Reflect.get(ctx, key, ctx),
+        },
+      ) as any;
+    for (const writer of [A, B, C])
+      tx(writer, (c) => {
+        module.start_round(collisionContext(c), {});
+      });
+    expect(new Set([...h.db.round.iter()].map((r) => r.id)).size).toBe(3);
+    const original = active(A).id;
+    tx(A, (c) => {
+      module.abandon_round(c, { roundId: original });
+      module.start_round(collisionContext(c), {});
+    });
+    expect(active(A).id).not.toBe(original);
+    expect([...h.db.round.iter()]).toHaveLength(4);
+  });
   it('only the owner can retire an unpublished bottle and revoke an in-progress claim', () => {
     start(A);
     setup(A);
@@ -694,5 +722,200 @@ describe('starter provenance', () => {
     env.DRIFT_DEV_MODE = 'true';
     catchBottle(A);
     expect(claim(A).starterKind).toBe('sample');
+  });
+});
+
+describe('private AI budget and latency accounting', () => {
+  const stats = () => module.admin_ai_usage(h.procedureContext(owner));
+  const calls = () => module.admin_ai_calls(h.procedureContext(owner));
+  const argsFor = (a: any) => ({
+    roundId: active(a).id,
+    requestId: crypto.randomUUID(),
+    text: 'I challenged their shark to poker.',
+  });
+  const allow = () => pricedResponse({ decision: 'allow', reason: 'safe' });
+  it('settles real usage once, measures server elapsed time and leaves no participant data in the cost row', () => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const args = argsFor(A);
+    let hits = 0;
+    const ctx = modelCtx(A, () => {
+      hits++;
+      h.clock.advance(TimeDuration.fromMillis(1450));
+      return allow();
+    });
+    expect(module.submit_setup(ctx, args).ok).toBe(true);
+    expect(module.submit_setup(ctx, args).ok).toBe(true);
+    expect(hits).toBe(1);
+    expect(stats()).toMatchObject({
+      spentEstimateMicros: 61n,
+      reservedMicros: 0n,
+      settledCalls: 1,
+      p50Ms: 1450,
+      p95Ms: 1450,
+      measuredCalls: 1,
+    });
+    const row = calls()[0];
+    expect(row.id).not.toContain(active(A).owner.toHexString());
+    expect(row).toMatchObject({
+      state: 'settled',
+      outcome: 'accepted',
+      inputTokens: 513,
+      outputTokens: 19,
+    });
+    expect(Object.keys(row)).not.toContain('owner');
+    expect(Object.keys(row)).not.toContain('text');
+    expect([...h.db.request.iter()][0].costId).toBe(row.id);
+  });
+  it('refuses before dispatch or consuming attempts when the budget is exhausted or the model is unpriced', () => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    tx(owner, (c) => module.set_ai_budget(c, { limitMicros: 0n }));
+    const ctx = modelCtx(A, () => {
+      throw Error('Must not dispatch.');
+    });
+    expect(module.submit_setup(ctx, argsFor(A)).message).toMatch(/budget/);
+    tx(owner, (c) => module.set_ai_budget(c, { limitMicros: 10_000_000n }));
+    env.MODERATION_MODEL = 'unreviewed-model';
+    expect(module.submit_setup(ctx, argsFor(A)).ok).toBe(false);
+    expect(active(A).setupAttempts).toBe(0);
+    expect([...h.db.request.iter()]).toHaveLength(0);
+    expect(stats().retainedCalls).toBe(0);
+    expect(module.admin_status(h.procedureContext(owner)).dispatches).toBe(0);
+  });
+  it('reserves transactionally across writers, then releases unused headroom for the next call', () => {
+    start(A);
+    start(B);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const bArgs = argsFor(B);
+    let bHits = 0;
+    const bCtx = modelCtx(B, () => {
+      bHits++;
+      return allow();
+    });
+    const aCtx = modelCtx(A, () => {
+      const held = stats().reservedMicros;
+      expect(held).toBeGreaterThan(122n);
+      tx(owner, (c) => module.set_ai_budget(c, { limitMicros: held + held / 2n }));
+      expect(module.submit_setup(bCtx, bArgs).message).toMatch(/budget/);
+      expect(active(B).setupAttempts).toBe(0);
+      return allow();
+    });
+    expect(module.submit_setup(aCtx, argsFor(A)).ok).toBe(true);
+    expect(bHits).toBe(0);
+    expect(module.submit_setup(bCtx, bArgs).ok).toBe(true);
+    expect(bHits).toBe(1);
+    expect(stats()).toMatchObject({
+      spentEstimateMicros: 122n,
+      reservedMicros: 0n,
+      settledCalls: 2,
+    });
+  });
+  it('accounts for malformed/late outputs even when neither is allowed to publish', () => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const invalid = modelCtx(A, () => pricedResponse({ decision: 'allow', reason: 'abuse' }));
+    expect(module.submit_setup(invalid, argsFor(A)).ok).toBe(false);
+    const late = modelCtx(A, () => {
+      h.clock.advance(TimeDuration.fromMillis(30000));
+      return allow();
+    });
+    const args = argsFor(A);
+    expect(module.submit_setup(late, args).ok).toBe(false);
+    expect(module.submit_setup(late, args).ok).toBe(false);
+    expect(stats()).toMatchObject({
+      spentEstimateMicros: 122n,
+      reservedMicros: 0n,
+      settledCalls: 2,
+    });
+    expect([...h.db.bottle.iter()]).toHaveLength(0);
+  });
+  it('keeps unknown usage on hold until bounded owner reconciliation and never charges a replay twice', () => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const ctx = modelCtx(A, () => modelResponse({ decision: 'allow', reason: 'safe' }));
+    const args = argsFor(A);
+    expect(module.submit_setup(ctx, args).ok).toBe(true);
+    const row = calls()[0],
+      held = stats().reservedMicros;
+    expect(held).toBeGreaterThan(0n);
+    expect(stats()).toMatchObject({ spentEstimateMicros: 0n, uncertainCalls: 1 });
+    module.submit_setup(ctx, args);
+    expect(stats().reservedMicros).toBe(held);
+    expect(() =>
+      tx(owner, (c) => module.reconcile_ai_call(c, { costId: row.id, chargedMicros: 120n })),
+    ).toThrow(/one minute/);
+    h.clock.advance(TimeDuration.fromMillis(60000));
+    tx(owner, (c) => module.reconcile_ai_call(c, { costId: row.id, chargedMicros: 120n }));
+    tx(owner, (c) => module.reconcile_ai_call(c, { costId: row.id, chargedMicros: 120n }));
+    expect(stats()).toMatchObject({
+      spentEstimateMicros: 120n,
+      reservedMicros: 0n,
+      settledCalls: 1,
+    });
+    expect(() =>
+      tx(owner, (c) => module.reconcile_ai_call(c, { costId: row.id, chargedMicros: 121n })),
+    ).toThrow(/Only uncertain/);
+  });
+  it('owner health checks use the same budget, publish nothing and cannot bypass owner permissions', () => {
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    expect(() => module.admin_ai_usage(h.procedureContext(A))).toThrow(/project owner/);
+    expect(() => module.admin_ai_calls(h.procedureContext(A))).toThrow(/project owner/);
+    expect(() => tx(A, (c) => module.set_ai_budget(c, { limitMicros: 50_000_000n }))).toThrow(
+      /project owner/,
+    );
+    expect(() =>
+      tx(A, (c) => module.reconcile_ai_call(c, { costId: 'x', chargedMicros: 0n })),
+    ).toThrow(/project owner/);
+    expect(() => module.admin_probe_claude(h.procedureContext(A), { kind: 'nudge' })).toThrow(
+      /project owner/,
+    );
+    const ctx = modelCtx(owner, () =>
+      pricedResponse(
+        { kind: 'nudge', hint: 'Try giving the aquarium an ordinary office problem.' },
+        { input_tokens: 600, output_tokens: 30 },
+      ),
+    );
+    expect(module.admin_probe_claude(ctx, { kind: 'nudge' }).ok).toBe(true);
+    expect(stats()).toMatchObject({
+      spentEstimateMicros: 1500n,
+      reservedMicros: 0n,
+      retainedCalls: 1,
+    });
+    expect(() => module.admin_probe_claude(ctx, { kind: 'nudge' })).toThrow(/one minute apart/);
+    expect([...h.db.round.iter()]).toHaveLength(0);
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+    expect(() => tx(owner, (c) => module.set_ai_budget(c, { limitMicros: 50_000_001n }))).toThrow(
+      /at most/,
+    );
+  });
+  it('retention removes settled anonymous detail while keeping totals and unresolved holds', () => {
+    start(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    module.submit_setup(
+      modelCtx(A, () => allow()),
+      argsFor(A),
+    );
+    start(B);
+    module.submit_setup(
+      modelCtx(B, () => ({
+        code: 401,
+        headers: { entries: [] },
+        version: { tag: 'Http11' },
+        body: 'no private body stored',
+      })),
+      argsFor(B),
+    );
+    const unresolved = calls().find((r) => r.state === 'uncertain')!;
+    const held = stats().reservedMicros;
+    h.clock.advance(TimeDuration.fromMillis(31 * 86400000));
+    tx(owner, (c) => module.purge_old_data(c, {}));
+    expect([...h.db.request.iter()]).toHaveLength(0);
+    expect(calls()).toHaveLength(1);
+    expect(stats()).toMatchObject({ spentEstimateMicros: 61n, reservedMicros: held });
+    tx(owner, (c) => module.reconcile_ai_call(c, { costId: unresolved.id, chargedMicros: 0n }));
+    tx(owner, (c) => module.purge_old_data(c, {}));
+    expect(calls()).toHaveLength(0);
+    expect(stats()).toMatchObject({ spentEstimateMicros: 61n, reservedMicros: 0n });
   });
 });
