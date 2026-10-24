@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { modelRequest, parseModelResponse } from './index';
+import { HINT_MAX_WORDS, HINT_MIN_WORDS, modelRequest, parseModelResponse } from './index';
 
 const envelope = (value: unknown, stop_reason = 'end_turn') => ({
   stop_reason,
@@ -51,6 +51,8 @@ test('guidance parser rejects quoted answers, contact details and unbounded outp
     'Try visiting https://example.com.',
     'Try <script>alert(1)</script>',
     'Try ' + 'a '.repeat(31),
+    'Try combining poker language with seafood.',
+    'Try ' + 'a '.repeat(HINT_MAX_WORDS),
     'Your account has been permanently frozen.',
   ])
     assert.throws(() => parseModelResponse('nudge', envelope({ kind: 'nudge', hint })));
@@ -63,5 +65,28 @@ test('guidance parser rejects quoted answers, contact details and unbounded outp
       kind: 'nudge',
       hint: 'Try giving the aquarium a very ordinary office problem.',
     },
+  );
+});
+
+test('guidance accepts both word-count boundaries and leaves six-word endings outside the contract', () => {
+  for (const count of [HINT_MIN_WORDS, HINT_MAX_WORDS]) {
+    const hint =
+      'Try ' +
+      Array(count - 1)
+        .fill('angle')
+        .join(' ');
+    assert.equal(parseModelResponse('nudge', envelope({ kind: 'nudge', hint })).hint, hint);
+  }
+  const overTarget =
+    "Try letting the aquarium treat the shark's poker game with straight-faced seriousness, as if it were a normal event.";
+  assert.equal(
+    parseModelResponse('nudge', envelope({ kind: 'nudge', hint: overTarget })).hint,
+    overTarget,
+  );
+  assert.throws(() =>
+    parseModelResponse(
+      'nudge',
+      envelope({ kind: 'nudge', hint: 'Try making the shark demand overtime.' }),
+    ),
   );
 });

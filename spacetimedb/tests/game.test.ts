@@ -465,7 +465,7 @@ describe('two-phase model boundary', () => {
       expect(input.draft).toBe('Our lawyers');
       return modelResponse({
         kind: 'nudge',
-        hint: 'Consider combining poker language with seafood.',
+        hint: 'Consider how the shark might take a poker rule literally.',
       });
     });
     const value = module.request_nudge(ctx, {
