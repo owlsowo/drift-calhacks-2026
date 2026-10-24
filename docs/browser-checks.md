@@ -10,11 +10,12 @@ The invitation now follows the postcard, sharing controls and return note. Its c
 
 ## Verified scope
 
-Eight WebKit checks cover:
+Nine WebKit checks cover:
 
 - Connection and layout at 390px and 1440px.
 - Actual moving sea pixels and stable paused pixels.
 - A peer catch opened with touch taps, connected paper mesh over the sea, and catch/draft recovery after reload.
+- A new returned-bottle notice offers the correct postcard without a refresh. Chrome additionally verifies current draft/focus preservation, resume after opening and no false new-arrival notice for historical cards after reload.
 - Two identities receiving the same canonical postcard without refreshing; an actual downloadable 1080×1350 PNG, also visually inspected.
 - Completion layout with the payoff before the optional next contribution.
 - Share cancellation and denial using explicitly injected adapters; a copied canonical link opens for a third independent WebKit identity.

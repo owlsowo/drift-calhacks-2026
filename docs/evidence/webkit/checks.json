@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-24T23:22:06.895Z",
+  "checkedAt": "2026-10-24T23:33:14.121Z",
   "mode": "Actual desktop Playwright WebKit engine with iPhone viewport/touch emulation; local isolated SpacetimeDB, AI off, synthetic inputs",
   "status": "passed",
   "engine": "27.2",
@@ -33,6 +33,7 @@
     "Actual WebKit engine connects at iPhone 13 and desktop viewports with no horizontal overflow",
     "WebKit draws moving sea pixels and the pause control freezes them",
     "A peer note opens as a connected WebKit mesh over the sea; its exclusive catch and draft survive reload",
+    "WebKit announces a new returned bottle and opens its postcard without a refresh",
     "Two WebKit identities receive the same canonical postcard without refresh and export a 1080×1350 PNG",
     "Mobile completion keeps the title, postcard and sharing controls above the optional next-beginning invitation",
     "Injected native-share cancellation stays quiet; injected share denial copies a link a third WebKit identity can open",
@@ -51,6 +52,10 @@
     },
     {
       "artifact": "writing-390.png",
+      "violations": []
+    },
+    {
+      "artifact": "returned-notice-1440.png",
       "violations": []
     },
     {

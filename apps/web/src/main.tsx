@@ -223,6 +223,8 @@ function App() {
   const [reveal, setReveal] = useState('');
   const [seaPaused, setSeaPaused] = useState(false);
   const [gateReady, setGateReady] = useState(false);
+  const [returnedNotice, setReturnedNotice] = useState('');
+  const seenReturns = useRef<{ identity: string; ids: Set<string> } | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const nowDay = dayOf(clock);
   const active = s.rounds.find(
@@ -262,6 +264,23 @@ function App() {
   const returnedToday = mine.filter(
     (o) => o.role === 'setup' && dayOf(o.card.createdMs) === nowDay,
   ).length;
+  const returnedCard = mine.find((o) => o.role === 'setup' && o.card.id === returnedNotice)?.card;
+  useEffect(() => {
+    if (!s.connected || !s.identity) return;
+    const returned = s.ownership
+      .filter((o) => o.role === 'setup' && !o.hidden)
+      .flatMap((o) => s.cards.filter((card) => card.id === o.id))
+      .sort((a, b) => b.createdMs - a.createdMs);
+    if (seenReturns.current?.identity !== s.identity) {
+      // The first complete subscription is a baseline, not a new-arrival event.
+      seenReturns.current = { identity: s.identity, ids: new Set(returned.map((card) => card.id)) };
+      setReturnedNotice('');
+      return;
+    }
+    const arriving = returned.find((card) => !seenReturns.current!.ids.has(card.id));
+    for (const card of returned) seenReturns.current.ids.add(card.id);
+    if (arriving) setReturnedNotice(arriving.id);
+  }, [s.connected, s.identity, s.ownership, s.cards]);
   const emptyTide = error.startsWith('No bottles are available');
   const remaining = active
     ? Math.max(0, Math.min(600, Math.ceil((active.leaseMs - clock) / 1000)))
@@ -376,6 +395,7 @@ function App() {
     minute: '2-digit',
   });
   function showCard(id: string) {
+    setReturnedNotice((current) => (current === id ? '' : current));
     setSelected(id);
     setView('card');
     setError('');
@@ -449,6 +469,27 @@ function App() {
         )}
         {s.connected && s.service?.botRequired && !gateReady && (
           <ShoreGate onVerified={() => setGateReady(true)} />
+        )}
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {returnedCard ? 'Your bottle came back. Someone added six words.' : ''}
+        </div>
+        {returnedCard && (
+          <aside className="returned-notice" aria-label="Returned bottle">
+            <div>
+              <Mail size={19} aria-hidden="true" />
+              <span>Your bottle came back. Someone added six words.</span>
+            </div>
+            <button className="text-button" onClick={() => showCard(returnedCard.id)}>
+              Open returned postcard <ArrowRight size={16} aria-hidden="true" />
+            </button>
+            <button
+              className="icon-button"
+              aria-label="Dismiss returned bottle notice"
+              onClick={() => setReturnedNotice('')}
+            >
+              <X size={17} aria-hidden="true" />
+            </button>
+          </aside>
         )}
         <main id="main" className={`main view-${view}`}>
           {view === 'today' && (
@@ -1055,17 +1096,17 @@ function App() {
         <Modal title="A little story, together." onClose={() => setModal(null)}>
           <ol className="how-list">
             <li>
-              <strong>Start with six words.</strong> Answer today’s playful prompt and toss your
-              beginning into the sea.
+              <strong>Catch a beginning.</strong> Shake the bottle or choose “Pick up a bottle”
+              to open someone’s six words over the sea.
             </li>
             <li>
-              <strong>Finish another bottle.</strong> Catch someone else’s setup and add a six-word
-              ending. A labeled starter may help when the sea is quiet. Samples are marked in the
-              sandbox.
+              <strong>Add your six-word ending.</strong> You both keep the finished postcard.
+              Save it or share it, then leave another beginning if you feel like it.
             </li>
             <li>
-              <strong>Keep the postcard.</strong> Save or share what you made. Someone may finish
-              your own setup later.
+              <strong>Keep the bottle drifting.</strong> “Write my six words” lets you start
+              instead. When the sea is quiet, leave a beginning or try catching again later.
+              A return isn’t guaranteed; samples are labeled in the sandbox.
             </li>
           </ol>
           <p>

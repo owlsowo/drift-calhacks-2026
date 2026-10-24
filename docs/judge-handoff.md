@@ -10,7 +10,7 @@ Open the app in two independent browser profiles or two devices. Tabs in the sam
 
 The real public pool can contain other people's beginnings, so a particular outgoing bottle's return cannot be promised on demand. If the sea is empty, use the honest writing/retry path. There are no invented strangers. For a deterministic rehearsal, use the disposable local demo commands in the README; that sandbox is visibly labeled, has AI checks off and is not hosted-Claude evidence.
 
-Optional Claude guidance suggests an angle; it does not fill the draft. The writer still supplies exactly six words. Motion can be paused; drag, button and keyboard alternatives are available. After finishing, leaving another beginning is optional. Mutual hello is disabled on this deployment until a real public meeting point is verified.
+Optional Claude guidance suggests an angle; it does not fill the draft. The writer still supplies exactly six words. Motion can be paused; drag, button and keyboard alternatives are available. After finishing, leaving another beginning is optional. A newly returned story offers a quiet open/dismiss notice without replacing the current draft or moving its focus. Previously saved cards do not announce as fresh arrivals on reload. Mutual hello is disabled on this deployment until a real public meeting point is verified.
 
 ## Inspect the work
 
@@ -23,7 +23,7 @@ Optional Claude guidance suggests an angle; it does not fill the draft. The writ
 | Was Figma really used? | [Make](https://www.figma.com/make/4Sk3BHNmaGuxH17B36jAxP/Drift-Bottle-Interaction-Prototype), [native Slides](https://www.figma.com/slides/aIXkdSqeFH9r8mXu7qI6zv/Drift-idea-to-working-tide), `docs/figma-stage-log.md` and implemented handoff commit `2544990` |
 | Was Mana really used? | [Bottle Kitchen](https://www.mana.space/home/uZUAnp4vMmhOcc7s846yMqttA8V2/apps/drift-bottle-kitchen), [public build chat](https://www.mana.space/shared-chats/uZUAnp4vMmhOcc7s846yMqttA8V2/001792875075719b18054a2b85b4dcba093), actual draft export and validator rejection |
 
-The Figma prototype is a later iteration with sample content, separate from the game. Its writing action is a placeholder; the live game's writing flow works. Mana's companion prepares drafts, verifies structure and tracks review; it does not prove authorship or populate the game automatically. Human starter inventory is still empty.
+The Figma prototype is a later iteration with sample content, separate from the game. Its current v4 includes a sample writing flow, dated identity and path-aware postcard authorship. The earlier video screenshot depicts v2; that historical version had a placeholder writing action. Production permits over-six-word drafts with feedback rather than adopting the prototype's input cap or synthetic autofill. Mana's companion prepares drafts, verifies structure and tracks review; it does not prove authorship or populate the game automatically. Human starter inventory is still empty.
 
 ## Source access without changing repo visibility
 

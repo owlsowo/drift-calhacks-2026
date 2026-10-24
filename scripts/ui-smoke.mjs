@@ -97,6 +97,7 @@ try {
   await B.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await B.getByText('I taught the octopus insider trading.', { exact: true }).waitFor();
   pass('Each identity catches the other writer, never itself');
+  await B.getByRole('textbox').fill('Your account has been permanently frozen.');
   await A.getByRole('textbox').fill('Our lawyers would like another hand.');
   await screen(A, 'reply-360.png');
   await screen(B, 'reply-1440.png');
@@ -120,7 +121,27 @@ try {
   pass('A server-confirmed postcard survives a lost reply acknowledgment');
   await B.getByRole('button', { name: 'My postcards 1', exact: true }).waitFor();
   pass('Original author receives the returned postcard without refreshing');
-  await B.getByRole('textbox').fill('Your account has been permanently frozen.');
+  await B.getByRole('complementary', { name: 'Returned bottle', exact: true }).waitFor();
+  assert.equal(await B.getByRole('textbox').inputValue(), 'Your account has been permanently frozen.');
+  assert.equal(await B.getByRole('textbox').evaluate((el) => el === document.activeElement), true);
+  await screen(B, 'returned-notice-1440.png');
+  await B.setViewportSize({ width: 360, height: 800 });
+  await screen(B, 'returned-notice-360.png');
+  await B.getByRole('button', { name: 'Open returned postcard', exact: true }).click();
+  await B.locator('.postcard-paper.paper-open').waitFor();
+  assert.equal(
+    await B.locator('article.postcard').getAttribute('data-card-id'),
+    await A.locator('article.postcard').getAttribute('data-card-id'),
+  );
+  assert.equal(await B.locator('.returned-notice').count(), 0);
+  await B.getByRole('button', { name: 'Today’s bottle', exact: true }).click();
+  assert.equal(await B.getByRole('textbox').inputValue(), 'Your account has been permanently frozen.');
+  await B.reload();
+  await B.getByRole('button', { name: 'Pick up where you left off', exact: true }).click();
+  assert.equal(await B.getByRole('textbox').inputValue(), 'Your account has been permanently frozen.');
+  assert.equal(await B.locator('.returned-notice').count(), 0);
+  await B.setViewportSize({ width: 1440, height: 1000 });
+  pass('A new return announces without taking draft focus; its open action reaches the right card and old cards stay quiet after reload');
   await B.getByRole('button', { name: 'Seal our postcard', exact: true }).click();
   await B.getByRole('heading', { name: 'Well, look what we made.' }).waitFor();
   await screen(B, 'reveal-1440.png');
