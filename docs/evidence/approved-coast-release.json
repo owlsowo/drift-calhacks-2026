@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-25T02:21:23.954Z",
+  "sourceCommit": "98f854b8bae34a2925c8f942dc31a0c4d2d9e060",
+  "cloudflareVersion": "527fbfff-d9bb-4c89-b756-df1fb9349441",
+  "ci": {
+    "run": 40154046528,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-BSr_WTG8.js",
+      "sha256": "a27252eb282620553aceefe3fab46ec36e74cdaf981494660a56784c43f90289",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-2K_o4_Df.css",
+      "sha256": "fd90f6efc2eee5e3032fad3012f5f3a0ba3df7bc10a79a7f6dc7d83a206ff94b",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/coast-night-wide.webp",
+      "sha256": "c000ff9473c2061fbdc8695acbc5875b4bd556eccaadd123e3f99cbc0b15b765",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/coast-night-mobile.webp",
+      "sha256": "b56f38f3b451e71afb970daf66d99591f50626bdc8ce0806db8ca1e17e3d56bc",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/coast-headland.webp",
+      "sha256": "d3d46ccacfe66bbf73b7ed45c6d0ad6e779129620fdc4ada90f6af65c957bb4b",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/credits.html",
+      "sha256": "d2faa22dde0e7dce5f9a8b19bdda4b65dbee89d7ae1d9508eb801b5e0d994b42",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Owner-approved existing PR artwork restored byte-for-byte; no new generation. Five scene checks, eight note-rendering fault cases and six ritual checks per Chrome/WebKit pass. Served files match tested build. No database update, provider call or hosted synthetic story."
+}

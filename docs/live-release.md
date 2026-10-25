@@ -127,3 +127,9 @@ Frontend `4acb0a3` (Cloudflare `b7f31eb6-95bf-430f-8aa9-c5c1d4387cbf`, CI `40152
 Frontend `e298e2a` is deployed as Cloudflare `1f936ef8-629c-4d45-b0c2-290dd1cb33a7`; CI `40153206152` succeeded. Request retry text now receives the same bounded envelope as drafts, retains its original ID through unknown outcomes and is removed immediately after a confirmed result. Current-connection guards keep manual reconnect status accurate.
 
 Six retention checks, ten letter checks and six ritual checks pass per Chrome/WebKit using corrected synchronous state polling. The retention suite injects response loss after an actual local server commit and confirms replay leaves one request with the same ID. Time, sensor, permission and storage faults are emulated. No provider call is made by these local suites. Served entry/ocean bytes match the tested build, strict CSP remains, and the hosted Privacy explanation was inspected. The database is unchanged. See `local-retry-retention.md`, `local-retention-release.json` and `local-retention-live-privacy.png`.
+
+## 2026-10-25 — owner-approved coast and lighthouse
+
+The owner approved restoring the PR landscape and lighthouse in Codex. Frontend `98f854b` is live as Cloudflare `527fbfff-d9bb-4c89-b756-df1fb9349441`; CI `40154046528` passed. All three approved image files match the original PR exactly. The transparent headland sits over live simulated water; unsupported WebGPU gets the responsive landscape/portrait art. Paper remains photographed and the dock remains CSS. Credits disclose generated artwork accurately.
+
+Twenty-five targeted scene/ritual/paper checks passed after this change. The served JS/CSS, ocean chunk, three images and credits page match the tested build. The connected public scene was inspected; no story or paid call was created, and no database change occurred. See `approved-coast.md`, `approved-coast-release.json` and `approved-coast-live.png`.
