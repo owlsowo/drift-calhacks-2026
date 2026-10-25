@@ -26,13 +26,14 @@ try {
       .subscriptionBuilder()
       .onApplied(() => resolve())
       .onError(() => reject(Error('Hosted service subscription failed.')))
-      .subscribe(['SELECT * FROM service_status']),
+      .subscribe(['SELECT * FROM service_status', 'SELECT * FROM my_unopened_returns']),
   );
   const status = [...connection.db.serviceStatus.iter()][0];
   assert.equal(status.sandbox, false);
   assert.equal(status.aiReady, true);
   assert.equal(status.botRequired, true);
   assert.equal(status.paused, false);
+  assert.deepEqual([...connection.db.myUnopenedReturns.iter()], []);
   let rejection = '';
   try {
     await connection.reducers.pickUpBeginning({ beginningId: 'invalid-synthetic-invitation' });
@@ -44,6 +45,7 @@ try {
     checkedAt: new Date().toISOString(),
     checks: [
       'Hosted service remains live, AI-ready, unpaused and bot-protected',
+      'The additive unopened-return view is available and reveals no reading state to a fresh anonymous identity',
       'The new invitation reducer rejects an unverified identity before selecting a beginning',
     ],
     scope:

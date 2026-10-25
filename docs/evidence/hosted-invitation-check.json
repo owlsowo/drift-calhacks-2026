@@ -1,7 +1,8 @@
 {
-  "checkedAt": "2026-10-25T02:39:07.978Z",
+  "checkedAt": "2026-10-25T03:37:00.246Z",
   "checks": [
     "Hosted service remains live, AI-ready, unpaused and bot-protected",
+    "The additive unopened-return view is available and reveals no reading state to a fresh anonymous identity",
     "The new invitation reducer rejects an unverified identity before selecting a beginning"
   ],
   "scope": "Real hosted SDK/service/reducer guard probe. No challenge solved, round/story created or provider call made. This is not a hosted multi-writer Claude completion test."

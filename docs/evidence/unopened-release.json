@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-25T03:37:37.551Z",
+  "sourceCommit": "72e39a566d9dedf470bb660e0986c9037ce913a6",
+  "cloudflareVersion": "d27970ad-19d0-48fd-acd6-288997f5abcb",
+  "ci": {
+    "run": 40158728097,
+    "conclusion": "success"
+  },
+  "database": {
+    "name": "drift-calhacks-2026",
+    "identity": "c20021eee2fe643cce13a21845d5dcb1a168026f58ec4ac83d36ebd86563be60",
+    "migrationPlan": "Created only my_unopened_returns view; no stored schema/table operation",
+    "readback": "unopened-upgrade-hosted.json"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-XLhDsUFb.js",
+      "sha256": "8e3b53bf7fd7314dc1c80dbb5983b2fb13425856c580f49c7f8ebb2afc8bd37c",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-C1ZGxGAT.css",
+      "sha256": "71bdddef87a83e99d8607d989c3217641ba4da7890d0f4c7256c98c696cccaed",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Unopened return discovery uses existing author open flags. Local Chrome/WebKit closed-page, cross-tab, reload, exact-pair and cookie-only privacy checks pass; hosted view availability and fresh-identity isolation are probed. No provider calls or stories from these checks, no data reset or new retained field. Revised full hosted Claude completion and physical phones remain separate."
+}
