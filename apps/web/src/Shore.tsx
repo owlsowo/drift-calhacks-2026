@@ -263,7 +263,7 @@ export function Shore({
   return (
     <section
       className={`shore shore-${mode} ${empty ? 'shore-empty' : ''} ${dragging ? 'is-grabbed' : ''} ${busy ? 'is-searching' : ''}`}
-      aria-label={mode === 'catch' ? 'Catch a bottle on the moonlit shore' : 'Drift bottle shore'}
+      aria-label={mode === 'catch' ? 'Catch a bottle on the shore' : 'Drift bottle shore'}
     >
       <h1 ref={headingRef} tabIndex={-1} className="sr-only">
         {mode === 'catch' ? 'Find a bottle on the shore' : 'Drift, a few words between strangers'}

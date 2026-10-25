@@ -48,8 +48,10 @@ import { EarlierDrafts } from './EarlierDrafts';
 import { BottleRitual, type BottleRitualKind } from './BottleRitual';
 import { useDriftNavigation } from './useDriftNavigation';
 import { confirmedAction } from './confirmed-action';
+import { useCoastPeriod } from './useCoastPeriod';
 import './natural.css';
 import './postcard-scene.css';
+import './daylight-coast.css';
 
 function Bottle({ small = false }: { small?: boolean }) {
   return (
@@ -298,6 +300,7 @@ function DailyTurnReceipt({ used, reset }: { used?: number; reset: string }) {
 
 function App() {
   const s = useSyncExternalStore(game.subscribe, game.snapshot);
+  const coastPeriod = useCoastPeriod();
   const beforeNavigation = useRef(() => {});
   const {
     route,
@@ -587,7 +590,20 @@ function App() {
   const changeDraft = (value: string) => {
     const limited = [...value].slice(0, 160).join('');
     setDraft({ key: currentDraftKey, text: limited });
-    if (currentDraftKey) persist(currentDraftKey, limited);
+    if (currentDraftKey)
+      persist(
+        currentDraftKey,
+        limited,
+        active && prompt
+          ? {
+              day: active.day,
+              setupPrompt: prompt.setup,
+              replyPrompt: prompt.reply,
+              kind: active.stage === 'reply' ? 'reply' : 'setup',
+              beginning: assignment?.text,
+            }
+          : undefined,
+      );
   };
   const run = async (label: string, fn: (stillHere: () => boolean) => Promise<unknown>) => {
     if (actionRunning.current) return;
@@ -856,8 +872,9 @@ function App() {
       </a>
       <div
         className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}${ritual ? ' has-bottle-ritual' : ''}${view === 'today' && needsShoreCheck ? ' has-shore-check' : ''}${view === 'today' && returnedCard ? ' has-returned-note' : ''}`}
+        data-time-of-day={coastPeriod}
       >
-        <Ocean paused={seaPaused} />
+        <Ocean paused={seaPaused} timeOfDay={coastPeriod} />
         <header className="site-header" inert={!!ritual}>
           <button
             className="wordmark"
@@ -1024,6 +1041,8 @@ function App() {
                     <EarlierDrafts
                       identity={s.identity}
                       rounds={s.rounds}
+                      beginnings={s.beginnings}
+                      assignments={s.assignments}
                       day={nowDay}
                       currentKey={currentDraftKey}
                       busy={!!busy}
@@ -1050,6 +1069,15 @@ function App() {
                   />
                 ) : (
                   <PaperNote key={currentDraftKey}>
+                    {active.stage === 'reply' && (
+                      <div className="writing-context">
+                        <strong>Original prompt</strong>
+                        <p>{prompt.setup}</p>
+                      </div>
+                    )}
+                    <span className="story-context">
+                      {active.stage === 'write' ? 'Original prompt' : 'How to respond'}
+                    </span>
                     <h1 ref={heading} tabIndex={-1}>
                       {active.stage === 'write' ? prompt.setup : prompt.reply}
                     </h1>
@@ -1069,7 +1097,14 @@ function App() {
                               : 'Bottle expired'}
                           </span>
                         </div>
+                        <span className="story-context">Their beginning</span>
                         <p>{assignment.text}</p>
+                      </div>
+                    )}
+                    {active.stage === 'write' && (
+                      <div className="writing-context">
+                        <strong>How someone will respond</strong>
+                        <p>{prompt.reply}</p>
                       </div>
                     )}
                     <label className="sr-only" htmlFor="six-words">
@@ -1503,6 +1538,17 @@ function App() {
                         <span>
                           <strong>{round.label}</strong>
                           <small id={`unfinished-detail-${index}`}>{round.detail}</small>
+                          <small className="story-context">
+                            {(() => {
+                              const savedRound = s.rounds.find((item) => item.id === round.id)!;
+                              const savedPrompt = JSON.parse(savedRound.promptJson) as Prompt;
+                              const caught = s.assignments.find(
+                                (item) =>
+                                  item.roundId === round.id && item.id === savedRound.assignmentId,
+                              );
+                              return `${savedPrompt.setup}${savedRound.stage === 'reply' ? ` · ${savedPrompt.reply}${caught ? ` · ${caught.text}` : ''}` : ''}`;
+                            })()}
+                          </small>
                         </span>
                         <ArrowRight size={16} aria-hidden="true" />
                       </button>
@@ -1556,6 +1602,9 @@ function App() {
                         className="beginning-preview"
                         onClick={() => showBeginning(letter.id)}
                       >
+                        <small className="story-context">
+                          {(JSON.parse(letter.promptJson) as Prompt).setup}
+                        </small>
                         <span>{letter.text}</span>
                         <small>
                           {letter.endings.length}{' '}
@@ -1638,6 +1687,8 @@ function App() {
               <EarlierDrafts
                 identity={s.identity}
                 rounds={s.rounds}
+                beginnings={s.beginnings}
+                assignments={s.assignments}
                 day={nowDay}
                 currentKey={currentDraftKey}
                 busy={!!busy}
@@ -1669,7 +1720,18 @@ function App() {
                           : 'Sample beginning'}
                       </span>
                     )}
+                    <div className="writing-context">
+                      <strong>Original prompt</strong>
+                      <p>{(JSON.parse(beginning.promptJson) as Prompt).setup}</p>
+                    </div>
+                    <span className="story-context">
+                      {ownsBeginning ? 'Your beginning' : 'Their beginning'}
+                    </span>
                     <p className="letter-text">{beginning.text}</p>
+                    <div className="writing-context">
+                      <strong>How to respond</strong>
+                      <p>{(JSON.parse(beginning.promptJson) as Prompt).reply}</p>
+                    </div>
                     <details className="bottle-receipt">
                       <summary>Bottle ID</summary>
                       <code>{beginning.id}</code>

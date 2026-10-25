@@ -14,6 +14,7 @@ export async function createOcean(canvas, options = {}) {
 let release = () => {};
 try {
 let disposed = false, raf = 0, stopped = !!options.paused, observer;
+let timeOfDay = options.timeOfDay === 'day' ? 'day' : 'night';
 let initialized = false, last = performance.now();
 let context = null, ownedDevice = null;
 function destroy() {
@@ -68,6 +69,19 @@ const P = {
   veil: 0.0,
   bloom: 0.035,
 };
+// Lighting changes do not touch the wave spectrum, simulation clock or GPU resources.
+// Keep the approved blue-hour settings as the default and restore them exactly at night.
+function applyLighting() {
+  const day = timeOfDay === 'day';
+  P.turbidity = day ? 0.80 : 0.65;
+  P.exposure = day ? 0.95 : 1.0;
+  P.haze = day ? 1.35 : 3.0;
+  P.clouds = day ? 0.0 : 0.01;
+  P.veil = 0.0;
+  P.bloom = day ? 0.025 : 0.035;
+  canvas.dataset.timeOfDay = timeOfDay;
+}
+applyLighting();
 const CASC_L = [1103.0, 211.3, 39.7, 7.43, 1.393, 0.2617];
 
 function fail(msg) { throw new Error(msg); }
@@ -570,29 +584,36 @@ function mat4Mul(out, a, b) {
     f[16] = cam.x; f[17] = cam.y; f[18] = cam.z; f[19] = time;
     f[20] = rx * tanX; f[21] = ry * tanX; f[22] = rz * tanX; f[23] = 0;
     f[24] = ux * tanY; f[25] = uy * tanY; f[26] = uz * tanY; f[27] = 0;
-    f[28] = fx; f[29] = fy; f[30] = fz; f[31] = 0;
-    // Keep the moon in the left sky on both wide and portrait screens. Its direction
-    // also lights the simulated waves, so the glitter is a real surface reflection.
-    const mx = fx - 0.56 * rx * tanX + 0.64 * ux * tanY;
-    const my = fy - 0.56 * ry * tanX + 0.64 * uy * tanY;
-    const mz = fz - 0.56 * rz * tanX + 0.64 * uz * tanY;
+    const day = timeOfDay === 'day';
+    // camFwd.w was unused; carry the lighting mode without changing the shared UBO layout.
+    f[28] = fx; f[29] = fy; f[30] = fz; f[31] = day ? 1 : 0;
+    // Keep the moon in the left sky; daylight's sun sits above the upper-left frame.
+    // Both light the simulated waves, so glitter is a real surface reflection.
+    const lightHeight = day ? 1.60 : 0.64;
+    const lightLeft = day ? 0.70 : 0.56;
+    const mx = fx - lightLeft * rx * tanX + lightHeight * ux * tanY;
+    const my = fy - lightLeft * ry * tanX + lightHeight * uy * tanY;
+    const mz = fz - lightLeft * rz * tanX + lightHeight * uz * tanY;
     const ml = Math.hypot(mx, my, mz);
-    f[32] = mx / ml; f[33] = my / ml; f[34] = mz / ml; f[35] = 0.025;
+    f[32] = mx / ml; f[33] = my / ml; f[34] = mz / ml; f[35] = day ? 0.8 : 0.025;
     f[36] = W; f[37] = H; f[38] = 1 / W; f[39] = 1 / H;
     for (let c = 0; c < C; c++) { f[40 + c] = CASC_L[c]; f[48 + c] = 1 / CASC_L[c]; }
     f[56] = Math.cos(P.windDir * D2R); f[57] = Math.sin(P.windDir * D2R); f[58] = P.windSpeed;
     f[64] = R0; f[65] = GRID; f[66] = FOAM_LEVEL_SIZE[0]; f[67] = FOAM_LEVEL_SIZE[1];
     f[68] = P.exposure; f[69] = P.bloom; f[70] = frameIndex; f[71] = DBG;
-    f[72] = P.haze; f[73] = Math.max(cam.y, 10) * 0.001; f[74] = P.veil; f[75] = 0.9;
+    f[72] = P.haze; f[73] = Math.max(cam.y, 10) * 0.001; f[74] = P.veil; f[75] = day ? 0.72 : 0.9;
     // deep water body scatter colour (greenish coastal water), unresolved slope variance
-    f[76] = 0.010 * P.turbidity; f[77] = 0.055 * P.turbidity; f[78] = 0.190 * P.turbidity; f[79] = 0.0024;
-    f[80] = 0.020; f[81] = 0.060; f[82] = 0.140; f[83] = 2.6;
+    f[76] = (day ? 0.003 : 0.010) * P.turbidity;
+    f[77] = (day ? 0.030 : 0.055) * P.turbidity;
+    f[78] = (day ? 0.055 : 0.190) * P.turbidity; f[79] = 0.0024;
+    f[80] = day ? 0.025 : 0.020; f[81] = day ? 0.130 : 0.060;
+    f[82] = day ? 0.170 : 0.140; f[83] = day ? 1.4 : 2.6;
     f[84] = 0.36 + 0.12 * P.foam; f[85] = 2.5; f[86] = 1.0; f[87] = 1.0;
     f[88] = (5.802e-3 + 4.40e-3 * P.haze) * 1e-3;
     f[89] = (13.558e-3 + 4.40e-3 * P.haze) * 1e-3;
     f[90] = (33.1e-3 + 4.40e-3 * P.haze) * 1e-3;
     f[91] = 1.0e-6;
-    f[92] = 1.5; f[93] = P.clouds; f[94] = 2.2; f[95] = time;
+    f[92] = 1.5; f[93] = P.clouds; f[94] = day ? 1.6 : 2.2; f[95] = time;
     device.queue.writeBuffer(frameUBO, 0, f);
   }
 
@@ -737,8 +758,9 @@ function mat4Mul(out, a, b) {
       p.end();
     }
 
-    compData[0] = P.exposure; compData[1] = P.bloom; compData[2] = frameIndex % 64; compData[3] = 0.025;
-    compData[4] = 1.08; compData[5] = 1.04; compData[6] = 0.0; compData[7] = 0;
+    const day = timeOfDay === 'day';
+    compData[0] = P.exposure; compData[1] = P.bloom; compData[2] = frameIndex % 64; compData[3] = day ? 0.012 : 0.025;
+    compData[4] = day ? 1.28 : 1.08; compData[5] = day ? 1.0 : 1.04; compData[6] = 0.0; compData[7] = 0;
     device.queue.writeBuffer(compUBO, 0, compData);
     const swapTex = ctx.getCurrentTexture();
     compPass.colorAttachments[0].view = swapTex.createView();
@@ -779,6 +801,18 @@ function mat4Mul(out, a, b) {
   resume();
   return {
     setPaused(value) { stopped = !!value; resume(); },
+    setTimeOfDay(value) {
+      if (disposed) return;
+      const next = value === 'day' ? 'day' : 'night';
+      if (next === timeOfDay) return;
+      timeOfDay = next;
+      applyLighting();
+      needLUT = true;
+      envFull = 2;
+      // resume redraws a still frame even when paused/reduced-motion, without advancing
+      // the simulation or starting an animation loop for a paused or hidden page.
+      resume();
+    },
     destroy,
   };
 } catch (error) {

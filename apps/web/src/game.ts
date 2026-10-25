@@ -1,5 +1,6 @@
 import './csp-serialization';
 import { DbConnection } from './module_bindings';
+import type { DraftContext } from './story-context';
 import { encodeDraft, decodeDraft } from './drafts';
 import type { CardAction } from '../../../packages/activity/index';
 import {
@@ -102,8 +103,14 @@ const read = (key: string) => {
 };
 const hasRetainedText = (key: string) =>
   key.startsWith('drift:draft:') || key.startsWith('drift:request:');
-export const persist = (key: string, value: string) => {
-  if (hasRetainedText(key)) value = encodeDraft(value);
+export const persist = (key: string, value: string, context?: DraftContext) => {
+  if (hasRetainedText(key)) {
+    const previous = decodeDraft(read(key) || '').context;
+    const retainedContext = context
+      ? { ...context, beginning: context.beginning ?? previous?.beginning }
+      : previous;
+    value = encodeDraft(value, Date.now(), retainedContext);
+  }
   memory.set(key, value);
   try {
     localStorage.setItem(key, value);
@@ -163,7 +170,7 @@ export function localDrafts(identity: string) {
     .filter((key) => key.startsWith(prefix))
     .flatMap((key) => {
       const text = saved(key);
-      return text.trim() ? [{ key, text }] : [];
+      return text.trim() ? [{ key, text, context: decodeDraft(read(key) || '').context }] : [];
     });
 }
 function emit(patch: Partial<Snapshot> = {}) {
