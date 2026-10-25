@@ -22,6 +22,8 @@
     "test:retention": "node scripts/test-room.mjs retention",
     "test:ritual": "node scripts/test-room.mjs ritual",
     "test:letters": "node scripts/test-room.mjs letters",
+    "test:returns": "node scripts/test-room.mjs returns",
+    "test:unopened-upgrade": "node --import tsx scripts/unopened-upgrade.mjs",
     "test:empty": "node scripts/test-room.mjs empty",
     "test:webkit": "node scripts/test-room.mjs webkit",
     "test:recovery": "node scripts/test-room.mjs recovery",

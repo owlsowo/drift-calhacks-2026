@@ -1,0 +1,11 @@
+# Finding replies after time away
+
+The basket badge counts unopened replies to your beginnings. The shelf identifies the beginning and the particular ending that remains unopened. A reply completed while every author page is closed is included on the next visit; the live-arrival notice still announces only arrivals during the current page session. Daily reply totals remain separate from unopened counts.
+
+Opening the full, visible postcard clears its marker. Looking at a beginning or ending preview, dismissing a notice, copying a link or the other writer opening the pair does not. Reading state updates through the server subscription, including between two tabs with the same author identity, and survives reloads. A browser that recovers only public bookmark cookies sees no private reading markers. Losing the anonymous session still loses author access, as explained in Privacy.
+
+Implementation reuses the existing per-author `open` bit recorded by the postcard's visibility observer. No new tracking event, stored column, table or read-history backfill is introduced. The additive sender-scoped `my_unopened_returns` view projects only IDs of visible pairs whose beginning author is the caller and whose setup-open bit is unset. The original `my_cards` wire shape remains unchanged for older clients. Hidden/expired pairs drop out, and the UI also excludes reported cards.
+
+Verification: 77 server checks, four unopened-return browser checks per Chrome/WebKit, the current eleven-check Chrome letter regression, six gate-layout checks and six coast checks. The new browser checks close all author pages before another writer finishes, verify a second independent return, confirm cross-tab acknowledgement and reload, and test cookie-only privacy. Selected accessibility scans cover the badge and marked reply list. An actual local upgrade from deployed source `99419dd` preserves all compared stored schemas/records and lets the previous generated client continue working while a new client observes the private view.
+
+All stories and gate fixtures in those tests are synthetic and local; there are no paid calls. This does not prove physical-phone behavior, human outcomes or the revised hosted Claude completion flow. The latter still requires the normal human-check interaction requested from the team.

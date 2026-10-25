@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T03:26:45.990Z",
+  "checkedAt": "2026-10-25T03:34:07.674Z",
   "mode": "Isolated local sandbox; no submitted story or model call. Real Chrome WebGPU pixels; forced unsupported-GPU and hidden-page conditions; emulated WebKit phone viewport, not a physical phone.",
   "checks": [
     "Chrome WebGPU renders moving water with the approved transparent lighthouse aligned to its 40% horizon",

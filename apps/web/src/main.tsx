@@ -330,6 +330,15 @@ function App() {
       total + letter.endings.filter((pair) => dayOf(pair.createdMs) === nowDay).length,
     0,
   );
+  const unopenedIds = new Set(
+    s.unopenedReturns
+      .filter(
+        (item) =>
+          s.cards.some((card) => card.id === item.id) &&
+          !s.reported.some((report) => report.id === item.id),
+      )
+      .map((item) => item.id),
+  );
   const returnedCard = s.cards.find(
     (item) =>
       item.id === returnedNotice &&
@@ -718,7 +727,7 @@ function App() {
               onAction={beginCatch}
               onWrite={begin}
               onCollection={() => setView('collection')}
-              count={released.length + completed.length}
+              unopenedCount={unopenedIds.size}
               returnedCount={returnedToday}
               empty={emptyTide}
               headingRef={heading}
@@ -762,7 +771,7 @@ function App() {
                     onAction={() => run('Finding a bottle…', () => pickUp(active.id))}
                     onWrite={begin}
                     onCollection={() => setView('collection')}
-                    count={released.length + completed.length}
+                    unopenedCount={unopenedIds.size}
                     returnedCount={returnedToday}
                     empty={emptyTide}
                     headingRef={heading}
@@ -1103,6 +1112,12 @@ function App() {
                         <small>
                           {letter.endings.length}{' '}
                           {letter.endings.length === 1 ? 'ending' : 'endings'}
+                          {letter.endings.some((pair) => unopenedIds.has(pair.id)) && (
+                            <strong className="unopened-label">
+                              {letter.endings.filter((pair) => unopenedIds.has(pair.id)).length}{' '}
+                              unopened
+                            </strong>
+                          )}
                         </small>
                         <ChevronLeft size={16} className="letter-forward" />
                       </button>
@@ -1324,6 +1339,9 @@ function App() {
                         >
                           <span>{pair.reply}</span>
                           <small>
+                            {unopenedIds.has(pair.id) && (
+                              <strong className="unopened-label">Unopened</strong>
+                            )}
                             {new Date(pair.createdMs).toLocaleDateString([], {
                               month: 'short',
                               day: 'numeric',
@@ -1383,7 +1401,8 @@ function App() {
             </li>
             <li>
               <strong>My bottles.</strong> Read replies to your beginnings and revisit the pairs you
-              finished. Open your beginning to invite someone to finish it.
+              finished. The badge counts unopened replies. Open your beginning to invite someone to
+              finish it.
             </li>
           </ol>
           <p>Up to three bottles a day. One skip per reply.</p>
@@ -1444,7 +1463,8 @@ function App() {
           <p>
             Private daily totals count completed stories, first postcard opens and export/share
             requests. We use existing card ownership to avoid counting repeats. These totals contain
-            no words or identities and expire after thirty days.
+            no words or identities and expire after thirty days. Your private postcard-open record
+            also keeps track of which replies you have yet to open.
           </p>
           <p>
             AI guidance is optional and stays separate from your words. Starter content is always

@@ -93,7 +93,7 @@ export function Shore({
   onAction,
   onWrite,
   onCollection,
-  count,
+  unopenedCount = 0,
   returnedCount = 0,
   empty = false,
   headingRef,
@@ -110,7 +110,7 @@ export function Shore({
   onAction: () => Promise<unknown>;
   onWrite: () => Promise<unknown>;
   onCollection: () => void;
-  count: number;
+  unopenedCount?: number;
   returnedCount?: number;
   empty?: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
@@ -392,9 +392,13 @@ export function Shore({
           <span>Pick up</span>
         </button>
         <button
-          className={`dock-action ${returnedCount ? 'dock-returned' : ''}`}
+          className={`dock-action ${unopenedCount ? 'dock-returned' : ''}`}
           onClick={onCollection}
-          aria-label={returnedCount ? `My bottles. ${returnedCount} replies today` : 'My bottles'}
+          aria-label={
+            unopenedCount
+              ? `My bottles. ${unopenedCount} unopened ${unopenedCount === 1 ? 'reply' : 'replies'}`
+              : 'My bottles'
+          }
         >
           <span className="dock-object">
             <svg viewBox="0 0 64 64" aria-hidden="true">
@@ -414,7 +418,7 @@ export function Shore({
                 stroke="#e1e7d8"
               />
               <path d="M16 42v15m16-14v16m16-17v15" stroke="#5f7b7d" />
-              {returnedCount > 0 && (
+              {unopenedCount > 0 && (
                 <g className="returned-seal">
                   <path d="m35 14-3 15 6-3 4 5 1-17" fill="#ae4e3f" />
                   <circle cx="38" cy="13" r="7" fill="#a9473a" stroke="#eac1a2" />
@@ -427,7 +431,7 @@ export function Shore({
                 </g>
               )}
             </svg>
-            {count > 0 && <b>{count}</b>}
+            {unopenedCount > 0 && <b aria-hidden="true">{unopenedCount}</b>}
           </span>
           <span>My bottles</span>
         </button>

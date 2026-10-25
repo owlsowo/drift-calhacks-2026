@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T03:26:21.730Z",
+  "checkedAt": "2026-10-25T03:34:09.758Z",
   "mode": "Isolated local sandbox, synthetic gate secret and inert 300px widget placeholder. No challenge solved, valid pass issued, external Turnstile request or provider call; this is layout/accessibility verification, not production human-check verification.",
   "checks": [
     "A newly required human check stays inside the writing view and preserves its local draft",

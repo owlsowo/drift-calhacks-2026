@@ -460,6 +460,11 @@
   color: var(--letter-pencil);
   font: 400 11px/1.5 var(--letter-ui);
 }
+.sea-world .unopened-label {
+  display: block;
+  color: #344b3a;
+  font: 600 11px/1.5 var(--letter-ui);
+}
 .sea-world .beginning-preview > svg,
 .sea-world .ending-preview > svg {
   color: #536174;

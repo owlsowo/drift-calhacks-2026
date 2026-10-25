@@ -76,6 +76,7 @@ import MyHelloRow from "./my_hello_table";
 import MyOutgoingRow from "./my_outgoing_table";
 import MyReportedCardsRow from "./my_reported_cards_table";
 import MyRoundRow from "./my_round_table";
+import MyUnopenedReturnsRow from "./my_unopened_returns_table";
 import PostcardRow from "./postcard_table";
 import ServiceStatusRow from "./service_status_table";
 import TodayRow from "./today_table";
@@ -165,6 +166,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyRoundRow),
+  myUnopenedReturns: __table({
+    name: 'my_unopened_returns',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyUnopenedReturnsRow),
   serviceStatus: __table({
     name: 'service_status',
     indexes: [
@@ -227,6 +235,8 @@ type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "ta
     readonly "my_reported_cards": Omit<typeof tablesSchema.schemaType.tables["myReportedCards"], "accessorName"> & { readonly accessorName: "my_reported_cards" };
     /** @deprecated Use `myRound` instead. This alias will be removed in the next major version. */
     readonly "my_round": Omit<typeof tablesSchema.schemaType.tables["myRound"], "accessorName"> & { readonly accessorName: "my_round" };
+    /** @deprecated Use `myUnopenedReturns` instead. This alias will be removed in the next major version. */
+    readonly "my_unopened_returns": Omit<typeof tablesSchema.schemaType.tables["myUnopenedReturns"], "accessorName"> & { readonly accessorName: "my_unopened_returns" };
     /** @deprecated Use `serviceStatus` instead. This alias will be removed in the next major version. */
     readonly "service_status": Omit<typeof tablesSchema.schemaType.tables["serviceStatus"], "accessorName"> & { readonly accessorName: "service_status" };
   };
@@ -253,6 +263,7 @@ const tableAccessorAliases = {
   "my_outgoing": "myOutgoing",
   "my_reported_cards": "myReportedCards",
   "my_round": "myRound",
+  "my_unopened_returns": "myUnopenedReturns",
   "service_status": "serviceStatus",
 } as const;
 
@@ -286,6 +297,8 @@ export type DbView = __DbViewBase & {
   readonly "my_reported_cards": __DbViewBase["myReportedCards"];
   /** @deprecated Use `myRound` instead. This alias will be removed in the next major version. */
   readonly "my_round": __DbViewBase["myRound"];
+  /** @deprecated Use `myUnopenedReturns` instead. This alias will be removed in the next major version. */
+  readonly "my_unopened_returns": __DbViewBase["myUnopenedReturns"];
   /** @deprecated Use `serviceStatus` instead. This alias will be removed in the next major version. */
   readonly "service_status": __DbViewBase["serviceStatus"];
 };
@@ -304,6 +317,8 @@ export type Tables = __TablesBase & {
   readonly "my_reported_cards": __TablesBase["myReportedCards"];
   /** @deprecated Use `myRound` instead. This alias will be removed in the next major version. */
   readonly "my_round": __TablesBase["myRound"];
+  /** @deprecated Use `myUnopenedReturns` instead. This alias will be removed in the next major version. */
+  readonly "my_unopened_returns": __TablesBase["myUnopenedReturns"];
   /** @deprecated Use `serviceStatus` instead. This alias will be removed in the next major version. */
   readonly "service_status": __TablesBase["serviceStatus"];
 };

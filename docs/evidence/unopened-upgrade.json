@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-25T03:33:41.822Z",
+  "baselineCommit": "99419ddb4d014ce60de67223e9c4df431a75e3b0",
+  "mode": "Same disposable local database, synthetic writers and AI off. No reset, backfill, provider call or hosted data.",
+  "checks": [
+    "Actual additive publish from deployed source retains all compared stored schemas, IDs and fields, including an open draft round and prior per-author open bits",
+    "The previous generated client and its original my_cards subscription keep working after the new private view is added",
+    "New client derives only the genuinely unopened historical pair from preserved private flags and reacts when an older client opens it"
+  ],
+  "comparedCounts": {
+    "round": 4,
+    "bottle": 1,
+    "beginning": 1,
+    "postcard": 2,
+    "authorship": 2,
+    "request": 3,
+    "report": 0,
+    "config": 1,
+    "today": 1,
+    "hello": 0,
+    "report_resolution": 0,
+    "ai_budget": 1,
+    "ai_call": 3,
+    "id_allocator": 1,
+    "activity_day": 1,
+    "schema_migration": 0
+  }
+}

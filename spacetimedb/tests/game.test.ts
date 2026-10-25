@@ -1093,6 +1093,43 @@ describe('private daily activity diagnostics', () => {
       completionOver120s: 0,
     });
   });
+  it('projects unopened returns only to the beginning author and clears only their actual open', () => {
+    const cardId = completePeer();
+    const unread = (who: any) => module.my_unopened_returns(h.viewContext(who));
+    expect(unread(A)).toEqual([{ id: cardId }]);
+    expect(unread(B)).toEqual([]);
+    expect(unread(C)).toEqual([]);
+    tx(B, (ctx) => module.record_card_action(ctx, { cardId, action: 'open' }));
+    tx(A, (ctx) => module.record_card_action(ctx, { cardId, action: 'link_copied' }));
+    expect(unread(A)).toEqual([{ id: cardId }]);
+    expect(() =>
+      tx(C, (ctx) => module.record_card_action(ctx, { cardId, action: 'open' })),
+    ).toThrow(/another writer/);
+    tx(A, (ctx) => module.record_card_action(ctx, { cardId, action: 'open' }));
+    expect(unread(A)).toEqual([]);
+  });
+  it('keeps each return independent and excludes hidden or expired postcards from unopened state', () => {
+    const first = completePeer();
+    tx(C, (ctx) => module.start_catching(ctx, {}));
+    expect(reply(C).ok).toBe(true);
+    const second = module.my_cards(h.viewContext(C))[0].id;
+    const unread = () =>
+      module
+        .my_unopened_returns(h.viewContext(A))
+        .map((r) => r.id)
+        .sort();
+    expect(unread()).toEqual([first, second].sort());
+    tx(A, (ctx) => module.record_card_action(ctx, { cardId: first, action: 'open' }));
+    expect(unread()).toEqual([second]);
+    tx(A, (ctx) => module.hide_my_card(ctx, { cardId: second }));
+    expect(unread()).toEqual([]);
+    tx(owner, (ctx) => {
+      const row = ctx.db.authorship.id.find(first)!;
+      ctx.db.authorship.id.update({ ...row, setupActions: 0 });
+      ctx.db.postcard.id.delete(first);
+    });
+    expect(unread()).toEqual([]);
+  });
   it('deduplicates author/card/action reports and rejects outsiders, unknown tags and hidden cards', () => {
     const cardId = completePeer();
     const record = (who: any, action: string) =>

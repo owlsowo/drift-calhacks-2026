@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-10-25T03:32:49.007Z",
+  "engine": "Chrome",
+  "mode": "Disposable local sandbox, synthetic writers and normal SDK subscriptions. No provider calls, production stories or challenge solution.",
+  "checks": [
+    "A reply completed while its author page is closed appears as unopened on return, without a false live-arrival notice or a badge for the ending writer",
+    "Beginning/reply previews do not mark a return opened; visible full-paper opening clears only that reply on both author tabs and remains cleared after reload",
+    "A second ending arriving while all author pages are closed adds exactly one unopened reply without reviving the already-opened pair",
+    "Public bookmark cookies recover the saved story but reveal no private reading state or author unread markers to a new identity"
+  ],
+  "errors": []
+}
