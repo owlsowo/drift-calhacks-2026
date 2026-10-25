@@ -137,10 +137,12 @@ function Modal({
   title,
   children,
   onClose,
+  canClose = true,
 }: {
   title: string;
   children: React.ReactNode;
   onClose: () => void;
+  canClose?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -161,13 +163,21 @@ function Modal({
     <dialog
       ref={ref}
       className="modal"
-      onCancel={onClose}
+      onCancel={(event) => {
+        if (canClose) onClose();
+        else event.preventDefault();
+      }}
       onClick={(e) => {
-        if (e.target === ref.current) onClose();
+        if (canClose && e.target === ref.current) onClose();
       }}
       aria-labelledby="modal-title"
     >
-      <button className="icon-button close" onClick={onClose} aria-label="Close dialog">
+      <button
+        className="icon-button close"
+        onClick={onClose}
+        disabled={!canClose}
+        aria-label="Close dialog"
+      >
         <X size={20} />
       </button>
       <h2 id="modal-title">{title}</h2>
@@ -244,16 +254,39 @@ async function confirmReply(roundId: string, text: string) {
   }
 }
 
+async function confirmWithdrawal(bottleId: string) {
+  let unsubscribe = () => {};
+  const committed = new Promise<void>((resolve, reject) => {
+    const check = () => {
+      const state = game.snapshot();
+      if (state.connected && !state.beginnings.some((item) => item.id === bottleId)) resolve();
+    };
+    unsubscribe = game.subscribe(check);
+    void game.withdraw(bottleId).then(check, reject);
+  });
+  try {
+    await withinDeadline(
+      committed,
+      'Withdrawal could not be confirmed. Reconnect and check your bottle before trying again.',
+    );
+  } finally {
+    unsubscribe();
+  }
+}
+
 function App() {
   const s = useSyncExternalStore(game.subscribe, game.snapshot);
   const [view, setView] = useState<'today' | 'play' | 'collection' | 'card' | 'beginning'>('today');
   const [selected, setSelected] = useState('');
   const [playingRoundId, setPlayingRoundId] = useState('');
-  const navigation = useRef({ view, playingRoundId });
-  navigation.current = { view, playingRoundId };
   const [selectedBeginningId, setSelectedBeginningId] = useState('');
+  const [withdrawalId, setWithdrawalId] = useState('');
+  const navigation = useRef({ view, playingRoundId, selectedBeginningId });
+  navigation.current = { view, playingRoundId, selectedBeginningId };
   const [bottleLookup, setBottleLookup] = useState('');
-  const [modal, setModal] = useState<'how' | 'report' | 'hide' | 'privacy' | null>(null);
+  const [modal, setModal] = useState<'how' | 'report' | 'hide' | 'withdraw' | 'privacy' | null>(
+    null,
+  );
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
@@ -290,6 +323,7 @@ function App() {
   const assignment = s.assignments.find(
     (a) => a.roundId === active?.id && a.id === active.assignmentId,
   );
+  const assignmentUnavailable = s.connected && active?.stage === 'reply' && !assignment;
   const released = s.book.beginningIds
     .flatMap((id) => {
       const beginning = s.beginnings.find((item) => item.id === id);
@@ -316,6 +350,13 @@ function App() {
     .sort((a, b) => b.createdMs - a.createdMs);
   const beginning = s.beginnings.find((item) => item.id === selectedBeginningId);
   const ownsBeginning = !!beginning && s.outgoing.some((item) => item.id === beginning.id);
+  useEffect(() => {
+    if (
+      modal === 'withdraw' &&
+      (view !== 'beginning' || selectedBeginningId !== withdrawalId || !ownsBeginning)
+    )
+      setModal(null);
+  }, [modal, view, selectedBeginningId, withdrawalId, ownsBeginning]);
   const finishedBeginning =
     !!beginning && s.rounds.some((round) => round.assignmentId === beginning.id && !!round.cardId);
   const heldInvitation =
@@ -870,6 +911,7 @@ function App() {
                             controlsDisabled ||
                             active.nudges >= 2 ||
                             !s.service?.aiReady ||
+                            assignmentUnavailable ||
                             remaining <= 0
                           }
                           onClick={() =>
@@ -886,7 +928,7 @@ function App() {
                           {busy === 'Finding a hint…' ? 'Finding a hint…' : 'Hint'}
                           <span>{2 - active.nudges} left</span>
                         </button>
-                        {active.hint && (
+                        {active.hint && !assignmentUnavailable && (
                           <aside className="nudge" aria-live="polite">
                             <span className="eyebrow">
                               <Sparkles size={12} /> AI hint
@@ -897,25 +939,31 @@ function App() {
                         )}
                       </div>
                     )}
-                    {active.stage === 'reply' && remaining <= 0 && !checksExhausted && (
-                      <div className="quota-recovery expiry-recovery" role="status">
-                        <p>
-                          <strong>This bottle has drifted on.</strong>{' '}
-                          {draft.trim()
-                            ? 'Your ending is still here. Copy it before catching a fresh beginning.'
-                            : 'Catch a fresh beginning when you’re ready.'}
-                        </p>
-                        {draft.trim() && (
-                          <button
-                            className="text-button"
-                            disabled={!!busy}
-                            onClick={() => void copyDraft(draft)}
-                          >
-                            <Copy size={14} /> Copy my draft
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    {active.stage === 'reply' &&
+                      (remaining <= 0 || assignmentUnavailable) &&
+                      !checksExhausted && (
+                        <div className="quota-recovery expiry-recovery" role="status">
+                          <p>
+                            <strong>
+                              {assignmentUnavailable
+                                ? 'That beginning is no longer available.'
+                                : 'This bottle has drifted on.'}
+                            </strong>{' '}
+                            {draft.trim()
+                              ? 'Your ending is still here. Copy it before catching a fresh beginning.'
+                              : 'Catch a fresh beginning when you’re ready.'}
+                          </p>
+                          {draft.trim() && (
+                            <button
+                              className="text-button"
+                              disabled={!!busy}
+                              onClick={() => void copyDraft(draft)}
+                            >
+                              <Copy size={14} /> Copy my draft
+                            </button>
+                          )}
+                        </div>
+                      )}
                     {checksExhausted && (
                       <div className="quota-recovery">
                         <p>
@@ -954,7 +1002,7 @@ function App() {
                           controlsDisabled ||
                           !!checksExhausted ||
                           count !== 6 ||
-                          (active.stage === 'reply' && remaining <= 0)
+                          (active.stage === 'reply' && (remaining <= 0 || assignmentUnavailable))
                         }
                       >
                         {busy ? (
@@ -971,7 +1019,7 @@ function App() {
                       </button>
                       {active.stage === 'reply' && (
                         <div className="minor-actions">
-                          {remaining > 0 ? (
+                          {remaining > 0 && !assignmentUnavailable ? (
                             <button
                               disabled={controlsDisabled || active.skips >= 1}
                               onClick={() =>
@@ -985,14 +1033,25 @@ function App() {
                             <button
                               disabled={controlsDisabled || !!checksExhausted}
                               onClick={() =>
-                                run('Finding a fresh bottle…', () => pickUp(active.id))
+                                run('Finding a fresh bottle…', async () => {
+                                  if (active.day !== nowDay) {
+                                    await withinDeadline(
+                                      game.abandon(active.id),
+                                      'Your earlier round is taking a moment to close. Your draft is saved.',
+                                    );
+                                    await pickUp();
+                                  } else await pickUp(active.id);
+                                })
                               }
                             >
                               <RotateCcw size={15} />
                               Catch a fresh bottle
                             </button>
                           )}
-                          <button disabled={controlsDisabled} onClick={() => setModal('report')}>
+                          <button
+                            disabled={controlsDisabled || assignmentUnavailable}
+                            onClick={() => setModal('report')}
+                          >
                             <Flag size={14} />
                             Report
                           </button>
@@ -1268,6 +1327,20 @@ function App() {
                         >
                           Copy bottle link
                         </button>
+                        {ownsBeginning && (
+                          <button
+                            className="text-button"
+                            disabled={!!busy || !s.connected}
+                            onClick={(event) => {
+                              event.currentTarget.focus();
+                              setError('');
+                              setWithdrawalId(beginning.id);
+                              setModal('withdraw');
+                            }}
+                          >
+                            Withdraw this bottle
+                          </button>
+                        )}
                       </div>
                     </details>
                   </PaperNote>
@@ -1395,7 +1468,7 @@ function App() {
               ) : (
                 <p className="shelf-note">
                   {s.connected
-                    ? 'The ID may be incomplete, or the bottle may have been removed. Your saved pairs are still in My bottles.'
+                    ? 'The ID may be incomplete, or this bottle and its replies may have been removed. You can find your other stories in My bottles.'
                     : 'Waiting for the bottle to arrive.'}
                 </p>
               )}
@@ -1485,8 +1558,10 @@ function App() {
             Clearing browser data can lose that access.
           </p>
           <p>
-            Either author can hide a postcard. That removes its share page, but cannot retract saved
-            images or screenshots. Reports are private.
+            Either author can hide a postcard. The beginning’s author can also withdraw the entire
+            bottle through its Bottle ID controls. That removes the beginning and all its replies
+            from public links and both authors’ collections. Saved images or screenshots cannot be
+            retracted. Reports are private.
           </p>
           <p>
             Unpublished submissions are retained for seven days; published beginnings, pairs, and
@@ -1538,6 +1613,41 @@ function App() {
               }
             >
               Hide postcard
+            </button>
+          </div>
+        </Modal>
+      )}
+      {modal === 'withdraw' && beginning && ownsBeginning && beginning.id === withdrawalId && (
+        <Modal title="Withdraw this bottle?" onClose={() => setModal(null)} canClose={!busy}>
+          <p>
+            Your beginning and all its replies will leave the sea, both authors’ collections, and
+            their public links. Nobody will be able to add another ending.
+          </p>
+          <p>Saved images and screenshots can still exist. This does not restore a daily turn.</p>
+          {error && <p role="alert">{error}</p>}
+          <div className="modal-actions">
+            <button className="button secondary" disabled={!!busy} onClick={() => setModal(null)}>
+              Keep it drifting
+            </button>
+            <button
+              className="button primary"
+              disabled={!!busy || !s.connected}
+              onClick={() => {
+                const bottleId = beginning.id;
+                void run('Withdrawing…', async () => {
+                  await confirmWithdrawal(bottleId);
+                  if (
+                    navigation.current.view === 'beginning' &&
+                    navigation.current.selectedBeginningId === bottleId
+                  ) {
+                    setModal(null);
+                    setView('collection');
+                  }
+                  setToast('Bottle withdrawn');
+                });
+              }}
+            >
+              {busy === 'Withdrawing…' ? 'Withdrawing…' : 'Withdraw bottle'}
             </button>
           </div>
         </Modal>
