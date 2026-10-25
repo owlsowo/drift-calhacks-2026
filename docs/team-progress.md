@@ -27,3 +27,11 @@ The user authorizes status posts and project-related replies in the Calhacks gro
 - Ten isolated synthetic checks pass in Chrome and ten in WebKit, including actual PNG download, cookie-only recovery, multiple endings, draft recovery and selected accessibility checks. These are software checks, not attendee research.
 - Sourced past-winner review links each next product change to a specific observed interaction and states its limits; it does not invent calibrated win percentages. Contribution clarity supports connection/creative/general judging without claiming a new integration.
 - Next: restore deliberate pointer/opt-in phone shake in the currently visible pickup ritual, keeping tap and keyboard alternatives.
+
+## 2026-10-25 01:56 UTC — reachable bottle shakes live
+
+- Product `4acb0a3` is pushed; CI `40152447514` succeeded; Cloudflare `b7f31eb6-95bf-430f-8aa9-c5c1d4387cbf` matches the tested entry CSS/JS and lazy ocean bytes. New live Help text was inspected.
+- The current pickup bottle supports held pointer shakes, tap and Enter, plus explicit phone motion with denial/error fallbacks and an off control. Motion stays on the device. Partial/weak/hidden inputs do not count. The sea and connected note opening remain underneath.
+- Six synthetic local checks pass per Chrome/WebKit, with selected accessibility/short-landscape scans, plus 27 unit checks and ten current Chrome letter checks. Motion/permission tests are emulated; physical phones remain unverified.
+- This improves the distinctive Creative/general demo and accessible People-First interaction. Existing Claude/Spacetime integrations are preserved; no new track eligibility is claimed. README now separates historical checks from current release gates and accurately identifies the photographic fallback.
+- Next: expire failed-transport retry records without losing request IDs or creating duplicate paid dispatches. Hosted new-mechanics/model verification remains separate.

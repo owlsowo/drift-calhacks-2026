@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T01:55:50.686Z",
+  "sourceCommit": "4acb0a3d96dcb7296fef7dd0fc0aa0d1e05db5b8",
+  "cloudflareVersion": "b7f31eb6-95bf-430f-8aa9-c5c1d4387cbf",
+  "ci": {
+    "run": 40152447514,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-B5EiNRuQ.js",
+      "sha256": "b5532db04c4881b9150e9e01780576c45409e6b66245e477e71df3cf26c5ca31",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DozChoTl.css",
+      "sha256": "0d8614a6d9412c93d3e772550b70d979e85b97bb7f2c29e0d710d0ee1b429a38",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend only; six local ritual checks per Chrome/WebKit, emulated phone motion/permissions; ten current Chrome letter regression checks; 27 unit checks and full CI. No physical phone or new hosted paid-call claim."
+}
