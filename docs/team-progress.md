@@ -19,3 +19,11 @@ The user authorizes status posts and project-related replies in the Calhacks gro
 - CI, 66 server tests, 25 unit tests, the actual populated local upgrade and current local Chrome pool flow pass. The connected hosted shore and matching entry/ocean assets were inspected. New hosted multi-writer/model verification remains separate.
 - The organizer's detailed Meta card was inspected: it evaluates connection, AI contribution, originality and demo execution without naming a Muse requirement. No model swap was made from that evidence.
 - Next product work: clarify the two writers' contributions and preserve the distinction between creative words and model hints, informed by the sourced past-winner review. See `past-winner-product-review.md` for the remaining prioritized work and evidence limits.
+
+## 2026-10-25 01:53 UTC — contribution captions live
+
+- Pushed product commit `e0df0d3`; CI `40152060990` passed. Cloudflare version `152a165e-3d3f-45fa-90eb-ec236d7a817e` serves the tested entry CSS/JS and ocean chunk. The connected public shore was inspected; no hosted test story or model call was created.
+- Both writers get accurate private contribution captions; public bookmark-only readers receive a neutral caption. The actual 1080×1350 PNG retains neutral provenance and the paper photograph's credit. Copy text stays the two creative lines for peer stories. Optional model hints stay separate from the writer's ending.
+- Ten isolated synthetic checks pass in Chrome and ten in WebKit, including actual PNG download, cookie-only recovery, multiple endings, draft recovery and selected accessibility checks. These are software checks, not attendee research.
+- Sourced past-winner review links each next product change to a specific observed interaction and states its limits; it does not invent calibrated win percentages. Contribution clarity supports connection/creative/general judging without claiming a new integration.
+- Next: restore deliberate pointer/opt-in phone shake in the currently visible pickup ritual, keeping tap and keyboard alternatives.

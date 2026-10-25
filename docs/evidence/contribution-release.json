@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T01:49:20.588Z",
+  "sourceCommit": "e0df0d3d31e073237ded4112db71b7ff0b4e6c6e",
+  "cloudflareVersion": "152a165e-3d3f-45fa-90eb-ec236d7a817e",
+  "ci": {
+    "run": 40152060990,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-BtGlQUaj.js",
+      "sha256": "44d29ecb8cd9196a64e65e6cc83a811d6748c40366932d9c48a2370dca8d76d6",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-Bm-f2T76.css",
+      "sha256": "c37a42a6cd022020d3de0c904ca6b12847efa383c36e0774728e71c8fa7c19eb",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend only. Ten isolated synthetic local checks per Chrome/WebKit include private and public captions, actual PNG download and plain text. Served assets match tested build; no hosted story or model call created."
+}
