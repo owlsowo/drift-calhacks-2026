@@ -10,7 +10,13 @@ declare global {
     turnstile?: Turnstile;
   }
 }
-export function ShoreGate({ onVerified }: { onVerified: () => void }) {
+export function ShoreGate({
+  onVerified,
+  placement = 'inline',
+}: {
+  onVerified: () => void;
+  placement?: 'shore' | 'inline';
+}) {
   const node = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState('Keeping the bottles human…');
   const [retry, setRetry] = useState(0);
@@ -85,7 +91,7 @@ export function ShoreGate({ onVerified }: { onVerified: () => void }) {
     };
   }, [retry]);
   return (
-    <section className="shore-gate" aria-label="Quick shore check">
+    <section className={`shore-gate shore-gate--${placement}`} aria-label="Quick shore check">
       <p role="status">{message}</p>
       <div ref={node} />
       <button onClick={() => setRetry(retry + 1)}>Retry shore check</button>

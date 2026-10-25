@@ -802,3 +802,49 @@ input:focus-visible {
   font: 400 13px/1.6 var(--letter-ui);
   text-shadow: 0 1px 3px #09192e;
 }
+
+/* The human check leaves the shore in place and never covers a received note. */
+.sea-world .shore-gate {
+  box-sizing: border-box;
+  width: min(360px, calc(100vw - 24px));
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 0 auto 20px;
+  padding: 16px 12px;
+  border-radius: 8px;
+  box-shadow: 0 12px 42px #03101c66;
+  text-align: center;
+}
+.sea-world .shore-gate--shore {
+  position: fixed;
+  top: max(84px, 20svh);
+  left: 50%;
+  transform: translateX(-50%);
+}
+.sea-world .shore-gate--inline {
+  left: 50%;
+  transform: translateX(-50%);
+  margin-left: 0;
+  margin-right: 0;
+}
+.sea-world .invitation-actions .shore-gate {
+  margin: 0 0 6px;
+}
+.sea-world .shore-gate p {
+  font: 400 12px/1.6 var(--letter-ui);
+  text-shadow: none;
+}
+@media (max-width: 340px) {
+  .sea-world .shore-gate {
+    width: 100vw;
+    padding: 14px 8px;
+  }
+}
+@media (max-height: 480px) {
+  .sea-world .shore-gate--shore {
+    top: 76px;
+    max-height: calc(100svh - 88px);
+    overflow-y: auto;
+  }
+}
