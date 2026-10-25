@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-10-25T05:54:20.289Z",
+  "variant": "memoized",
+  "cards": 30,
+  "sampleMs": 2300,
+  "repeatedDateFormats": 0,
+  "newCardVisible": true,
+  "changedStoryVisible": true,
+  "receivedThanksVisible": true,
+  "errors": [],
+  "scope": "Local synthetic client projection with stable immutable card rows and actual parent clock ticks; date-format calls only, not FPS, GPU, physical-phone or population performance. No story writes or provider calls."
+}

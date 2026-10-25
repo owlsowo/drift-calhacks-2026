@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import type { Card } from '../../../packages/game-rules/index';
 import type { SceneSpec } from '../../../packages/scene-contracts/index';
 import { submissionTime } from './submission-time';
@@ -6,7 +6,7 @@ import { SceneIllustration } from './SceneIllustration';
 import { SceneLoading } from './SceneLoading';
 import type { IllustrationStatus } from './usePostcardScene';
 
-export function Postcard({
+export const Postcard = memo(function Postcard({
   card,
   scene,
   illustrationStatus = 'idle',
@@ -59,4 +59,4 @@ export function Postcard({
       {children}
     </article>
   );
-}
+});

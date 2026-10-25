@@ -231,8 +231,14 @@ The user authorizes status posts and project-related replies in the Calhacks gro
 - A failed optional illustration now becomes a small paper notice rather than a large empty picture frame; the original story stays prominent. Sixteen Chrome/WebKit image abort/stall/resize/share/download cases pass after the layout change. Privacy now describes Claude’s safety/contextual Hint and automatic composition roles while preserving human story lines. No new model calls, backend changes or image-quality reduction.
 - All 45 unit tests, production build and script typecheck pass. Next: push/deploy this refinement, then examine avoidable timer-driven work on a larger My bottles shelf. No frame-rate improvement is claimed.
 
-## 2026-10-25 05:55 UTC — sensor and graceful-failure refinement live
+## 2026-10-25 05:53 UTC — sensor and graceful-failure refinement live
 
 - Product `a3ee14b` is pushed; CI `40167057726` passed. Cloudflare `26407620-aee8-49cf-9278-197d4ae3e33b` serves matching tested entry/CSS and unchanged ocean. No backend change or paid call.
 - Additional projected result checks pass in both engines. A 390px WebKit visual review confirms the small failed-art notice leaves both original lines and export controls prominent. Reports/screenshots now have separate browser-engine output folders rather than overwriting one another. No live story screenshot is stored in Git.
 - The first automated status overstated the phone handler gap; the primary pickup already used the correct axis filter. This was corrected in the authorized Discord group. The actual changes align the legacy fallback and fix all-null sensor startup in the shared filter. Next: measure and reduce repeated work on an unchanged larger postcard shelf.
+
+## 2026-10-25 05:59 UTC — unchanged shelf work reduced
+
+- A controlled thirty-postcard shelf repeated 120 date-format operations across 2.3 seconds of parent clock ticks. Memoizing the immutable postcard view reduces that count to zero for unchanged cards. New cards, changed story text and received thanks still appear in the projected live-update check. This measures repeated formatting work, not FPS, GPU load or physical-phone speed. The full-quality sea is untouched.
+- Seven real local private-thanks checks and eleven Chrome letter checks pass after the change, including focused drafts, live arrivals, private receipt handling and actual PNG download. App build and script typecheck pass. No new provider call or backend update.
+- New authorized group feedback requests larger/distinctive essential instructions, separation of the thanks/date footer, discovery of all endings for co-writers and visible public upvotes. These are next after this tested shelf patch. The owner directly requested thumbs-up read receipts; the three product requests have verified selected reactions. No private chat transcript is stored here.
