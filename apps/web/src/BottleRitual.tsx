@@ -2,6 +2,8 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEve
 import { GlassBottle } from './Shore';
 import { MotionShakeMeter, ShakeMeter } from './shake';
 import './bottle-ritual.css';
+import type { ShoreScene } from './shore-scene';
+import { AMBIENT_BOTTLE_COUNT } from './ocean-engine/scene-limits.js';
 
 export type BottleRitualKind = 'release' | 'pickup';
 
@@ -10,6 +12,7 @@ type BottleRitualProps = {
   phase: 'waiting' | 'moving';
   onComplete: () => void;
   onCancel: () => void;
+  worldScene?: ShoreScene;
 };
 
 const THROW_MS = 1450;
@@ -20,11 +23,12 @@ type MotionConstructor = typeof DeviceMotionEvent & { requestPermission?: () => 
 let phoneShakeOptedIn = false;
 
 /** The sea stays visible underneath this brief, user-triggered interaction. */
-export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitualProps) {
+export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: BottleRitualProps) {
   const labelId = useId();
   const statusId = useId();
   const dialog = useRef<HTMLDivElement>(null);
   const openButton = useRef<HTMLButtonElement>(null);
+  const worldButtons = useRef(new Map<number, HTMLButtonElement>());
   const cancelButton = useRef<HTMLButtonElement>(null);
   const motionButton = useRef<HTMLButtonElement>(null);
   const grip = useRef<HTMLSpanElement>(null);
@@ -56,6 +60,31 @@ export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitual
   const [motion, setMotion] = useState(phoneShakeOptedIn);
   const [motionPending, setMotionPending] = useState(false);
   const [motionMessage, setMotionMessage] = useState('');
+
+  useEffect(() => {
+    if (!worldScene || kind !== 'pickup') return;
+    const paint = () => {
+      for (let i = 0; i < AMBIENT_BOTTLE_COUNT; i++) {
+        const target = worldButtons.current.get(i);
+        if (!target) continue;
+        const point = worldScene.choiceTarget(i);
+        const size = Math.max(48, Math.min(90, point.size * 1.4));
+        target.style.width = `${size}px`;
+        target.style.height = `${size}px`;
+        target.style.transform = `translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%)`;
+      }
+    };
+    const unsubscribe = worldScene.subscribe(paint);
+    worldScene.showChoices(true);
+    paint();
+    return () => {
+      unsubscribe();
+      worldScene.showChoices(false);
+    };
+  }, [worldScene, kind]);
+  useEffect(() => {
+    if (worldScene && kind === 'release' && phase === 'moving') worldScene.throwBottle();
+  }, [worldScene, kind, phase]);
 
   function finish() {
     if (completed.current) return;
@@ -141,7 +170,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitual
   const openRef = useRef(open);
   openRef.current = open;
   useEffect(() => {
-    if (!motion || kind !== 'pickup' || !arrived || opening || hidden) return;
+    if (worldScene || !motion || kind !== 'pickup' || !arrived || opening || hidden) return;
     phoneMeter.current.reset();
     const listener = (event: DeviceMotionEvent) => {
       if (openingRef.current || pointer.current || document.visibilityState !== 'visible') return;
@@ -159,7 +188,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitual
       window.removeEventListener('devicemotion', listener);
       phoneMeter.current.reset();
     };
-  }, [motion, kind, arrived, opening, hidden]);
+  }, [worldScene, motion, kind, arrived, opening, hidden]);
 
   async function enableMotion() {
     if (motionPending) return;
@@ -251,9 +280,10 @@ export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitual
       return;
     }
     if (event.key !== 'Tab') return;
-    const buttons = [openButton.current, motionButton.current, cancelButton.current].filter(
-      (button): button is HTMLButtonElement => Boolean(button && !button.disabled),
-    );
+    const buttons = [
+      ...(worldScene ? worldButtons.current.values() : [openButton.current, motionButton.current]),
+      cancelButton.current,
+    ].filter((button): button is HTMLButtonElement => Boolean(button && !button.disabled));
     if (!buttons.length) {
       event.preventDefault();
       dialog.current?.focus({ preventScroll: true });
@@ -274,7 +304,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitual
   const state = opening ? 'opening' : arrived ? 'arrived' : phase;
   return (
     <div
-      className={`bottle-ritual bottle-ritual--${kind} bottle-ritual--${state}${reducedMotion ? ' bottle-ritual--reduced' : ''}${hidden ? ' bottle-ritual--hidden' : ''}${dragging ? ' bottle-ritual--dragging' : ''}`}
+      className={`bottle-ritual${worldScene ? ' bottle-ritual--world' : ''} bottle-ritual--${kind} bottle-ritual--${state}${reducedMotion ? ' bottle-ritual--reduced' : ''}${hidden ? ' bottle-ritual--hidden' : ''}${dragging ? ' bottle-ritual--dragging' : ''}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby={labelId}
@@ -292,7 +322,9 @@ export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitual
         {kind === 'release'
           ? 'Releasing your bottle.'
           : arrived
-            ? 'A bottle is ready to open.'
+            ? worldScene
+              ? 'Five bottles are ready. Choose any bottle to open.'
+              : 'A bottle is ready to open.'
             : 'Finding a bottle.'}
       </p>
       <div className="bottle-ritual__shade" aria-hidden="true" />
@@ -303,7 +335,29 @@ export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitual
         <i />
         <i />
       </div>
-      {kind === 'release' ? (
+      {worldScene && kind === 'pickup' ? (
+        <>
+          <p className="bottle-ritual__world-title">Pick the one that calls to you.</p>
+          {Array.from({ length: AMBIENT_BOTTLE_COUNT }, (_, index) => (
+            <button
+              type="button"
+              key={index}
+              className="bottle-ritual__world-choice"
+              ref={(node) => {
+                if (node) worldButtons.current.set(index, node);
+                else worldButtons.current.delete(index);
+                if (index === 0) openButton.current = node;
+              }}
+              aria-label={index === 0 ? 'Open bottle' : `Open bottle ${index + 1}`}
+              disabled={!arrived || opening || hidden}
+              onClick={open}
+              data-bottle-choice={index + 1}
+            >
+              <span aria-hidden="true">{index + 1}</span>
+            </button>
+          ))}
+        </>
+      ) : kind === 'release' ? (
         <div className="bottle-ritual__thrown" aria-hidden="true">
           <GlassBottle />
         </div>
@@ -333,7 +387,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel }: BottleRitual
           </span>
         </button>
       )}
-      {kind === 'pickup' && arrived && !opening && (
+      {kind === 'pickup' && !worldScene && arrived && !opening && (
         <div className="bottle-ritual__gesture">
           <p>Drag to shake, or tap to open.</p>
           <span className="bottle-ritual__beats" aria-hidden="true">

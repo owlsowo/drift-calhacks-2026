@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CoastPeriod } from './coast-time';
+import type { ShoreScene } from './shore-scene';
 import './ocean.css';
 
 type OceanController = {
@@ -12,6 +13,7 @@ type OceanModule = {
     canvas: HTMLCanvasElement,
     options: {
       paused: boolean;
+      scene?: ShoreScene;
       timeOfDay: CoastPeriod;
       signal: AbortSignal;
       onReady: () => void;
@@ -20,7 +22,15 @@ type OceanModule = {
   ) => Promise<OceanController>;
 };
 
-export function Ocean({ paused = false, timeOfDay }: { paused?: boolean; timeOfDay: CoastPeriod }) {
+export function Ocean({
+  paused = false,
+  timeOfDay,
+  scene,
+}: {
+  paused?: boolean;
+  timeOfDay: CoastPeriod;
+  scene?: ShoreScene;
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const controller = useRef<OceanController | null>(null);
   const pausedRef = useRef(paused);
@@ -38,6 +48,7 @@ export function Ocean({ paused = false, timeOfDay }: { paused?: boolean; timeOfD
       if (abort.signal.aborted) return;
       target.dataset.renderer = 'coast-art';
       target.dataset.motion = 'paused';
+      scene?.setRenderer('fallback');
       setReady(false);
     };
     media.addEventListener('change', update);
@@ -48,12 +59,14 @@ export function Ocean({ paused = false, timeOfDay }: { paused?: boolean; timeOfD
         if (abort.signal.aborted) return;
         const active = await engine.createOcean(target, {
           paused: pausedRef.current || media.matches,
+          scene,
           timeOfDay: periodRef.current,
           signal: abort.signal,
           onReady: () => {
             if (abort.signal.aborted) return;
             target.dataset.renderer = 'webgpu-fft';
             setReady(true);
+            scene?.setRenderer('webgpu');
           },
           onError: fallback,
         });
@@ -74,7 +87,7 @@ export function Ocean({ paused = false, timeOfDay }: { paused?: boolean; timeOfD
       controller.current?.destroy();
       controller.current = null;
     };
-  }, []);
+  }, [scene]);
 
   useEffect(() => {
     controller.current?.setPaused(paused || matchMedia('(prefers-reduced-motion: reduce)').matches);

@@ -42,6 +42,8 @@ import { bottleLink } from './bottle-link';
 import { usePostcardScene } from './usePostcardScene';
 import { Shore } from './Shore';
 import { Ocean } from './Ocean';
+import { ShoreScene } from './shore-scene';
+import { WorldBottles } from './WorldBottles';
 import { PaperNote } from './PaperNote';
 import { ShoreGate } from './ShoreGate';
 import { EarlierDrafts } from './EarlierDrafts';
@@ -331,6 +333,9 @@ function App() {
   const [clock, setClock] = useState(Date.now());
   const [reveal, setReveal] = useState('');
   const [seaPaused, setSeaPaused] = useState(false);
+  const [worldScene] = useState(() => new ShoreScene());
+  useEffect(() => worldScene.start(), [worldScene]);
+  useEffect(() => worldScene.setPaused(seaPaused), [worldScene, seaPaused]);
   const [gateReady, setGateReady] = useState(false);
   const [returnedNotice, setReturnedNotice] = useState('');
   const seenReturns = useRef<{ identity: string; ids: Set<string> } | null>(null);
@@ -933,7 +938,8 @@ function App() {
         className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}${ritual ? ' has-bottle-ritual' : ''}${view === 'today' && needsShoreCheck ? ' has-shore-check' : ''}${view === 'today' && returnedCard ? ' has-returned-note' : ''}`}
         data-time-of-day={coastPeriod}
       >
-        <Ocean paused={seaPaused} timeOfDay={coastPeriod} />
+        <Ocean paused={seaPaused} timeOfDay={coastPeriod} scene={worldScene} />
+        <WorldBottles scene={worldScene} />
         <header className="site-header" inert={!!ritual}>
           <button
             className="wordmark"
@@ -1993,6 +1999,7 @@ function App() {
         </main>
         {ritual && (
           <BottleRitual
+            worldScene={worldScene}
             kind={ritual.kind}
             phase={ritual.phase}
             onComplete={() => finishRitual(true)}

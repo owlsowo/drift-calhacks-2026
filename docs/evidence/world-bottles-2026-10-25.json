@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-10-25T08:18:59.712Z",
+  "scope": "Development-only preview: actual headless Chrome Metal WebGPU plus WebKit with GPU explicitly unavailable to exercise the artwork/SVG fallback. No database, paid-model, production story or physical-phone claim.",
+  "checks": [
+    "chrome: The sea starts empty; full Metal WebGPU and CSS fallback both initialize.",
+    "chrome: Five reachable spotlit choices fit 1440×1000; Escape clears them.",
+    "chrome: Five reachable spotlit choices fit 390×844; Escape clears them.",
+    "chrome: Five reachable spotlit choices fit 320×568; Escape clears them.",
+    "chrome: Five reachable spotlit choices fit 740×360; Escape clears them.",
+    "chrome: Each of the five choices opens once, with no walking or distance gate.",
+    "chrome: Accepted release shows the wave-backed throw; the next pickup contains exactly five choices.",
+    "chrome: Paused sea and reduced-motion night remain usable without restarting the scene.",
+    "webkit: The sea starts empty; full Metal WebGPU and CSS fallback both initialize.",
+    "webkit: Five reachable spotlit choices fit 1440×1000; Escape clears them.",
+    "webkit: Five reachable spotlit choices fit 390×844; Escape clears them.",
+    "webkit: Five reachable spotlit choices fit 320×568; Escape clears them.",
+    "webkit: Five reachable spotlit choices fit 740×360; Escape clears them.",
+    "webkit: Each of the five choices opens once, with no walking or distance gate.",
+    "webkit: Accepted release shows the wave-backed throw; the next pickup contains exactly five choices.",
+    "webkit: Paused sea and reduced-motion night remain usable without restarting the scene."
+  ],
+  "errors": [],
+  "storyRegression": {
+    "chromeChecks": 11,
+    "webkitChecks": 11,
+    "hintRetryChecks": 7,
+    "unitChecks": 59,
+    "source": "Local isolated synthetic databases, model calls disabled. Exact story text, live subscriptions, independent drafts, bookmark recovery, author boundaries and actual PNG download verified."
+  },
+  "integration": {
+    "request": "Fixed camera, clean idle ocean, five illuminated pickup choices, click any, no walking/distance check.",
+    "adaptedFrom": "EG_xry shared bottle mesh, wave displacement and throw prototype dated 2026-10-25. Ported into current main without replacing the newer day/night, voting, prompt-context or review code.",
+    "assignment": "The five objects are a visual pickup ritual for the one real server-reserved assignment. They do not represent five independent stories or a public inventory.",
+    "quality": "Existing FFT cascade count, resolution/DPR cap, multisampling, simulation cadence and approved coast assets retained. No FPS/performance gain claimed."
+  }
+}

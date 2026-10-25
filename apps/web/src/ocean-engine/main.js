@@ -8,6 +8,9 @@ import { SIM_INIT, SIM_EVOLVE, FFT_ROWS, FFT_COLS, SIM_MIPS, FOAM_TEX, RGBA8_MIP
 import { TRANS_LUT, MS_LUT, SKYVIEW_LUT, ENV_CUBE, CUBE_MIPS, SUN_VIS } from './wgsl/sky.js';
 import { OCEAN, SKY_BG, HEIGHT_PROBE } from './wgsl/ocean.js';
 import { BLOOM_DOWN, BLOOM_UP, COMPOSITE } from './wgsl/post.js';
+import { BOTTLE } from './wgsl/bottle.js';
+import { createBottleMesh } from './bottle-mesh.js';
+import { MAX_BOTTLES } from './scene-limits.js';
 
 /** Drift adaptation: fixed-camera background; no controls, telemetry, or UI. */
 export async function createOcean(canvas, options = {}) {
@@ -16,12 +19,13 @@ try {
 let disposed = false, raf = 0, stopped = !!options.paused, observer;
 let timeOfDay = options.timeOfDay === 'day' ? 'day' : 'night';
 let initialized = false, last = performance.now();
-let context = null, ownedDevice = null;
+let context = null, ownedDevice = null, removeScene;
 function destroy() {
   if (disposed) return;
   disposed = true;
   cancelAnimationFrame(raf);
   observer?.disconnect();
+  removeScene?.();
   document.removeEventListener('visibilitychange', resume);
   options.signal?.removeEventListener('abort', destroy);
   try { context?.unconfigure(); } catch {}
@@ -290,9 +294,9 @@ function mat4Mul(out, a, b) {
   // --------------------------------------------------------------------------------------
   const MSAA = 4;
   const HDR = 'rgba16float';
-  const [oceanMod, skyMod, downMod, upMod, compMod] = await Promise.all([
+  const [oceanMod, skyMod, downMod, upMod, compMod, bottleMod] = await Promise.all([
     shader(OCEAN, 'ocean'), shader(SKY_BG, 'sky'), shader(BLOOM_DOWN, 'bloom down'),
-    shader(BLOOM_UP, 'bloom up'), shader(COMPOSITE, 'composite'),
+    shader(BLOOM_UP, 'bloom up'), shader(COMPOSITE, 'composite'), shader(BOTTLE, 'bottles'),
   ]);
   const oceanPipe = await device.createRenderPipelineAsync({
     label: 'ocean', layout: 'auto',
@@ -313,6 +317,51 @@ function mat4Mul(out, a, b) {
     depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'equal' },
     multisample: { count: MSAA },
   });
+  const bottleVertex = { arrayStride: 28, attributes: [
+    { shaderLocation: 0, offset: 0, format: 'float32x3' },
+    { shaderLocation: 1, offset: 12, format: 'float32x3' },
+    { shaderLocation: 2, offset: 24, format: 'float32' },
+  ] };
+  const alphaBlend = { color: { srcFactor: 'src-alpha', dstFactor: 'one-minus-src-alpha' },
+    alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' } };
+  const makeBottlePipe = (entryPoint, cullMode, depthWriteEnabled, vertexEntry = 'vs') => device.createRenderPipelineAsync({
+    label: 'bottle ' + entryPoint + ' ' + cullMode, layout: 'auto',
+    vertex: { module: bottleMod, entryPoint: vertexEntry, buffers: [bottleVertex] },
+    fragment: { module: bottleMod, entryPoint, targets: [{ format: HDR, blend: alphaBlend }] },
+    primitive: { topology: 'triangle-list', cullMode },
+    depthStencil: { format: 'depth32float', depthWriteEnabled, depthCompare: 'greater' },
+    multisample: { count: MSAA },
+  });
+  const [bottleBackPipe, bottleSolidPipe, bottleGlassPipe, ripplePipe, splashPipe] = await Promise.all([
+    makeBottlePipe('glass', 'front', false), makeBottlePipe('solid', 'none', true),
+    makeBottlePipe('glass', 'back', false), makeBottlePipe('ripple', 'none', false, 'rippleVs'),
+    makeBottlePipe('splash', 'none', false, 'splashVs'),
+  ]);
+  const bottleData = new Float32Array(MAX_BOTTLES * 12);
+  const bottleUBO = mkBuf(bottleData.byteLength, GU.UNIFORM | GU.COPY_DST, 'bottle instances');
+  const previousSplash = new Float32Array(MAX_BOTTLES).fill(-1);
+  const bottleMesh = createBottleMesh();
+  const bottleBuffers = {};
+  for (const name of ['glass', 'solid', 'rings', 'droplets']) {
+    bottleBuffers[name] = mkBuf(bottleMesh[name].byteLength, GU.VERTEX | GU.COPY_DST, 'bottle ' + name);
+    device.queue.writeBuffer(bottleBuffers[name], 0, bottleMesh[name]);
+  }
+  // Auto layouts retain only the bindings used by each entry point.
+  const bottleBindings = [
+    { binding: 0, resource: { buffer: frameUBO } },
+    { binding: 1, resource: { buffer: bottleUBO } },
+    { binding: 2, resource: fullArr(dispTex) },
+    { binding: 3, resource: fullArr(derivTex) },
+    { binding: 4, resource: samplerSim },
+    { binding: 5, resource: envCubeView },
+    { binding: 6, resource: sampClamp },
+  ];
+  const bottleBG = (pipe, ripple = false) => device.createBindGroup({
+    layout: pipe.getBindGroupLayout(0), entries: ripple ? bottleBindings.slice(0, 5) : bottleBindings,
+  });
+  const bgBottleBack = bottleBG(bottleBackPipe), bgBottleSolid = bottleBG(bottleSolidPipe),
+    bgBottleGlass = bottleBG(bottleGlassPipe), bgRipple = bottleBG(ripplePipe, true), bgSplash = bottleBG(splashPipe);
+
   const downPipe = await device.createRenderPipelineAsync({
     label: 'bloom down', layout: 'auto',
     vertex: { module: downMod, entryPoint: 'vs' },
@@ -679,6 +728,21 @@ function mat4Mul(out, a, b) {
     last = now;
     simTime = (simTime + dt * 0.62) % LOOP;
     frameIndex++;
+    let visibleBottles = 0;
+    for (let i = 0; i < MAX_BOTTLES; i++) {
+      const b = options.scene?.bottles[i], o = i * 12;
+      if (!b) { bottleData[o + 3] = 0; continue; }
+      if (b.opacity > .01) visibleBottles++;
+      bottleData[o] = b.x; bottleData[o + 1] = b.y; bottleData[o + 2] = b.z; bottleData[o + 3] = b.opacity;
+      bottleData[o + 4] = b.yaw; bottleData[o + 5] = b.pitch; bottleData[o + 6] = b.roll; bottleData[o + 7] = b.floatBlend;
+      bottleData[o + 8] = b.splashAge; bottleData[o + 9] = i;
+      if (b.splashAge >= 0 && (previousSplash[i] < 0 || b.splashAge < previousSplash[i])) {
+        bottleData[o + 10] = b.x; bottleData[o + 11] = b.z;
+      }
+      previousSplash[i] = b.splashAge;
+    }
+    canvas.dataset.bottleCount = String(visibleBottles);
+    device.queue.writeBuffer(bottleUBO, 0, bottleData);
 
     writeFrame(simTime);
     writeSimStatic();
@@ -741,6 +805,18 @@ function mat4Mul(out, a, b) {
     rp.setPipeline(skyPipe);
     rp.setBindGroup(0, bgSky);
     rp.draw(3);
+    if (visibleBottles) {
+      rp.setPipeline(bottleBackPipe); rp.setBindGroup(0, bgBottleBack);
+      rp.setVertexBuffer(0, bottleBuffers.glass); rp.draw(bottleMesh.glass.length / 7, MAX_BOTTLES);
+      rp.setPipeline(bottleSolidPipe); rp.setBindGroup(0, bgBottleSolid);
+      rp.setVertexBuffer(0, bottleBuffers.solid); rp.draw(bottleMesh.solid.length / 7, MAX_BOTTLES);
+      rp.setPipeline(bottleGlassPipe); rp.setBindGroup(0, bgBottleGlass);
+      rp.setVertexBuffer(0, bottleBuffers.glass); rp.draw(bottleMesh.glass.length / 7, MAX_BOTTLES);
+      rp.setPipeline(ripplePipe); rp.setBindGroup(0, bgRipple);
+      rp.setVertexBuffer(0, bottleBuffers.rings); rp.draw(bottleMesh.rings.length / 7, MAX_BOTTLES);
+      rp.setPipeline(splashPipe); rp.setBindGroup(0, bgSplash);
+      rp.setVertexBuffer(0, bottleBuffers.droplets); rp.draw(bottleMesh.droplets.length / 7, MAX_BOTTLES);
+    }
     rp.end();
 
     for (let m = 0; m < BLOOM_LEVELS; m++) {
@@ -789,6 +865,9 @@ function mat4Mul(out, a, b) {
 
   ensureAlive();
   initialized = true;
+  removeScene = options.scene?.subscribe(() => {
+    if (stopped && !disposed && !document.hidden) frame(performance.now(), true);
+  });
   observer = new ResizeObserver(resume);
   observer.observe(canvas);
   document.addEventListener('visibilitychange', resume);

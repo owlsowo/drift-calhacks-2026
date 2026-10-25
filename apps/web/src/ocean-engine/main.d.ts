@@ -1,5 +1,6 @@
 export function createOcean(canvas: HTMLCanvasElement, options?: {
   paused?: boolean;
+  scene?: import('../shore-scene').ShoreScene;
   timeOfDay?: 'day' | 'night';
   signal?: AbortSignal;
   onReady?: () => void;
