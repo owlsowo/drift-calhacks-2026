@@ -14,3 +14,25 @@ test('old drafts can migrate without losing their text; malformed envelopes expi
   });
   assert.equal(decodeDraft('{"driftDraft":1,"text":"x","expiresAt":null}').expired, true);
 });
+test('reply drafts retain their original prompt and caught beginning until expiry', () => {
+  const context = {
+    day: 20750,
+    setupPrompt: 'Original question',
+    replyPrompt: 'Reply as the captain',
+    kind: 'reply' as const,
+    beginning: 'A caught beginning before a skip',
+  };
+  const raw = encodeDraft('My saved ending', 100, context);
+  assert.deepEqual(decodeDraft(raw, 101).context, context);
+  assert.equal(decodeDraft(raw, 100 + 7 * 86400000).context, undefined);
+});
+test('invalid draft context does not corrupt recoverable words', () => {
+  const raw = JSON.stringify({
+    driftDraft: 1,
+    text: 'saved words',
+    expiresAt: 1000,
+    context: { kind: 'unknown' },
+  });
+  assert.equal(decodeDraft(raw, 100).text, 'saved words');
+  assert.equal(decodeDraft(raw, 100).context, undefined);
+});
