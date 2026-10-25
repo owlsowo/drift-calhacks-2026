@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-10-25T07:53:39.320Z",
+  "productSource": "5e743dea3ad93b2e484fdd70c1f5b65d2c46d293",
+  "local": {
+    "status": "passed",
+    "unit": 56,
+    "server": 132,
+    "build": "passed",
+    "browserCases": 44,
+    "letters": {
+      "Chrome": 11,
+      "WebKit": 11
+    },
+    "hintRetriesChrome": 7,
+    "votesChrome": 8,
+    "storyReviewChrome": 7,
+    "scope": "Disposable keyless local databases, synthetic writers, real subscriptions, PNG downloads, reloads and retry recovery. Injected failures as labeled in individual suites. No physical phone or live model claim."
+  },
+  "hosted": {
+    "homeHttpStatus": 200,
+    "assets": [
+      {
+        "asset": "/assets/index-BhXc1WtV.js",
+        "sha256": "872f4baea09363db5ed4c190384d3ddc09a4ccfdd50e36463467b096bafc78bc",
+        "matchesEstablishedRelease": true
+      },
+      {
+        "asset": "/assets/index-hua7epsZ.css",
+        "sha256": "747f6ae6a21bd8eec401e6cf6df680615ea97a35b7b4bcf946396f48b43ee3db",
+        "matchesEstablishedRelease": true
+      },
+      {
+        "asset": "/assets/main--IVA6crH.js",
+        "sha256": "4a49e2a2b7fb6ae9a7f92be3d541836356f908acdd917568d952430710b38bf3",
+        "matchesEstablishedRelease": true
+      }
+    ],
+    "newEndToEndCompletion": "not_established",
+    "automatedProfiles": "Cloudflare verification failed on hotel Wi-Fi and hotspot. Both runs stopped before any submission/provider call.",
+    "ordinaryBrowser": "Owner directly confirmed verification works in an ordinary browser; this confirms the gate, not a full live story flow.",
+    "nativeControl": "Ordinary Chrome control was interrupted and then failed with an audio/video capture error; no browser security or verification protections were changed.",
+    "applicationActionsAttempted": 0,
+    "newProviderCalls": 0,
+    "newProductionStories": 0
+  },
+  "testRunnerFixes": [
+    "Optional headed/manual-verification wait and separate output directory",
+    "Preflight progress diagnostics and safe screenshots on cancellation",
+    "Wait for enabled Save image after asynchronous illustration preparation",
+    "Added fresh public-reader and vote/undo assertions for a future successful hosted run"
+  ],
+  "fixesScope": "QA runner only. No product runtime changes or deployment needed; new hosted assertions were not reached and are not claimed passed."
+}
