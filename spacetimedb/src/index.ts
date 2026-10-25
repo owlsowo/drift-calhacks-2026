@@ -108,6 +108,27 @@ const postcard = table(
     beginningId: t.string().default('').index('btree'),
   },
 );
+// Individual selections stay private; public views expose totals only.
+const cardVote = table(
+  { name: 'card_vote' },
+  {
+    id: t.string().primaryKey(),
+    cardId: t.string().index('btree'),
+    owner: t.identity().index('btree'),
+    voted: t.bool(),
+    createdMs: t.f64(),
+    updatedMs: t.f64(),
+  },
+);
+const voteRate = table(
+  { name: 'vote_rate' },
+  {
+    owner: t.identity().primaryKey(),
+    day: t.u32(),
+    used: t.u32(),
+    updatedMs: t.f64(),
+  },
+);
 const postcardScene = table(
   { name: 'postcard_scene', public: true },
   {
@@ -287,6 +308,8 @@ const db = schema(
     bottle,
     beginning,
     postcard,
+    cardVote,
+    voteRate,
     postcardScene,
     postcardSceneStatus,
     sceneJob,
@@ -396,6 +419,7 @@ function hideBeginning(ctx: Tx, b: Bottle) {
   for (const card of ctx.db.postcard.beginningId.filter(b.id)) {
     ctx.db.postcard.id.delete(card.id);
     removeCardScene(ctx, card.id);
+    removeCardVotes(ctx, card.id);
     const a = ctx.db.authorship.id.find(card.id);
     if (a) ctx.db.authorship.id.update({ ...a, hidden: true });
     ctx.db.hello.cardId.delete(card.id);
@@ -1495,6 +1519,8 @@ export const report_content = db.reducer(
     const a = ctx.db.authorship.id.find(cardId);
     if (!a || !ctx.db.postcard.id.find(cardId)) fail('This postcard is no longer available.');
     recordReport(ctx, cardId, reason);
+    const vote = ctx.db.cardVote.id.find(`${cardId}:${ctx.sender.toHexString()}`);
+    if (vote?.voted) ctx.db.cardVote.id.update({ ...vote, voted: false, updatedMs: now(ctx) });
     // Authors can withdraw their publication. Other viewers hide it only for themselves.
     if (same(a.replyOwner, ctx.sender) || (a.setupOwner && same(a.setupOwner, ctx.sender)))
       hide(ctx, cardId);
@@ -1525,6 +1551,7 @@ function hide(ctx: Tx, id: string) {
     fail('Only the two authors can hide this postcard.');
   ctx.db.postcard.id.delete(id);
   removeCardScene(ctx, id);
+  removeCardVotes(ctx, id);
   ctx.db.authorship.id.update({ ...a!, hidden: true });
   ctx.db.hello.cardId.delete(id);
 }
@@ -1700,6 +1727,81 @@ export const thank_co_writer = db.reducer({ cardId: t.string() }, (ctx, { cardId
   // Preserve existing private open/share flags without recording an analytics event.
   ctx.db.authorship.id.update({ ...a, [field]: a[field] | THANK_YOU_BIT });
 });
+export const set_card_vote = db.reducer(
+  { cardId: t.string(), voted: t.bool() },
+  (ctx, { cardId, voted }) => {
+    if (!/^[a-zA-Z0-9_-]{1,128}$/.test(cardId)) fail('Invalid postcard identifier.');
+    const key = `${cardId}:${ctx.sender.toHexString()}`;
+    const existing = ctx.db.cardVote.id.find(key);
+    if ((existing?.voted ?? false) === voted) return;
+    const time = now(ctx);
+    // Undo remains available during pauses, after verification expiry or after a removal.
+    if (!voted) {
+      if (existing) ctx.db.cardVote.id.update({ ...existing, voted: false, updatedMs: time });
+      return;
+    }
+    const card = ctx.db.postcard.id.find(cardId);
+    const author = ctx.db.authorship.id.find(cardId);
+    if (
+      !card ||
+      !author ||
+      author.hidden ||
+      card.createdMs < time - 30 * 86400000 ||
+      [...ctx.db.report.owner.filter(ctx.sender)].some(
+        (row) => row.target === cardId || row.target === card.beginningId,
+      )
+    )
+      fail('This postcard is no longer available.');
+    ready(ctx);
+    const day = dayOf(time),
+      rate = ctx.db.voteRate.owner.find(ctx.sender);
+    if (rate?.day === day && rate.used >= 100)
+      fail('You’ve upvoted one hundred endings today. Read more and return with the next tide.');
+    if (rate && time - rate.updatedMs < 250) fail('Let this upvote settle, then try again.');
+    const nextRate = {
+      owner: ctx.sender,
+      day,
+      used: rate?.day === day ? rate.used + 1 : 1,
+      updatedMs: time,
+    };
+    if (rate) ctx.db.voteRate.owner.update(nextRate);
+    else ctx.db.voteRate.insert(nextRate);
+    const row = {
+      id: key,
+      cardId,
+      owner: ctx.sender,
+      voted: true,
+      createdMs: existing?.createdMs ?? time,
+      updatedMs: time,
+    };
+    if (existing) ctx.db.cardVote.id.update(row);
+    else ctx.db.cardVote.insert(row);
+  },
+);
+const voteTotal = t.row('VoteTotal', { cardId: t.string(), count: t.u32() });
+export const card_vote_totals = db.view(
+  { name: 'card_vote_totals', public: true },
+  t.array(voteTotal),
+  (ctx) => {
+    const totals = new Map<string, number>();
+    for (const row of ctx.db.cardVote.iter())
+      if (row.voted && ctx.db.postcard.id.find(row.cardId))
+        totals.set(row.cardId, (totals.get(row.cardId) ?? 0) + 1);
+    return [...totals].map(([cardId, count]) => ({ cardId, count }));
+  },
+);
+const myVote = t.row('MyVote', { cardId: t.string() });
+export const my_card_votes = db.view(
+  { name: 'my_card_votes', public: true },
+  t.array(myVote),
+  (ctx) =>
+    [...ctx.db.cardVote.owner.filter(ctx.sender)]
+      .filter((row) => row.voted && ctx.db.postcard.id.find(row.cardId))
+      .map((row) => ({ cardId: row.cardId })),
+);
+function removeCardVotes(ctx: Tx, cardId: string) {
+  for (const row of ctx.db.cardVote.cardId.filter(cardId)) ctx.db.cardVote.id.delete(row.id);
+}
 export const set_pause = db.reducer({ paused: t.bool() }, (ctx, { paused }) => {
   const c = admin(ctx);
   ctx.db.config.id.update({ ...c, paused });
@@ -1907,6 +2009,7 @@ export const resolve_report = db.reducer(
       if (a) {
         ctx.db.postcard.id.delete(a.id);
         removeCardScene(ctx, a.id);
+        removeCardVotes(ctx, a.id);
         ctx.db.authorship.id.update({ ...a, hidden: true });
         ctx.db.hello.cardId.delete(a.id);
       }
@@ -1925,9 +2028,14 @@ function purgeExpired(ctx: Tx) {
     if (c.createdMs < cutoff) {
       ctx.db.postcard.id.delete(c.id);
       removeCardScene(ctx, c.id);
+      removeCardVotes(ctx, c.id);
       ctx.db.authorship.id.delete(c.id);
       ctx.db.hello.cardId.delete(c.id);
     }
+  for (const vote of ctx.db.cardVote.iter())
+    if (!ctx.db.postcard.id.find(vote.cardId)) ctx.db.cardVote.id.delete(vote.id);
+  for (const rate of ctx.db.voteRate.iter())
+    if (rate.updatedMs < cutoff) ctx.db.voteRate.owner.delete(rate.owner);
   for (const q of ctx.db.request.iter())
     if (q.createdMs < now(ctx) - 7 * 86400000) ctx.db.request.id.delete(q.id);
   for (const scene of ctx.db.postcardScene.iter())
@@ -1973,6 +2081,7 @@ function purgeExpired(ctx: Tx) {
     if (!ctx.db.postcard.id.find(a.id)) {
       ctx.db.authorship.id.delete(a.id);
       removeCardScene(ctx, a.id);
+      removeCardVotes(ctx, a.id);
       ctx.db.hello.cardId.delete(a.id);
     }
   for (const h of ctx.db.hello.iter())

@@ -2365,3 +2365,60 @@ a {
   margin: 0 auto 16px;
   gap: 7px;
 }
+
+.ending-upvote {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid #d3dce66b;
+  border-radius: 3px;
+  background: #15263acc;
+  color: #f1ead8;
+  font: 400 13px/1.5 var(--letter-ui);
+}
+.ending-upvote strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 1ch;
+}
+.ending-upvote[aria-pressed='true'] {
+  background: #e9dfbd;
+  color: #243b47;
+  border-color: #e9dfbd;
+}
+.sea-world .has-postcard .reveal-copy > .postcard-vote {
+  order: 3;
+  display: flex;
+  justify-content: center;
+  margin: 14px 0 0;
+}
+.ending-entry {
+  background:
+    linear-gradient(#f5edceed, #f5edceed),
+    url('/assets/paper-texture.jpg') center/cover;
+  border-radius: 3px;
+  box-shadow: 0 5px 17px #071a3230;
+}
+.sea-world .ending-entry > .ending-preview {
+  background: none;
+  box-shadow: none;
+}
+.ending-vote {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 20px 14px;
+}
+.ending-vote .ending-upvote {
+  min-height: 38px;
+  padding: 6px 12px;
+  color: #263342;
+  border-color: #74695855;
+  background: #fff7;
+}
+.ending-vote .ending-upvote[aria-pressed='true'] {
+  background: #d8e3ce;
+  border-color: #73856d;
+}

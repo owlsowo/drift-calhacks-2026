@@ -1605,3 +1605,117 @@ describe('private daily activity diagnostics', () => {
     expect([...h.db.activityDay.iter()]).toHaveLength(0);
   });
 });
+
+describe('public ending upvotes with private selections', () => {
+  function pair() {
+    start(A);
+    expect(setup(A).ok).toBe(true);
+    const beginning = [...h.db.beginning.iter()].find((row) => !row.seeded)!;
+    tx(B, (c) => module.pick_up_beginning(c, { beginningId: beginning.id }));
+    expect(reply(B).ok).toBe(true);
+    return [...h.db.postcard.iter()][0];
+  }
+  const vote = (who: any, cardId: string, voted = true) =>
+    tx(who, (c) => module.set_card_vote(c, { cardId, voted }));
+  const totals = (who = C) => module.card_vote_totals(h.viewContext(who));
+  const mine = (who = C) => module.my_card_votes(h.viewContext(who));
+  it('counts a public reader once, keeps selections private and changes no writing quota or AI accounting', () => {
+    const card = pair();
+    const rounds = [...h.db.round.iter()];
+    const costs = [...h.db.aiCall.iter()];
+    vote(C, card.id);
+    vote(C, card.id);
+    expect(totals()).toEqual([{ cardId: card.id, count: 1 }]);
+    expect(totals(A)).toEqual(totals(C));
+    expect(mine(C)).toEqual([{ cardId: card.id }]);
+    expect(mine(A)).toEqual([]);
+    expect([...h.db.cardVote.iter()]).toHaveLength(1);
+    expect([...h.db.voteRate.iter()][0].used).toBe(1);
+    expect([...h.db.round.iter()]).toEqual(rounds);
+    expect([...h.db.aiCall.iter()]).toEqual(costs);
+    expect(Object.keys(totals()[0]).sort()).toEqual(['cardId', 'count']);
+  });
+  it('allows both writers and another viewer independent votes, with reversible idempotent removal', () => {
+    const card = pair();
+    for (const who of [A, B, C]) vote(who, card.id);
+    expect(totals()[0].count).toBe(3);
+    vote(B, card.id, false);
+    vote(B, card.id, false);
+    expect(totals()[0].count).toBe(2);
+    expect(mine(B)).toEqual([]);
+    expect(mine(A)).toHaveLength(1);
+  });
+  it('requires the writing human check for a new public vote, while undo works after expiry and during a pause', () => {
+    const card = pair();
+    vote(C, card.id);
+    env.DRIFT_TURNSTILE_SECRET = 'synthetic-test-secret';
+    expect(() => vote(A, card.id)).toThrow(/shore check/);
+    tx(owner, (c) => module.set_pause(c, { paused: true }));
+    vote(C, card.id, false);
+    expect(totals()).toEqual([]);
+    expect(() => vote(C, card.id)).toThrow(/short break/);
+  });
+  it('bounds new votes per day, rejects rapid toggles, and rolls the rate window at the next day', () => {
+    const card = pair();
+    vote(C, card.id);
+    vote(C, card.id, false);
+    expect(() => vote(C, card.id)).toThrow(/settle/);
+    h.clock.advance(TimeDuration.fromMillis(251));
+    vote(C, card.id);
+    vote(C, card.id, false);
+    tx(C, (c) => {
+      const rate = c.db.voteRate.owner.find(c.sender)!;
+      c.db.voteRate.owner.update({ ...rate, used: 100, updatedMs: rate.updatedMs - 1000 });
+    });
+    expect(() => vote(C, card.id)).toThrow(/hundred/);
+    h.clock.advance(TimeDuration.fromMillis(86400000));
+    vote(C, card.id);
+    expect([...h.db.voteRate.iter()][0].used).toBe(1);
+    expect(totals()[0].count).toBe(1);
+  });
+  it('does not let a reporter vote on the card they have hidden for themselves', () => {
+    const card = pair();
+    tx(C, (c) => module.report_content(c, { roundId: '', cardId: card.id, reason: 'other' }));
+    expect(() => vote(C, card.id)).toThrow(/no longer available/);
+    vote(A, card.id);
+    expect(totals()[0].count).toBe(1);
+  });
+  it.each(['hide', 'withdraw', 'report'])(
+    'removes all vote mappings when a card is removed through %s',
+    (action) => {
+      const card = pair();
+      vote(C, card.id);
+      if (action === 'hide') tx(A, (c) => module.hide_my_card(c, { cardId: card.id }));
+      else if (action === 'withdraw')
+        tx(A, (c) => module.withdraw_my_beginning(c, { bottleId: card.beginningId }));
+      else {
+        tx(C, (c) => module.report_content(c, { roundId: '', cardId: card.id, reason: 'other' }));
+        const report = [...h.db.report.iter()][0];
+        tx(owner, (c) => module.resolve_report(c, { reportId: report.id, decision: 'hide' }));
+      }
+      expect(totals()).toEqual([]);
+      expect(mine(C)).toEqual([]);
+      expect([...h.db.cardVote.iter()]).toHaveLength(0);
+      expect(() => vote(C, card.id)).toThrow(/no longer available/);
+      expect(() => vote(C, card.id, false)).not.toThrow();
+    },
+  );
+  it('reporting retracts only that viewer’s own vote while leaving another viewer’s count', () => {
+    const card = pair();
+    vote(A, card.id);
+    vote(C, card.id);
+    tx(C, (c) => module.report_content(c, { roundId: '', cardId: card.id, reason: 'other' }));
+    expect(totals()).toEqual([{ cardId: card.id, count: 1 }]);
+    expect(mine(C)).toEqual([]);
+    expect(mine(A)).toHaveLength(1);
+  });
+  it('retention clears expired votes and rate records, without retaining a public count', () => {
+    const card = pair();
+    vote(C, card.id);
+    h.clock.advance(TimeDuration.fromMillis(31 * 86400000));
+    tx(owner, (c) => module.purge_old_data(c, {}));
+    expect([...h.db.cardVote.iter()]).toHaveLength(0);
+    expect([...h.db.voteRate.iter()]).toHaveLength(0);
+    expect(totals()).toEqual([]);
+  });
+});

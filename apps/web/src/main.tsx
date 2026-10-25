@@ -36,6 +36,7 @@ import './style.css';
 import { HelloPanel } from './HelloPanel';
 import { friendlyError } from './errors';
 import { Postcard } from './Postcard';
+import { VoteButton } from './VoteButton';
 import { QrInvitation } from './QrInvitation';
 import { bottleLink } from './bottle-link';
 import { usePostcardScene } from './usePostcardScene';
@@ -314,7 +315,7 @@ function App() {
   navigation.current = { view, playingRoundId, selectedBeginningId };
   const [bottleLookup, setBottleLookup] = useState('');
   const [modal, setModal] = useState<
-    'how' | 'report' | 'hide' | 'withdraw' | 'privacy' | 'qr' | null
+    'how' | 'report' | 'hide' | 'withdraw' | 'privacy' | 'qr' | 'vote-check' | null
   >(null);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
@@ -800,6 +801,39 @@ function App() {
     hour: 'numeric',
     minute: '2-digit',
   });
+  async function voteCard(id: string) {
+    const voted = s.votes.some((item) => item.cardId === id);
+    if (!voted && needsShoreCheck) {
+      setModal('vote-check');
+      return;
+    }
+    await run('Updating your upvote…', async () => {
+      await confirmedAction({
+        snapshot: game.snapshot,
+        subscribe: game.subscribe,
+        read: (state) =>
+          state.connected && state.votes.some((item) => item.cardId === id) === !voted
+            ? true
+            : undefined,
+        act: () => game.vote(id, !voted),
+        message: 'Your upvote could not be confirmed. Reconnect and check it before trying again.',
+      });
+      setToast(voted ? 'Upvote removed' : 'Upvote added');
+    });
+  }
+  function renderVote(pair: Card) {
+    const voted = s.votes.some((item) => item.cardId === pair.id);
+    return (
+      <VoteButton
+        reply={pair.reply}
+        count={s.voteTotals.find((item) => item.cardId === pair.id)?.count ?? 0}
+        voted={voted}
+        requiresCheck={!voted && needsShoreCheck}
+        disabled={!!busy || !s.connected || (!!s.service?.paused && !voted)}
+        onVote={() => void voteCard(pair.id)}
+      />
+    );
+  }
   function showBeginning(id: string) {
     navigate({ view: 'beginning', beginningId: id });
     setError('');
@@ -1346,6 +1380,7 @@ function App() {
                         Copy text
                       </button>
                     </div>
+                    <div className="postcard-vote">{renderVote(card)}</div>
                     {parentBeginning && (
                       <div className="other-endings">
                         <button
@@ -1353,7 +1388,7 @@ function App() {
                           onClick={() => showBeginning(parentBeginning.id)}
                         >
                           {otherEndings
-                            ? `Other endings from this bottle (${otherEndings})`
+                            ? `Read all ${otherEndings + 1} endings to this beginning`
                             : 'View this bottle'}
                           <ArrowRight size={14} aria-hidden="true" />
                         </button>
@@ -1784,32 +1819,31 @@ function App() {
                   ) : (
                     <div className="ending-list">
                       {endings.map((pair) => (
-                        <button
-                          className="ending-preview"
-                          key={pair.id}
-                          onClick={() => showCard(pair.id)}
-                        >
-                          <span>{pair.reply}</span>
-                          <small>
-                            {unopenedIds.has(pair.id) && (
-                              <strong className="unopened-label">Unopened</strong>
-                            )}
-                            {s.appreciation.some(
-                              (item) => item.cardId === pair.id && item.received,
-                            ) && (
-                              <span className="thanks-label">
-                                <Heart size={12} aria-hidden="true" /> Thanks received
-                              </span>
-                            )}
-                            <time dateTime={new Date(pair.createdMs).toISOString()}>
-                              {new Date(pair.createdMs).toLocaleDateString([], {
-                                month: 'short',
-                                day: 'numeric',
-                              })}
-                            </time>
-                          </small>
-                          <ArrowUpRight size={16} />
-                        </button>
+                        <div className="ending-entry" key={pair.id}>
+                          <button className="ending-preview" onClick={() => showCard(pair.id)}>
+                            <span>{pair.reply}</span>
+                            <small>
+                              {unopenedIds.has(pair.id) && (
+                                <strong className="unopened-label">Unopened</strong>
+                              )}
+                              {s.appreciation.some(
+                                (item) => item.cardId === pair.id && item.received,
+                              ) && (
+                                <span className="thanks-label">
+                                  <Heart size={12} aria-hidden="true" /> Thanks received
+                                </span>
+                              )}
+                              <time dateTime={new Date(pair.createdMs).toISOString()}>
+                                {new Date(pair.createdMs).toLocaleDateString([], {
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}
+                              </time>
+                            </small>
+                            <ArrowUpRight size={16} />
+                          </button>
+                          <div className="ending-vote">{renderVote(pair)}</div>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -1850,6 +1884,21 @@ function App() {
           <Check size={17} />
           {toast}
         </div>
+      )}
+      {modal === 'vote-check' && (
+        <Modal title="Keep the votes human" onClose={() => setModal(null)}>
+          <p>
+            Anyone can read and upvote an ending. Complete this check before adding your vote; no
+            sign-in or writing turn is needed.
+          </p>
+          <ShoreGate
+            onVerified={() => {
+              setGateReady(true);
+              setModal(null);
+              setToast('Human check complete. You can upvote now.');
+            }}
+          />
+        </Modal>
       )}
       {modal === 'qr' && beginning && beginning.id === qrBeginningId && (
         <Modal title="Pass this bottle along" onClose={() => setModal(null)}>
@@ -1953,6 +2002,12 @@ function App() {
             Claude also uses the pair to arrange a shared illustration from a small art library;
             both story lines stay unchanged. Checks can miss things; use Report to flag a postcard.
             Starter content is always labeled.
+          </p>
+          <p>
+            Public upvote totals are visible to everyone. Your selection is tied to this browser’s
+            anonymous session; other readers cannot see who voted. You can undo it. Vote records
+            follow the postcard’s thirty-day retention and are removed when it is hidden or
+            withdrawn. A private rate counter limits new votes and expires after thirty days.
           </p>
           <p>
             On a completed human story, either co-writer can send one private thank-you. Only the

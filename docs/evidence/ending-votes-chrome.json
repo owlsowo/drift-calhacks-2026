@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-25T06:32:12.431Z",
+  "engine": "Chrome",
+  "checks": [
+    "An ending responder can open the explicit all-endings route, read both replies and see vote controls without another writing turn",
+    "A public guest upvote arrives live for a co-writer, and subscription confirmation unlocks a deliberately lost reducer acknowledgement with one dispatch",
+    "Reload preserves the same guest selection without duplicating it; a fresh identity sees the shared total but has its own independent selection",
+    "Undo works during a real local service pause; adding a new vote stays blocked until writing is reopened",
+    "An injected expired human-check state opens verification before any vote dispatch; no challenge is solved or pass granted",
+    "A fresh local SDK identity cannot subscribe to individual private vote records",
+    "Public readers vote without writing turns, and the full ending/thanks/date/vote layout fits a narrow phone with selected accessibility checks",
+    "A real author withdrawal removes both public pairs, live totals, personal selections and vote controls for subscribed readers"
+  ],
+  "errors": [],
+  "scope": "Real disposable keyless local multi-writer/reader flow, SDK privacy denial, real local pause/withdrawal, lost acknowledgement, injected verification state and denied empty-pass preflight. No paid model, production story, solved challenge or physical-phone claim."
+}

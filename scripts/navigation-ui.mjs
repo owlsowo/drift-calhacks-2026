@@ -130,9 +130,9 @@ try {
   await enter(C);
   await finish(C, 'Nobody approved your suspicious little plan.');
   const otherPair = (await state(C)).rounds.find((r) => r.cardId).cardId;
-  const alternatives = B.getByRole('button', { name: /Other endings from this bottle/ });
+  const alternatives = B.getByRole('button', { name: /Read all 2 endings to this beginning/ });
   await alternatives.waitFor();
-  assert.match(await alternatives.innerText(), /1/);
+  assert.match(await alternatives.innerText(), /2/);
   await alternatives.click();
   await B.getByRole('heading', { name: '2 replies', exact: true }).waitFor();
   await B.locator('.ending-preview').filter({ hasText: 'Nobody approved' }).click();
@@ -152,7 +152,10 @@ try {
   await B.getByRole('heading', { name: 'Reply unavailable', exact: true }).waitFor();
   await ready(B, `${origin}/?card=${ownPair}`);
   await button(B, 'View this bottle').waitFor();
-  assert.equal(await B.getByRole('button', { name: /Other endings from this bottle/ }).count(), 0);
+  assert.equal(
+    await B.getByRole('button', { name: /Read all 2 endings to this beginning/ }).count(),
+    0,
+  );
   assert.ok((await state(A)).cards.some((card) => card.id === otherPair));
   pass(
     'Alternative-ending counts exclude this viewer’s reported pair without hiding another writer’s public story for everyone',

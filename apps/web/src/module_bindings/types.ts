@@ -150,6 +150,19 @@ export const Bottle = __t.object("Bottle", {
 });
 export type Bottle = __Infer<typeof Bottle>;
 
+export const CardVote = __t.object("CardVote", {
+  id: __t.string(),
+  cardId: __t.string(),
+  owner: __t.identity(),
+  voted: __t.bool(),
+  createdMs: __t.f64(),
+  updatedMs: __t.f64(),
+});
+export type CardVote = __Infer<typeof CardVote>;
+
+export const CardVoteTotals = __t.object("CardVoteTotals", {});
+export type CardVoteTotals = __Infer<typeof CardVoteTotals>;
+
 export const Config = __t.object("Config", {
   id: __t.u32(),
   owner: __t.identity(),
@@ -211,6 +224,9 @@ export type MyAppreciation = __Infer<typeof MyAppreciation>;
 export const MyAssignment = __t.object("MyAssignment", {});
 export type MyAssignment = __Infer<typeof MyAssignment>;
 
+export const MyCardVotes = __t.object("MyCardVotes", {});
+export type MyCardVotes = __Infer<typeof MyCardVotes>;
+
 export const MyCards = __t.object("MyCards", {});
 export type MyCards = __Infer<typeof MyCards>;
 
@@ -228,6 +244,11 @@ export type MyRound = __Infer<typeof MyRound>;
 
 export const MyUnopenedReturns = __t.object("MyUnopenedReturns", {});
 export type MyUnopenedReturns = __Infer<typeof MyUnopenedReturns>;
+
+export const MyVote = __t.object("MyVote", {
+  cardId: __t.string(),
+});
+export type MyVote = __Infer<typeof MyVote>;
 
 export const Outgoing = __t.object("Outgoing", {
   id: __t.string(),
@@ -404,4 +425,18 @@ export const UnopenedReturn = __t.object("UnopenedReturn", {
   id: __t.string(),
 });
 export type UnopenedReturn = __Infer<typeof UnopenedReturn>;
+
+export const VoteRate = __t.object("VoteRate", {
+  owner: __t.identity(),
+  day: __t.u32(),
+  used: __t.u32(),
+  updatedMs: __t.f64(),
+});
+export type VoteRate = __Infer<typeof VoteRate>;
+
+export const VoteTotal = __t.object("VoteTotal", {
+  cardId: __t.string(),
+  count: __t.u32(),
+});
+export type VoteTotal = __Infer<typeof VoteTotal>;
 

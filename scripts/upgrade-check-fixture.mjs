@@ -10,9 +10,9 @@ import {
   verifyRecords,
   runUpgradeCheck,
   requiredTables,
-  sceneTables,
+  optionalTables,
 } from './letter-upgrade-check.mjs';
-const all = [...requiredTables, ...sceneTables];
+const all = [...requiredTables, ...optionalTables];
 const camel = (s) => s.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 const metadata = (tables) =>
   tables.map((source_name) => ({ source_name: camel(source_name), primary_key: [0] }));
@@ -117,9 +117,9 @@ test('quiescence guards reject active checks and queued/pending scenes; expired 
   live.config[0].paused = false;
   assert.throws(() => assertQuiescent(live), /Pause submissions/);
 });
-test('first-upgrade scene tables have explicit zero expectations and cannot be missing/nonempty', () => {
+test('first-upgrade additive tables have explicit zero expectations and cannot be missing/nonempty', () => {
   const r = records();
-  const s = snap(r, sceneTables);
+  const s = snap(r, optionalTables);
   assert.equal(verifyRecords(s, clone(r)), 0);
   const added = clone(r);
   added.postcard_scene = [{ cardId: 'x', sceneJson: secret }];
@@ -132,16 +132,20 @@ test('first-upgrade scene tables have explicit zero expectations and cannot be m
 });
 test('scene cardId and schedule scheduledId reconcile reordered multiple rows and all backed fields', () => {
   const r = records();
-  for (const t of sceneTables)
+  for (const t of optionalTables)
     r[t] = [1, 2].map((n) =>
-      t === 'scene_schedule'
-        ? { scheduledId: String(n), cardId: 'c' + n, scheduledAt: { Interval: '1000' } }
-        : { cardId: 'c' + n, state: 'ready', sceneJson: secret + n },
+      t === 'card_vote'
+        ? { id: 'v' + n, cardId: 'c' + n, owner: 'owner' + n, voted: true, updatedMs: n }
+        : t === 'vote_rate'
+          ? { owner: 'owner' + n, day: 10, used: n, updatedMs: n }
+          : t === 'scene_schedule'
+            ? { scheduledId: String(n), cardId: 'c' + n, scheduledAt: { Interval: '1000' } }
+            : { cardId: 'c' + n, state: 'ready', sceneJson: secret + n },
     );
   const after = clone(r);
-  for (const t of sceneTables) after[t].reverse();
+  for (const t of optionalTables) after[t].reverse();
   assert.equal(verifyRecords(snap(r), after), 0);
-  for (const t of ['beginning', 'schema_migration', ...sceneTables]) {
+  for (const t of ['beginning', 'schema_migration', ...optionalTables]) {
     const changed = clone(after);
     const field =
       t === 'beginning'
@@ -150,7 +154,9 @@ test('scene cardId and schedule scheduledId reconcile reordered multiple rows an
           ? 'appliedMs'
           : t === 'scene_schedule'
             ? 'scheduledAt'
-            : 'sceneJson';
+            : ['card_vote', 'vote_rate'].includes(t)
+              ? 'updatedMs'
+              : 'sceneJson';
     changed[t][0][field] = 'changed';
     assert.throws(
       () => verifyRecords(snap(r), changed),
@@ -208,9 +214,9 @@ try {
       const saved = await runUpgradeCheck('backup', { run, workspace });
       assert.deepEqual(
         saved.newTableExpectedCounts,
-        Object.fromEntries(sceneTables.map((t) => [t, 0])),
+        Object.fromEntries(optionalTables.map((t) => [t, 0])),
       );
-      assert.ok(!sqlReads.some((t) => sceneTables.includes(t)));
+      assert.ok(!sqlReads.some((t) => optionalTables.includes(t)));
       assert.ok(!JSON.stringify(saved).includes(secret));
       const pointer = path.join(workspace, '.spacetime/letter-upgrade-backup-path');
       const file = (await fs.readFile(pointer, 'utf8')).trim();
@@ -219,7 +225,7 @@ try {
       assert.equal((await fs.stat(path.dirname(file))).mode & 0o777, 0o700);
       const raw = JSON.parse(await fs.readFile(file, 'utf8'));
       assert.equal(raw.records.beginning[0].text, secret);
-      assert.deepEqual(raw.absentBeforeUpgrade, sceneTables);
+      assert.deepEqual(raw.absentBeforeUpgrade, optionalTables);
       await assert.rejects(
         runUpgradeCheck('verify', { run, workspace }),
         /Expected post-upgrade table is missing/,
@@ -260,20 +266,23 @@ try {
       }
     }
   });
-  await asyncTest('existing scene rows included and preserved in subsequent upgrade', async () => {
-    current = records();
-    current.scene_job = [{ cardId: 'c1', state: 'ready', message: '', owner: 'private-owner' }];
-    current.postcard_scene = [{ cardId: 'c1', sceneJson: secret }];
-    current.scene_schedule = [
-      { scheduledId: '22', cardId: 'c1', scheduledAt: { Interval: '1000' } },
-    ];
-    const saved = await runUpgradeCheck('backup', { run, workspace });
-    assert.deepEqual(saved.absentBeforeUpgrade, []);
-    assert.equal(saved.counts.scene_job, 1);
-    const report = await runUpgradeCheck('verify', { run, workspace });
-    assert.equal(report.afterCounts.scene_job, 1);
-    assert.equal(report.afterCounts.scene_schedule, 1);
-  });
+  await asyncTest(
+    'existing additive rows included and preserved in subsequent upgrade',
+    async () => {
+      current = records();
+      current.scene_job = [{ cardId: 'c1', state: 'ready', message: '', owner: 'private-owner' }];
+      current.postcard_scene = [{ cardId: 'c1', sceneJson: secret }];
+      current.scene_schedule = [
+        { scheduledId: '22', cardId: 'c1', scheduledAt: { Interval: '1000' } },
+      ];
+      const saved = await runUpgradeCheck('backup', { run, workspace });
+      assert.deepEqual(saved.absentBeforeUpgrade, []);
+      assert.equal(saved.counts.scene_job, 1);
+      const report = await runUpgradeCheck('verify', { run, workspace });
+      assert.equal(report.afterCounts.scene_job, 1);
+      assert.equal(report.afterCounts.scene_schedule, 1);
+    },
+  );
 } finally {
   await fs.rm(workspace, { recursive: true, force: true });
 }
