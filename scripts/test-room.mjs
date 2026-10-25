@@ -6,6 +6,7 @@ process.chdir(root);
 const mode = process.argv[2] || 'ui';
 if (
   ![
+    'response-context',
     'gate-layout',
     'daily-clarity',
     'type-layout',
@@ -107,6 +108,7 @@ try {
     }
   }
   const sceneFiles = {
+    'response-context': 'response-context-ui.mjs',
     'type-layout': 'type-layout-ui.mjs',
     'shelf-render': 'shelf-render-check.mjs',
     'shore-motion': 'shore-motion-ui.mjs',

@@ -8,7 +8,13 @@ if (!origin || !process.env.DRIFT_TEST_DATABASE?.startsWith('drift-test-'))
   throw Error('Use npm run test:thanks.');
 const engine = process.env.DRIFT_TEST_ENGINE === 'webkit' ? 'WebKit' : 'Chrome';
 const browser =
-  engine === 'WebKit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' });
+  engine === 'WebKit'
+    ? await webkit.launch()
+    : await chromium.launch(
+        process.env.DRIFT_CHROMIUM_PATH
+          ? { executablePath: process.env.DRIFT_CHROMIUM_PATH }
+          : { channel: 'chrome' },
+      );
 const out = new URL('../docs/evidence/', import.meta.url),
   checks = [],
   errors = [];
@@ -230,13 +236,20 @@ try {
   await button(B, 'Copy text').click();
   const copied = await B.evaluate(() => window.testCopied);
   assert.equal(copied.includes('thanks'), false);
-  assert.ok(copied.includes(setupText) && copied.includes(replyText));
+  assert.equal(
+    copied,
+    `Original prompt: ${prompt.setup}\nBeginning: ${setupText}\n\nHow to respond: ${prompt.reply}\nEnding: ${replyText}`,
+  );
   const downloadPromise = B.waitForEvent('download');
   await button(B, 'Save image').click();
   const download = await downloadPromise;
   const file = await download.path();
   assert.ok(file);
   assert.ok((await fs.stat(file)).size > 10000);
+  const png = await fs.readFile(file);
+  assert.equal(png.subarray(1, 4).toString(), 'PNG');
+  assert.equal(png.readUInt32BE(16), 1080);
+  assert.equal(png.readUInt32BE(20), 1650);
   pass(
     'Copy text and the actual image download still export the story, with private receipt UI kept outside story text',
   );

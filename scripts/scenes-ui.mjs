@@ -34,10 +34,20 @@ try {
     .waitFor();
   for (const example of examples) {
     const output = await page.evaluate(async ({ fixture, scene }) => {
-      const { preparePostcard } = await import('/src/export.ts');
+      const { postcardPng, cardText } = await import('/src/export.ts');
       const { prepareScene, drawScene } = await import('/src/scene-renderer.ts');
-      await preparePostcard(fixture);
-      const blob = await preparePostcard(fixture, scene);
+      const text = [];
+      const original = CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText = function (value, ...args) {
+        text.push(value);
+        return original.call(this, value, ...args);
+      };
+      let blob;
+      try {
+        blob = await postcardPng(fixture, scene);
+      } finally {
+        CanvasRenderingContext2D.prototype.fillText = original;
+      }
       const bitmap = await createImageBitmap(blob);
       const exported = document.createElement('canvas');
       exported.width = 900;
@@ -64,11 +74,43 @@ try {
         reader.onload = () => resolve(reader.result);
         reader.readAsDataURL(blob);
       });
-      return { png, width: bitmap.width, height: bitmap.height, differingPixels };
+      return {
+        png,
+        width: bitmap.width,
+        height: bitmap.height,
+        differingPixels,
+        drawnText: text.join(' '),
+        copiedText: cardText(fixture),
+      };
     }, example);
     assert.equal(output.width, 1080);
-    assert.equal(output.height, 1350);
+    assert.equal(output.height, 1650);
     assert.equal(output.differingPixels, 0, 'The shared PNG must contain the same rendered scene.');
+    const prompt =
+      example.fixture.promptId === 'aquarium'
+        ? {
+            setup: 'Why were you banned from the aquarium?',
+            reply: 'Write the aquarium’s official response.',
+          }
+        : { setup: 'Unavailable', reply: 'Unavailable' };
+    const provenance = example.fixture.seeded
+      ? example.fixture.starterKind === 'team'
+        ? 'Beginning by the Drift team.'
+        : 'Sample beginning.'
+      : '';
+    for (const value of [
+      example.fixture.setup,
+      example.fixture.reply,
+      `Original prompt: ${prompt.setup}`,
+      `How to respond: ${prompt.reply}`,
+      provenance,
+    ].filter(Boolean))
+      assert.ok(output.drawnText.includes(value), `The PNG retains ${JSON.stringify(value)}.`);
+    assert.equal(
+      output.copiedText,
+      `Original prompt: ${prompt.setup}\nBeginning: ${example.fixture.setup}\n\nHow to respond: ${prompt.reply}\nEnding: ${example.fixture.reply}${provenance ? `\n\n${provenance}` : ''}`,
+      'Historical demo prompts use an explicit unavailable fallback instead of today’s question.',
+    );
     await fs.writeFile(
       new URL(`postcard-${example.fixture.promptId}.png`, out),
       Buffer.from(output.png.split(',')[1], 'base64'),
@@ -128,7 +170,7 @@ try {
   await page.screenshot({ path: new URL('mobile.png', out).pathname, fullPage: true });
   assert.deepEqual(errors, []);
   console.log(
-    `PASS ${examples.length} actual Claude scenes render, export to 1080×1350, match exported pixels, and fit mobile.`,
+    `PASS ${examples.length} actual Claude scenes render, export both human lines with prompt context and provenance at 1080×1650, match exported pixels, and fit mobile.`,
   );
 } finally {
   await browser.close();

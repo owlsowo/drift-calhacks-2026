@@ -17,7 +17,13 @@ for (const [engine, launcher] of baseline
       ['Chrome', chromium],
       ['WebKit', webkit],
     ]) {
-  const browser = await launcher.launch(engine === 'Chrome' ? { channel: 'chrome' } : {});
+  const browser = await launcher.launch(
+    engine === 'Chrome'
+      ? process.env.DRIFT_CHROMIUM_PATH
+        ? { executablePath: process.env.DRIFT_CHROMIUM_PATH }
+        : { channel: 'chrome' }
+      : {},
+  );
   try {
     for (const fault of baseline
       ? ['stalled-paper']
@@ -48,7 +54,8 @@ for (const [engine, launcher] of baseline
           promptId: 'aquarium',
           setup: 'I challenged their shark to poker.',
           reply: 'Our lawyers would like another hand.',
-          seeded: false,
+          seeded: fault === 'failed-paper',
+          starterKind: fault === 'failed-paper' ? 'team' : undefined,
           createdMs: Date.parse('2026-10-24T12:00:00Z'),
         };
         const started = performance.now();
@@ -75,10 +82,23 @@ for (const [engine, launcher] of baseline
         );
       assert.equal(result.state, 'complete', JSON.stringify(result));
       assert.equal(result.width, 1080);
-      assert.equal(result.height, 1350);
+      assert.equal(result.height, 1650);
       assert.equal(result.type, 'image/png');
       assert.ok(
         result.text.join(' ').includes('shark') && result.text.join(' ').includes('lawyers'),
+      );
+      assert.ok(
+        result.text.join(' ').includes('Original prompt: Why were you banned from the aquarium?'),
+        'The PNG keeps the beginning’s own question.',
+      );
+      assert.ok(
+        result.text.join(' ').includes('How to respond: Write the aquarium’s official response.'),
+        'The PNG keeps the response instruction beside the ending.',
+      );
+      assert.equal(
+        result.text.includes('Beginning by the Drift team.'),
+        fault === 'failed-paper',
+        'Seeded provenance survives export, including when the paper image fails.',
       );
       if (fault.includes('paper'))
         assert.ok(
