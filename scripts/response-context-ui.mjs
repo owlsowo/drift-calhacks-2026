@@ -1,4 +1,4 @@
-import { chromium, expect } from '@playwright/test';
+import { chromium, webkit, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { waitForGameConnection } from './browser-game-state.mjs';
@@ -10,16 +10,22 @@ if (
 )
   throw Error('Use the disposable, keyless local test room.');
 
-const browser = await chromium.launch({
+const isWebKit = process.env.DRIFT_TEST_ENGINE === 'webkit';
+const browser = await (isWebKit ? webkit : chromium).launch({
   headless: true,
-  ...(process.env.DRIFT_CHROMIUM_PATH
+  ...(!isWebKit && process.env.DRIFT_CHROMIUM_PATH
     ? { executablePath: process.env.DRIFT_CHROMIUM_PATH }
-    : { channel: 'chrome' }),
+    : !isWebKit
+      ? { channel: 'chrome' }
+      : {}),
 });
 const contexts = [];
 const checks = [];
 const errors = [];
-const out = new URL('../test-results/response-context/', import.meta.url);
+const out = new URL(
+  `../test-results/response-context/${isWebKit ? 'webkit' : 'chrome'}/`,
+  import.meta.url,
+);
 const button = (page, name) => page.getByRole('button', { name, exact: true });
 const pass = (name) => {
   checks.push(name);

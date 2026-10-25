@@ -195,8 +195,8 @@ async function run() {
   await download.saveAs(file);
   const png = await fs.readFile(file);
   assert.equal(png.readUInt32BE(16), 1080);
-  assert.equal(png.readUInt32BE(20), 1350);
-  pass('The hosted result downloads as an actual 1080×1350 PNG');
+  assert.equal(png.readUInt32BE(20), 1650);
+  pass('The hosted result downloads as an actual 1080×1650 PNG');
   assert.deepEqual(errors, []);
   report.status = 'passed';
   report.syntheticAccounting =

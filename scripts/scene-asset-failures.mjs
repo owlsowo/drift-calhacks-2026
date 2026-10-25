@@ -118,13 +118,13 @@ for (const [engine, launcher] of process.env.DRIFT_TEST_ENGINE === 'webkit'
           };
         });
         assert.equal(result.width, 1080);
-        assert.equal(result.height, 1350);
+        assert.equal(result.height, 1650);
         assert.equal(result.type, 'image/png');
         assert.ok(result.bytes > 1000);
         assert.ok(result.elapsedMs < 12000, JSON.stringify(result));
         for (const [text, center] of [
-          [example.fixture.setup, 390],
-          [example.fixture.reply, 920],
+          [example.fixture.setup, 540],
+          [example.fixture.reply, 1190],
         ]) {
           const rows = result.texts.filter((row) => Math.abs(row.y - center) < 190);
           assert.equal(rows.map((row) => row.text).join(' '), text);
@@ -137,7 +137,7 @@ for (const [engine, launcher] of process.env.DRIFT_TEST_ENGINE === 'webkit'
         pass(
           engine,
           fault,
-          'Asset failure settles within the load bound; a readable 1080×1350 PNG retains both original lines and the UI explains its fallback',
+          'Asset failure settles within the load bound; a readable 1080×1650 PNG retains both original lines and the UI explains its fallback',
         );
 
         await page.evaluate(async () => {
@@ -182,7 +182,7 @@ for (const [engine, launcher] of process.env.DRIFT_TEST_ENGINE === 'webkit'
         const png = await fs.readFile(path);
         assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
         assert.equal(png.readUInt32BE(16), 1080);
-        assert.equal(png.readUInt32BE(20), 1350);
+        assert.equal(png.readUInt32BE(20), 1650);
         pass(
           engine,
           fault,
@@ -229,7 +229,7 @@ for (const [engine, launcher] of process.env.DRIFT_TEST_ENGINE === 'webkit'
           const { preparePostcard } = await import('/src/export.ts');
           const { fixture, scene } = window.sceneFailureExample;
           const same = await preparePostcard(fixture, scene);
-          const rows = window.sceneExportText.filter((row) => Math.abs(row.y - 870) < 90);
+          const rows = window.sceneExportText.filter((row) => Math.abs(row.y - 1000) < 90);
           return {
             cached: blob === same,
             illustrated: window.sceneExportText.some((row) =>

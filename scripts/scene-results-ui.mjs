@@ -214,7 +214,7 @@ try {
     await button(page, 'Save words').click();
     const offlineBytes = await fs.readFile(await (await offlineDownload).path());
     assert.equal(offlineBytes.readUInt32BE(16), 1080);
-    assert.equal(offlineBytes.readUInt32BE(20), 1350);
+    assert.equal(offlineBytes.readUInt32BE(20), 1650);
     pass(`${role} author can download the original words while reconnecting to pending art`);
     await project(page, { connected: true, state: 'ready' });
     await page.locator('.scene-illustration[data-state="ready"]').waitFor();

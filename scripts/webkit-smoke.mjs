@@ -86,7 +86,7 @@ async function download(page, name) {
   const png = await fs.readFile(out + name);
   assert.equal(png.subarray(1, 4).toString(), 'PNG');
   assert.equal(png.readUInt32BE(16), 1080);
-  assert.equal(png.readUInt32BE(20), 1350);
+  assert.equal(png.readUInt32BE(20), 1650);
 }
 try {
   const phone = await browser.newContext({
@@ -205,7 +205,7 @@ try {
   assert.equal(await B.locator('.returned-notice').count(), 0);
   pass('WebKit announces a new returned bottle and opens its postcard without a refresh');
   pass(
-    'Two WebKit identities receive the same canonical postcard without refresh and export a 1080×1350 PNG',
+    'Two WebKit identities receive the same canonical postcard without refresh and export a 1080×1650 PNG',
   );
   pass(
     'Mobile completion keeps the title, postcard and sharing controls above the optional next-beginning invitation',
