@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-25T07:03:38.734Z",
+  "sourceCommit": "5e743dea3ad93b2e484fdd70c1f5b65d2c46d293",
+  "cloudflareVersion": "fff36d0c-6a43-489e-8454-a4826f2a2d8e",
+  "assets": [
+    {
+      "asset": "/assets/index-BhXc1WtV.js",
+      "sha256": "872f4baea09363db5ed4c190384d3ddc09a4ccfdd50e36463467b096bafc78bc",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/index-hua7epsZ.css",
+      "sha256": "747f6ae6a21bd8eec401e6cf6df680615ea97a35b7b4bcf946396f48b43ee3db",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/main--IVA6crH.js",
+      "sha256": "4a49e2a2b7fb6ae9a7f92be3d541836356f908acdd917568d952430710b38bf3",
+      "localBytesMatch": true
+    }
+  ],
+  "scope": "Served frontend byte comparison; exact unchanged full-quality daylight ocean engine retained. Gentle advisory is tested with synthetic local Chrome/WebKit flows and injected refusal/version cases, not hosted publication, physical phones or real semantic moderation. Existing backend safety and bot guards remain unchanged at 014437e. No new provider calls.",
+  "ci": {
+    "run": 40171276798,
+    "conclusion": "success"
+  },
+  "hostedReader": {
+    "originalContextVisible": true,
+    "votingVisible": true,
+    "localPeriod": "night",
+    "advisoryDialogClosedOnRead": true
+  }
+}
