@@ -78,3 +78,12 @@ The user authorizes status posts and project-related replies in the Calhacks gro
 - No backend update, provider call or story was needed. The human functional check requested in Discord remains pending; no challenge bypass or budget increase was attempted.
 - Track value: the initial screen now explains the small daily collaboration before a judge opens a note, while preserving the familiar sea/bottle ritual. The visible shared prompt also clarifies Claude's contextual role and Spacetime's shared day. These are product arguments, not eligibility/outcome claims.
 - Next: inspect the completed-note return path on the shore, including notification placement and real saved-story cues.
+
+## 2026-10-25 03:29 UTC — returning notes stay reachable
+
+- Product `99419dd` is pushed; CI `40158275623` passed. Cloudflare `902c06a9-124b-4e42-8239-2a951fdeb8db` serves the matching tested entry CSS/JS and ocean chunk. No backend or protection change.
+- The three-writer regression reproduced a real layout failure: the return notice pushed an 800px shore's dock bottom to 979px. The notice now sits under the home header without moving the scene, and stays inline in writing views. A new live reply preserves the focused draft; opening it selects the exact pair and writing resumes afterward. Short landscape leaves room for the notice and dock.
+- A pending writing check is deferred on the shore while the return notice is visible, then appears when the notice is dismissed. Writing remains disabled until normal verification. Read-only returns remain accessible. No challenge was solved or bypassed.
+- Eleven synthetic local letter checks pass in each Chrome/WebKit engine, plus six synthetic human-check layout checks and six coast checks. Actual Chrome WebGPU movement/pause and the approved fallback remain covered. Viewports are controlled browser tests; persistent unread tracking, physical phones and the revised hosted Claude completion remain separate.
+- Track value: the human ending → live return → read payoff is easier to see in the connection/Meta and SpacetimeDB demo. Preserving focused writing supports the People-First case. Existing sponsor contributions are preserved; no additional eligibility or outcome is claimed.
+- The teammate functional-check request in Discord remains pending. Continue product improvements without inventing human-testing evidence or increasing model limits.

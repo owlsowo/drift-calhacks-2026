@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T03:28:39.034Z",
+  "sourceCommit": "99419ddb4d014ce60de67223e9c4df431a75e3b0",
+  "cloudflareVersion": "902c06a9-124b-4e42-8239-2a951fdeb8db",
+  "ci": {
+    "run": 40158275623,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-p5A98s_A.js",
+      "sha256": "074040322840335baf5b96e01e82fc939ae7802119f1f0ca3b0d37dd0248d90e",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DS1DnGTb.css",
+      "sha256": "16a383f70d7161122b6f9f6158b6bf658b842a80289b7b82201e7d3ac6ae0700",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend return-notice placement only. Eleven synthetic local letter checks per Chrome/WebKit, six synthetic human-check layout checks and six coast checks pass. No provider call, backend update, production story or challenge solution. Full hosted multi-writer Claude completion and physical phones remain unverified."
+}
