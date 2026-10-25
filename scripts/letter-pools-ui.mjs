@@ -1,3 +1,4 @@
+import { waitForGameConnection } from './browser-game-state.mjs';
 import { chromium, webkit } from '@playwright/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -74,7 +75,7 @@ async function state(page) {
 }
 async function ready(page, url = origin) {
   await page.goto(url);
-  await page.waitForFunction(async () => (await import('/src/game.ts')).game.snapshot().connected);
+  await waitForGameConnection(page);
 }
 async function home(page) {
   await button(page, 'Drift home').click();
@@ -113,9 +114,7 @@ try {
   await A.getByRole('textbox', { name: 'Your six-word beginning', exact: true }).fill(setupText);
   await button(A, 'Release').click();
   await A.locator('.shore-home').waitFor();
-  await A.waitForFunction(
-    async () => (await import('/src/game.ts')).game.snapshot().book.beginningIds.length === 1,
-  );
+  await A.waitForFunction(() => window.driftTestGame.snapshot().book.beginningIds.length === 1);
   const aState = await state(A);
   const beginningId = aState.book.beginningIds[0];
   assert.equal(aState.rounds[0].stage, 'done');
@@ -222,13 +221,13 @@ try {
   });
 
   await A.reload();
-  await A.waitForFunction(async () => (await import('/src/game.ts')).game.snapshot().connected);
+  await waitForGameConnection(A);
   await shelfButton(A).click();
   await A.locator('.beginning-preview').filter({ hasText: setupText }).click();
   await A.getByRole('heading', { name: '2 replies', exact: true }).waitFor();
   assert.deepEqual((await state(A)).book.beginningIds, [beginningId]);
   await B.reload();
-  await B.waitForFunction(async () => (await import('/src/game.ts')).game.snapshot().connected);
+  await waitForGameConnection(B);
   await shelfButton(B).click();
   await B.getByRole('heading', { name: 'Your replies', exact: true }).waitFor();
   assert.equal(await B.locator('.collection-card').count(), 1);
@@ -262,7 +261,7 @@ try {
     bSetup,
   );
   await B.reload();
-  await B.waitForFunction(async () => (await import('/src/game.ts')).game.snapshot().connected);
+  await waitForGameConnection(B);
   await releaseButton(B).click();
   assert.equal(
     await B.getByRole('textbox', { name: 'Your six-word beginning', exact: true }).inputValue(),
@@ -286,9 +285,7 @@ try {
   await releaseButton(B).click();
   await button(B, 'Release').click();
   await B.locator('.shore-home').waitFor();
-  await B.waitForFunction(
-    async () => (await import('/src/game.ts')).game.snapshot().book.beginningIds.length === 1,
-  );
+  await B.waitForFunction(() => window.driftTestGame.snapshot().book.beginningIds.length === 1);
   assert.equal(await releaseButton(B).isDisabled(), true);
   assert.equal(await pickupButton(B).isEnabled(), true);
   const bBook = await readBookFromCookies(B);
