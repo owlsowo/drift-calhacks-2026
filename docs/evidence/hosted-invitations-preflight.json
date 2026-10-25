@@ -1,0 +1,19 @@
+{
+  "startedAt": "2026-10-25T03:00:05.877Z",
+  "origin": "https://drift-game.drift-calhacks-2026-owlsowo.workers.dev",
+  "mode": "Normal hosted application preflight; no model call occurs before human checks finish. No bypass, forged token or increased evaluation budget.",
+  "applicationActionsAttempted": 0,
+  "status": "human_check_or_connection_needed",
+  "checks": [],
+  "errors": [],
+  "cleanup": {
+    "retired": false,
+    "count": 0,
+    "scope": "No tagged demo beginning was created; no retirement was needed."
+  },
+  "preflight1": "Keeping the bottles human…\n\nRetry shore check",
+  "preflight2": "Keeping the bottles human…\n\nRetry shore check",
+  "preflight3": "Keeping the bottles human…\n\nRetry shore check",
+  "error": "The normal browser preflight did not finish automatically. No test story or provider call was started.",
+  "finishedAt": "2026-10-25T03:00:39.507Z"
+}

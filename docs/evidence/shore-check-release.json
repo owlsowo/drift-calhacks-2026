@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-25T03:00:06.500Z",
+  "sourceCommit": "4f5bed743a5458d701200f55b75163f22f1a1b54",
+  "cloudflareVersion": "34a31d03-bcab-4422-b18c-57d679f4acbd",
+  "ci": {
+    "run": 40156492231,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-BulmN6xX.js",
+      "sha256": "96ef8e30f942509d26a5758e96d74842212eafe313ed3a8b51798503bee5a711",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DpZti7WO.css",
+      "sha256": "162dd5c59e3e77c573b439a976065e20f15ccee21a4ab5d2ea7b58e0b5a3ebc1",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend entry-layout refinement only; five local layout checks use a synthetic local secret and inert widget, and fourteen invitation checks pass. Protection remains server-enforced. Hosted full Claude flow is still incomplete because fresh profiles require manual verification. No backend publication or protection change.",
+  "hostedPreflight": {
+    "status": "human_check_or_connection_needed",
+    "applicationActionsAttempted": 0,
+    "scope": "Actual Cloudflare checkbox shown, not clicked; no story or provider call. This confirms the entry presentation, not full model-flow completion."
+  },
+  "controlledViewportCapture": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "beforeFullPage": {
+      "width": 390,
+      "height": 1018
+    },
+    "afterFullPage": {
+      "width": 390,
+      "height": 844
+    },
+    "scope": "Same configured phone viewport in normal Chrome automation; not a physical-phone or field-performance measurement."
+  }
+}

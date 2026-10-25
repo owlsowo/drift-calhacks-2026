@@ -60,3 +60,12 @@ The user authorizes status posts and project-related replies in the Calhacks gro
 - All 75 server and 27 unit checks pass, plus seven invitation checks per Chrome/WebKit, the current ten-check Chrome letter regression, selected accessibility scans, build and typechecks. Browser fixtures are synthetic with AI off; the clipboard adapter is injected.
 - Actual hosted checks confirm the new public view, unpaused AI-ready service and rejection of an unverified invitation call. These probes created no story or paid call. A new hosted multi-writer Claude completion remains separate; a normal-browser preflight is next.
 - Track value: the share → human ending → live return loop makes the connection/Meta and SpacetimeDB contribution clear in a demo, while retaining Claude moderation and optional guidance. No eligibility, outcome or numerical win-probability claim is made.
+
+## 2026-10-25 03:01 UTC — first-visit human-check layout fixed
+
+- Product `4f5bed7` is pushed; CI `40156492231` passed; Cloudflare `34a31d03-bcab-4422-b18c-57d679f4acbd` serves the matching tested entry/ocean files. This is frontend presentation only; no backend publish or protection change.
+- The manual Cloudflare checkbox now sits in a bounded shore panel, leaving navigation and dock in place. Invitations display their note before an inline check; read-only postcards/collections do not mount a writing widget, and their start actions lead to the verification screen. Initial invitation loading no longer suggests a broken ID.
+- Five local layout checks (including 320px, 390px, short landscape and WebKit) use a synthetic local secret and inert widget; they solve no challenge and issue no pass. Fourteen Chrome/WebKit invitation checks, build/typechecks and full CI pass.
+- Normal hosted preflight screenshots confirm the real Cloudflare widget's new placement. In the same configured 390×844 viewport, full-page capture height falls from 1018px to 844px. This is controlled browser layout evidence, not a physical phone or performance claim.
+- Both hosted attempts stop at a manual human checkbox before any story/model action. Server status remains `[9,1000,false,0,0,0]`; no spend or data inventory was added. The new hosted full Claude flow still needs human interaction; no bypass or budget increase was attempted.
+- Next: request that human functional check when teammates return, while continuing the daily identity/return-cue improvements identified by the winner review.

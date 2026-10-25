@@ -139,3 +139,9 @@ Twenty-five targeted scene/ritual/paper checks passed after this change. The ser
 `0462e9b` is live as Cloudflare `74a2867b-2dbf-460d-9bc4-5836e884a965`; CI `40155096372` passed. Backend publication kept the same database identity, used `--delete-data=never` and required no table migration or backfill. Paused before/after owner readback preserved existing rows/fields with zero completed-release changes. The shore is unpaused.
 
 All 75 server and 27 unit checks, fourteen local Chrome/WebKit invitation checks and the current Chrome letter regression pass. The live public invitation view was inspected and the new hosted reducer rejects an unverified guest. Served entry/ocean files match the tested build. No hosted story or paid model call was created by these release probes; this is not yet the new hosted multi-writer Claude completion gate. See `bottle-invitations.md`, `invitation-upgrade-hosted.json`, `hosted-invitation-check.json`, `invitation-release.json` and `invitation-live-public.png`.
+
+## 2026-10-25 — first-visit shore check
+
+Frontend `4f5bed7` is live as Cloudflare `34a31d03-bcab-4422-b18c-57d679f4acbd`; CI `40156492231` passed. Five local mock-widget layout checks and fourteen invitation checks pass. Real hosted preflight captures show the actual human checkbox in the corrected position; a 390×844 viewport now captures at 844px page height instead of 1018px. Header/dock remain visible, and public invitation words precede their inline check.
+
+The hosted preflight still requires manual verification and starts no story/provider action. This result is explicitly incomplete for the new full Claude loop. The backend, database, bot requirement and dispatch count are unchanged. Served entry/ocean assets match the tested build. See `shore-check-entry.md`, `shore-check-release.json`, `hosted-invitations-preflight.json` and `hosted-invitation-current-preflight-*.png`.
