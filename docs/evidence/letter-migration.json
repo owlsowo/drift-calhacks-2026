@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-10-25T01:29:53.669Z",
+  "legacyCommit": "f68baf452a2f85614ff7a18629e86ec0ca02df1c",
+  "sourceScope": "Working migration code on main; local namespace only",
+  "mode": "Actual local Spacetime publish + SQL invariants + Chrome UI; synthetic data; provider keys cleared",
+  "beforeCounts": {
+    "bottle": 4,
+    "postcard": 1,
+    "authorship": 2,
+    "round": 11,
+    "request": 6,
+    "config": 1,
+    "activity_day": 1,
+    "ai_budget": 1,
+    "ai_call": 6
+  },
+  "afterCounts": {
+    "bottle": 4,
+    "postcard": 1,
+    "authorship": 2,
+    "round": 11,
+    "request": 6,
+    "config": 1,
+    "activity_day": 1,
+    "ai_budget": 1,
+    "ai_call": 6
+  },
+  "firstBackfill": [
+    false,
+    4,
+    1,
+    4,
+    0
+  ],
+  "secondBackfill": [
+    true,
+    4,
+    1,
+    4,
+    0
+  ],
+  "planSha256": "4d7d821eac389036baed7ed20780105f7008f044359f227b902d4f14dde7c56e",
+  "checks": [
+    "Actual additive publish from the previous hosted code retains every existing row/field except the documented completed-release stage transition",
+    "Separate owner backfill is idempotent; canonical IDs, words, ownership, hidden state, active leases, requests, activity and cost records survive",
+    "New browser UI restores the saved pair, author beginning shelf and exact held reply round using the original identity tokens"
+  ],
+  "limits": [
+    "Not a hosted data migration yet",
+    "No physical device or paid model call",
+    "Fixture has 11 rounds and 4 bottles; matches the current hosted row-count scale, not a load benchmark"
+  ]
+}

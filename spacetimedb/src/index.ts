@@ -27,6 +27,7 @@ import {
   normalize,
   dayOf,
   promptForDay,
+  PROMPTS,
   LEASE_MS,
   ROUNDS_PER_DAY,
 } from '../../packages/game-rules/index';
@@ -66,10 +67,14 @@ const bottle = table(
     text: t.string(),
     seeded: t.bool(),
     seedIndex: t.u32(),
+    // Keep the published column order for additive upgrades; pools no longer use these locks.
+    claimRound: t.string().default(''),
+    claimVersion: t.u32().default(0),
+    claimUntil: t.f64().default(0),
     cardId: t.string(),
     hidden: t.bool(),
     starterKind: t.string().default('sample'),
-    createdMs: t.f64(),
+    createdMs: t.f64().default(0),
   },
 );
 const beginning = table(
@@ -89,13 +94,13 @@ const postcard = table(
   { name: 'postcard', public: true },
   {
     id: t.string().primaryKey(),
-    beginningId: t.string().index('btree'),
     promptId: t.string(),
     setup: t.string(),
     reply: t.string(),
     seeded: t.bool(),
     createdMs: t.f64(),
     starterKind: t.string().default('sample'),
+    beginningId: t.string().default('').index('btree'),
   },
 );
 const authorship = table(
@@ -104,10 +109,10 @@ const authorship = table(
     id: t.string().primaryKey(),
     setupOwner: t.option(t.identity()),
     replyOwner: t.identity(),
-    beginningId: t.string(),
     hidden: t.bool(),
     setupActions: t.u32().default(0),
     replyActions: t.u32().default(0),
+    beginningId: t.string().default(''),
   },
 );
 const request = table(
@@ -215,6 +220,17 @@ const aiCall = table(
     durationKnown: t.bool(),
   },
 );
+const schemaMigration = table(
+  { name: 'schema_migration' },
+  {
+    id: t.string().primaryKey(),
+    appliedMs: t.f64(),
+    beginnings: t.u32(),
+    pairs: t.u32(),
+    rounds: t.u32(),
+    orphanPairs: t.u32(),
+  },
+);
 const db = schema(
   {
     round,
@@ -234,6 +250,7 @@ const db = schema(
     aiCall,
     idAllocator,
     activityDay,
+    schemaMigration,
   },
   {
     env: {
@@ -326,6 +343,94 @@ function hideBeginning(ctx: Tx, b: Bottle) {
     ctx.db.hello.cardId.delete(card.id);
   }
 }
+// Schema expansion is automatic; this owner-run data backfill is separate and idempotent.
+const letterUpgradeInfo = t.row('LetterUpgradeInfo', {
+  alreadyApplied: t.bool(),
+  beginnings: t.u32(),
+  pairs: t.u32(),
+  rounds: t.u32(),
+  orphanPairs: t.u32(),
+});
+export const admin_upgrade_letters = db.procedure(letterUpgradeInfo, (ctx) =>
+  ctx.withTx((tx) => {
+    const config = admin(tx);
+    const key = 'independent-letters-v1';
+    const applied = tx.db.schemaMigration.id.find(key);
+    if (applied)
+      return {
+        alreadyApplied: true,
+        beginnings: applied.beginnings,
+        pairs: applied.pairs,
+        rounds: applied.rounds,
+        orphanPairs: applied.orphanPairs,
+      };
+    if (!config.paused) fail('The tide must be paused before upgrading existing bottles.');
+    const rounds = [...tx.db.round.iter()];
+    if (rounds.some((r) => r.inFlight && r.busyUntil > now(tx)))
+      fail('Your last request is still being checked. Try the upgrade again shortly.');
+    let beginnings = 0,
+      pairs = 0,
+      changedRounds = 0,
+      orphanPairs = 0;
+    const cardToBeginning = new Map<string, string>();
+    for (const r of rounds)
+      if (r.cardId && r.assignmentId) cardToBeginning.set(r.cardId, r.assignmentId);
+    for (const original of tx.db.bottle.iter()) {
+      const b = original.createdMs ? original : { ...original, createdMs: original.day * 86400000 };
+      if (!original.createdMs) tx.db.bottle.id.update(b);
+      if (b.cardId) cardToBeginning.set(b.cardId, b.id);
+      if (!b.hidden && b.text && !tx.db.beginning.id.find(b.id)) {
+        publishBeginning(tx, b);
+        beginnings++;
+      }
+    }
+    for (const c of tx.db.postcard.iter()) {
+      const id = c.beginningId || cardToBeginning.get(c.id) || `legacy-${c.id}`;
+      cardToBeginning.set(c.id, id);
+      if (!c.beginningId) {
+        tx.db.postcard.id.update({ ...c, beginningId: id });
+        pairs++;
+      }
+      // The original bottle may have expired under the previous seven-day policy.
+      // Reconstruct only its approved public setup; never infer an owner or resurrect a hidden pair.
+      if (!tx.db.beginning.id.find(id) && !tx.db.bottle.id.find(id)) {
+        const a = tx.db.authorship.id.find(c.id);
+        if (!a?.hidden) {
+          const prompt = PROMPTS.find((p) => p.id === c.promptId);
+          if (!prompt) fail('This legacy postcard prompt needs an explicit migration mapping.');
+          tx.db.beginning.insert({
+            id,
+            day: dayOf(c.createdMs),
+            promptId: c.promptId,
+            promptJson: JSON.stringify(prompt),
+            text: c.setup,
+            seeded: c.seeded,
+            starterKind: c.starterKind,
+            createdMs: c.createdMs,
+          });
+          beginnings++;
+          orphanPairs++;
+        }
+      }
+    }
+    for (const a of tx.db.authorship.iter()) {
+      const id = a.beginningId || cardToBeginning.get(a.id);
+      if (id && !a.beginningId) tx.db.authorship.id.update({ ...a, beginningId: id });
+    }
+    for (const r of rounds) {
+      // A legacy write-first release used to lead straight into catching. Its publication is complete.
+      // Keep existing reply leases, optional write drafts, IDs, request receipts and ownership intact.
+      if (r.stage === 'catch' && r.setupId && !r.inFlight) {
+        saveRound(tx, { ...r, stage: 'done' });
+        changedRounds++;
+      }
+    }
+    const result = { beginnings, pairs, rounds: changedRounds, orphanPairs };
+    tx.db.schemaMigration.insert({ id: key, appliedMs: now(tx), ...result });
+    return { alreadyApplied: false, ...result };
+  }),
+);
+
 function ready(ctx: Tx) {
   const c = ctx.db.config.id.find(0)!;
   if (c.paused) fail('The tide is taking a short break. Your draft is saved.');
@@ -832,6 +937,9 @@ function paidAction(
         starterKind: 'none',
         createdMs: now(tx),
         seedIndex: 0,
+        claimRound: '',
+        claimVersion: 0,
+        claimUntil: 0,
         cardId: '',
         hidden: false,
       });
@@ -969,6 +1077,9 @@ function assign(ctx: Tx, r: Round) {
       starterKind: humanWritten ? 'team' : 'sample',
       createdMs: now(ctx),
       seedIndex: seed.index,
+      claimRound: '',
+      claimVersion: 0,
+      claimUntil: 0,
       cardId: '',
       hidden: false,
     };
@@ -1452,7 +1563,7 @@ function purgeExpired(ctx: Tx) {
     if (row.createdMs < cutoff && row.heldMicros === 0n && row.state !== 'pending')
       ctx.db.aiCall.id.delete(row.id);
   for (const b of ctx.db.bottle.iter())
-    if (b.createdMs < cutoff) {
+    if ((b.createdMs || b.day * 86400000) < cutoff) {
       ctx.db.bottle.id.delete(b.id);
       ctx.db.beginning.id.delete(b.id);
     }

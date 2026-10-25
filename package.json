@@ -32,7 +32,8 @@
     "test:live": "node scripts/test-room.mjs live",
     "test:states": "node scripts/test-room.mjs states",
     "demo:rehearse": "node scripts/test-room.mjs demo --rehearse",
-    "demo:record": "node scripts/test-room.mjs demo"
+    "demo:record": "node scripts/test-room.mjs demo",
+    "test:migration": "node --import tsx scripts/letter-migration.mjs"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
