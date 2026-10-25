@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
+import { waitForGameConnection } from './browser-game-state.mjs';
 const origin = process.env.DRIFT_WEB_URL;
 if (!origin || !process.env.DRIFT_TEST_DATABASE?.startsWith('drift-test-paper-benchmark-'))
   throw Error('Use the isolated benchmark runner.');
@@ -66,7 +67,10 @@ try {
     const page = await context.newPage();
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(origin);
-    await page.getByRole('button', { name: 'Pick up a bottle', exact: true }).click();
+    await waitForGameConnection(page);
+    await page
+      .getByRole('button', { name: 'Pick up a bottle. Write an ending', exact: true })
+      .click();
     const open = page.getByRole('button', { name: 'Open bottle', exact: false });
     await open.waitFor();
     releaseTexture();
@@ -128,6 +132,7 @@ await fs.writeFile(
     {
       checkedAt: new Date().toISOString(),
       sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+      sourceState: 'Working tree at measurement; sourceHashes identify the tested content',
       sourceHashes: sources,
       viewport: [390, 844],
       engine: 'Actual desktop Chrome, touch viewport',

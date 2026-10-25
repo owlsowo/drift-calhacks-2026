@@ -30,6 +30,7 @@
     "test:coldstart": "node scripts/test-room.mjs coldstart",
     "benchmark:paper": "node scripts/test-room.mjs paper-benchmark",
     "test:paper-fallbacks": "node scripts/test-room.mjs paper-fallbacks",
+    "test:paper-continuity": "node scripts/test-room.mjs paper-continuity",
     "test:server": "vitest run",
     "test:a11y": "node scripts/test-room.mjs a11y",
     "eval:models": "tsx scripts/eval-models.ts",
