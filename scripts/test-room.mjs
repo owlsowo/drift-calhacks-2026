@@ -7,9 +7,11 @@ const mode = process.argv[2] || 'ui';
 if (
   ![
     'gate-layout',
+    'shore-script-retry',
     'invite',
     'withdrawal',
     'thanks',
+    'navigation',
     'coast',
     'retention',
     'hint-retries',
@@ -38,6 +40,7 @@ const room = `drift-test-${mode}-${Date.now().toString(36)}-${Math.random().toSt
 const env = {
   ...process.env,
   ANTHROPIC_API_KEY: '',
+  DRIFT_TEST_GATE: mode === 'shore-script-retry' ? 'true' : process.env.DRIFT_TEST_GATE || 'false',
   DRIFT_TEST_HELLO: mode === 'ui' ? 'true' : 'false',
   DRIFT_TEST_EMPTY: mode === 'empty' ? 'true' : 'false',
   VITE_SPACETIMEDB_DATABASE: room,
@@ -94,55 +97,59 @@ try {
     }
   }
   const file =
-    mode === 'thanks'
-      ? 'appreciation-ui.mjs'
-      : mode === 'withdrawal'
-        ? 'withdrawal-ui.mjs'
-        : mode === 'gate-layout'
-          ? 'shore-gate-layout.mjs'
-          : mode === 'invite'
-            ? 'invitations-ui.mjs'
-            : mode === 'coast'
-              ? 'approved-coast-ui.mjs'
-              : mode === 'keepsake'
-                ? 'keepsake-ui.mjs'
-                : mode === 'hint-retries'
-                  ? 'hint-retries-ui.mjs'
-                  : mode === 'retention'
-                    ? 'local-retention-ui.mjs'
-                    : mode === 'ritual'
-                      ? 'bottle-ritual-ui.mjs'
-                      : mode === 'returns'
-                        ? 'unopened-returns-ui.mjs'
-                        : mode === 'letters'
-                          ? 'letter-pools-ui.mjs'
-                          : mode === 'paper-continuity'
-                            ? 'paper-continuity.mjs'
-                            : mode === 'paper-fallbacks'
-                              ? 'paper-fallbacks.mjs'
-                              : mode === 'paper-benchmark'
-                                ? 'paper-benchmark.mjs'
-                                : mode === 'coldstart'
-                                  ? 'coldstart.mjs'
-                                  : mode === 'recovery'
-                                    ? 'draft-recovery.mjs'
-                                    : mode === 'webkit'
-                                      ? 'webkit-smoke.mjs'
-                                      : mode === 'empty'
-                                        ? 'empty-tide.mjs'
-                                        : mode === 'catch-first'
-                                          ? 'catch-first.mjs'
-                                          : mode === 'shore'
-                                            ? 'shore-interactions.mjs'
-                                            : mode === 'ui'
-                                              ? 'ui-smoke.mjs'
-                                              : mode === 'a11y'
-                                                ? 'accessibility.mjs'
-                                                : mode === 'states'
-                                                  ? 'content-states.mjs'
-                                                  : mode === 'demo'
-                                                    ? 'demo-flow.mjs'
-                                                    : 'live-invariants.ts';
+    mode === 'shore-script-retry'
+      ? 'shore-script-retry.mjs'
+      : mode === 'navigation'
+        ? 'navigation-ui.mjs'
+        : mode === 'thanks'
+          ? 'appreciation-ui.mjs'
+          : mode === 'withdrawal'
+            ? 'withdrawal-ui.mjs'
+            : mode === 'gate-layout'
+              ? 'shore-gate-layout.mjs'
+              : mode === 'invite'
+                ? 'invitations-ui.mjs'
+                : mode === 'coast'
+                  ? 'approved-coast-ui.mjs'
+                  : mode === 'keepsake'
+                    ? 'keepsake-ui.mjs'
+                    : mode === 'hint-retries'
+                      ? 'hint-retries-ui.mjs'
+                      : mode === 'retention'
+                        ? 'local-retention-ui.mjs'
+                        : mode === 'ritual'
+                          ? 'bottle-ritual-ui.mjs'
+                          : mode === 'returns'
+                            ? 'unopened-returns-ui.mjs'
+                            : mode === 'letters'
+                              ? 'letter-pools-ui.mjs'
+                              : mode === 'paper-continuity'
+                                ? 'paper-continuity.mjs'
+                                : mode === 'paper-fallbacks'
+                                  ? 'paper-fallbacks.mjs'
+                                  : mode === 'paper-benchmark'
+                                    ? 'paper-benchmark.mjs'
+                                    : mode === 'coldstart'
+                                      ? 'coldstart.mjs'
+                                      : mode === 'recovery'
+                                        ? 'draft-recovery.mjs'
+                                        : mode === 'webkit'
+                                          ? 'webkit-smoke.mjs'
+                                          : mode === 'empty'
+                                            ? 'empty-tide.mjs'
+                                            : mode === 'catch-first'
+                                              ? 'catch-first.mjs'
+                                              : mode === 'shore'
+                                                ? 'shore-interactions.mjs'
+                                                : mode === 'ui'
+                                                  ? 'ui-smoke.mjs'
+                                                  : mode === 'a11y'
+                                                    ? 'accessibility.mjs'
+                                                    : mode === 'states'
+                                                      ? 'content-states.mjs'
+                                                      : mode === 'demo'
+                                                        ? 'demo-flow.mjs'
+                                                        : 'live-invariants.ts';
   const runner = mode === 'live' ? ['--import', 'tsx', `scripts/${file}`] : [`scripts/${file}`];
   const child = spawn(process.execPath, [...runner, ...process.argv.slice(3)], {
     cwd: root,

@@ -322,13 +322,13 @@ try {
 
   await A.reload();
   await waitForGameConnection(A);
-  await shelfButton(A).click();
-  await A.locator('.beginning-preview').filter({ hasText: setupText }).click();
+  assert.equal(new URL(A.url()).searchParams.get('bottle'), beginningId);
   await A.getByRole('heading', { name: '2 replies', exact: true }).waitFor();
   assert.deepEqual((await state(A)).book.beginningIds, [beginningId]);
   await B.reload();
   await waitForGameConnection(B);
-  await shelfButton(B).click();
+  assert.equal(new URL(B.url()).searchParams.get('card'), bCardId);
+  await button(B, 'Back to bottles').click();
   await B.getByRole('heading', { name: 'Your replies', exact: true }).waitFor();
   assert.equal(await B.locator('.collection-card').count(), 1);
   assert.deepEqual((await state(B)).book.pairIds, [bCardId]);
@@ -362,7 +362,6 @@ try {
   );
   await B.reload();
   await waitForGameConnection(B);
-  await releaseButton(B).click();
   assert.equal(
     await B.getByRole('textbox', { name: 'Your six-word beginning', exact: true }).inputValue(),
     bSetup,

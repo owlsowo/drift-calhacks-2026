@@ -41,6 +41,8 @@ import { PaperNote } from './PaperNote';
 import { ShoreGate } from './ShoreGate';
 import { EarlierDrafts } from './EarlierDrafts';
 import { BottleRitual, type BottleRitualKind } from './BottleRitual';
+import { useDriftNavigation } from './useDriftNavigation';
+import { confirmedAction } from './confirmed-action';
 import './natural.css';
 
 function Bottle({ small = false }: { small?: boolean }) {
@@ -308,11 +310,17 @@ async function confirmThanks(cardId: string) {
 
 function App() {
   const s = useSyncExternalStore(game.subscribe, game.snapshot);
-  const [view, setView] = useState<'today' | 'play' | 'collection' | 'card' | 'beginning'>('today');
-  const [selected, setSelected] = useState('');
+  const beforeNavigation = useRef(() => {});
+  const {
+    route,
+    navigate,
+    generation: navigationGeneration,
+  } = useDriftNavigation(beforeNavigation);
+  const view = route.view;
+  const selected = route.view === 'card' ? route.cardId : '';
+  const playingRoundId = route.view === 'play' ? route.roundId : '';
+  const selectedBeginningId = route.view === 'beginning' ? route.beginningId : '';
   const [openedCardId, setOpenedCardId] = useState('');
-  const [playingRoundId, setPlayingRoundId] = useState('');
-  const [selectedBeginningId, setSelectedBeginningId] = useState('');
   const [withdrawalId, setWithdrawalId] = useState('');
   const navigation = useRef({ view, playingRoundId, selectedBeginningId });
   navigation.current = { view, playingRoundId, selectedBeginningId };
@@ -339,6 +347,13 @@ function App() {
   const actionRunning = useRef(false);
   const releasingRound = useRef('');
   const heading = useRef<HTMLHeadingElement>(null);
+  beforeNavigation.current = () => {
+    setModal(null);
+    setError('');
+    setReveal('');
+    finishRitual(false);
+    setRitual(null);
+  };
   const nowDay = dayOf(clock);
   const writeRound = s.rounds.find((round) => round.stage === 'write' && round.day === nowDay);
   const catchRound = s.rounds.find(
@@ -358,6 +373,7 @@ function App() {
     (a) => a.roundId === active?.id && a.id === active.assignmentId,
   );
   const assignmentUnavailable = s.connected && active?.stage === 'reply' && !assignment;
+  const closedWrite = active?.stage === 'write' && active.day !== nowDay;
   const released = s.book.beginningIds
     .flatMap((id) => {
       const beginning = s.beginnings.find((item) => item.id === id);
@@ -411,6 +427,15 @@ function App() {
     )
     .sort((a, b) => b.createdMs - a.createdMs);
   const card = s.cards.find((c) => c.id === selected && !s.reported.some((r) => r.id === c.id));
+  const parentBeginning = card && s.beginnings.find((item) => item.id === card.beginningId);
+  const otherEndings = parentBeginning
+    ? s.cards.filter(
+        (item) =>
+          item.beginningId === parentBeginning.id &&
+          item.id !== card?.id &&
+          !s.reported.some((report) => report.id === item.id),
+      ).length
+    : 0;
   const ownership = s.ownership.find((o) => o.id === selected);
   const appreciation = s.appreciation.find((item) => item.cardId === selected);
   const cardId = card?.id;
@@ -504,7 +529,6 @@ function App() {
   // Restore before paint so switching between independent drafts never exposes an empty input.
   useLayoutEffect(() => {
     setDraft({ key: currentDraftKey, text: currentDraftKey ? saved(currentDraftKey) : '' });
-    setError('');
   }, [currentDraftKey]);
   useEffect(() => {
     if (!toast) return;
@@ -512,23 +536,10 @@ function App() {
     return () => clearTimeout(t);
   }, [toast]);
   useEffect(() => {
-    const id = new URLSearchParams(location.search).get('card');
-    if (id) {
-      setSelected(id);
-      setView('card');
-    } else {
-      const bottleId = new URLSearchParams(location.search).get('bottle');
-      if (bottleId) {
-        setSelectedBeginningId(bottleId);
-        setView('beginning');
-      }
-    }
-  }, []);
-  useEffect(() => {
     if (ritual) return;
     heading.current?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  }, [view, active?.stage, !!ritual]);
+  }, [view, selected, selectedBeginningId, playingRoundId, active?.stage, !!ritual]);
   useEffect(() => () => ritualDone.current?.(false), []);
   function finishRitual(opened: boolean) {
     const resolve = ritualDone.current;
@@ -546,27 +557,57 @@ function App() {
     setDraft({ key: currentDraftKey, text: limited });
     if (currentDraftKey) persist(currentDraftKey, limited);
   };
-  const run = async (label: string, fn: () => Promise<unknown>) => {
+  const run = async (label: string, fn: (stillHere: () => boolean) => Promise<unknown>) => {
     if (actionRunning.current) return;
+    const startedAt = navigationGeneration.current;
+    const stillHere = () => navigationGeneration.current === startedAt;
     actionRunning.current = true;
     setBusy(label);
     setError('');
     try {
-      await fn();
+      await fn(stillHere);
     } catch (e) {
       if (e instanceof Error && e.message.startsWith('Your shore check')) setGateReady(false);
-      setError(friendlyError(e));
+      if (stillHere()) setError(friendlyError(e));
     } finally {
       actionRunning.current = false;
       setRitual(null);
       setBusy('');
     }
   };
+  async function startBeginning() {
+    return confirmedAction({
+      snapshot: game.snapshot,
+      subscribe: game.subscribe,
+      read: (state) =>
+        state.connected
+          ? state.rounds.find(
+              (round) =>
+                round.stage === 'write' && round.day === dayOf(Date.now() + state.clockOffsetMs),
+            )?.id
+          : undefined,
+      act: () => game.start(),
+      message:
+        'Your beginning could not be confirmed. Your draft is saved. Reconnect and try again.',
+    });
+  }
+  async function closeRound(roundId: string) {
+    return confirmedAction({
+      snapshot: game.snapshot,
+      subscribe: game.subscribe,
+      read: (state) =>
+        state.connected &&
+        state.rounds.some((round) => round.id === roundId && round.stage === 'done')
+          ? true
+          : undefined,
+      act: () => game.abandon(roundId),
+      message: 'Your earlier round is taking a moment to close. Your draft is saved.',
+    });
+  }
   async function begin() {
-    await run('Opening your bottle…', async () => {
-      setPlayingRoundId(await game.start());
-      setReveal('');
-      setView('play');
+    await run('Opening your bottle…', async (stillHere) => {
+      const id = await startBeginning();
+      if (stillHere()) navigate({ view: 'play', roundId: id });
     });
   }
   async function copyDraft(text: string) {
@@ -581,6 +622,8 @@ function App() {
     });
   }
   async function pickUp(roundId?: string, skip = false, invitationId?: string) {
+    const startedAt = navigationGeneration.current;
+    const stillHere = () => navigationGeneration.current === startedAt;
     setRitual({ kind: 'pickup', phase: 'waiting' });
     const id =
       roundId ??
@@ -588,44 +631,48 @@ function App() {
         invitationId ? game.startInvited(invitationId) : game.startCatching(),
         'Your bottle is taking a moment. Try picking up again.',
       ));
+    if (!stillHere()) return;
     const priorVersion = game.snapshot().rounds.find((item) => item.id === id)?.version ?? -1;
     if (skip)
       await withinDeadline(game.skip(id), 'Your bottle is taking a moment. Try picking up again.');
+    if (!stillHere()) return;
     if (!invitationId && (skip || !assignedBottle(game.snapshot(), id)))
       await withinDeadline(game.claim(id), 'Your bottle is taking a moment. Try picking up again.');
+    if (!stillHere()) return;
     await waitForGame((state) => {
       if (skip && (state.rounds.find((item) => item.id === id)?.version ?? -1) <= priorVersion)
         return;
       const received = assignedBottle(state, id);
       return received && (!invitationId || received.id === invitationId) ? received : undefined;
     }, 'Your bottle is taking a moment. Try picking up again.');
+    if (!stillHere()) return;
     const opened = await playRitual('pickup');
+    if (!stillHere()) return;
     if (!opened) {
-      setView(invitationId ? 'beginning' : 'today');
+      navigate(invitationId ? { view: 'beginning', beginningId: invitationId } : { view: 'today' });
       return;
     }
     // The bottle may have been left in the light until its lease expired.
     if (!assignedBottle(game.snapshot(), id))
       throw Error('Your bottle expired. Pick up another one.');
-    setPlayingRoundId(id);
-    setReveal('');
-    setView('play');
+    navigate({ view: 'play', roundId: id });
   }
   async function releaseToSea() {
+    const startedAt = navigationGeneration.current;
     await playRitual('release');
-    setView('today');
-    setPlayingRoundId('');
+    if (navigationGeneration.current !== startedAt) return;
+    navigate({ view: 'today' }, true);
     setError('');
     setToast('Bottle released');
   }
   async function submit() {
-    if (!active) return;
+    if (!active || closedWrite) return;
     const roundId = active.id;
     const stage = active.stage;
     const text = draft;
     await run(
       stage === 'write' ? 'Checking your six words…' : 'Sealing your postcard…',
-      async () => {
+      async (stillHere) => {
         if (stage === 'write') {
           releasingRound.current = roundId;
           setRitual({ kind: 'release', phase: 'waiting' });
@@ -647,7 +694,7 @@ function App() {
                 ),
               'Your release is taking a moment. Your draft is saved.',
             );
-            await releaseToSea();
+            if (stillHere()) await releaseToSea();
           } finally {
             releasingRound.current = '';
           }
@@ -660,11 +707,11 @@ function App() {
           const completed = game.snapshot().rounds.find((r) => r.id === active.id)?.cardId;
           if (active.stage === 'reply' && completed) {
             if (
+              stillHere() &&
               navigation.current.view === 'play' &&
               navigation.current.playingRoundId === roundId
             ) {
-              setSelected(completed);
-              setView('card');
+              navigate({ view: 'card', cardId: completed }, true);
               setError('');
             }
             return;
@@ -672,6 +719,7 @@ function App() {
           throw error;
         }
         if (
+          stillHere() &&
           active.stage === 'reply' &&
           navigation.current.view === 'play' &&
           navigation.current.playingRoundId === roundId
@@ -680,8 +728,7 @@ function App() {
           const find = () => game.snapshot().rounds.find((r) => r.id === active.id)?.cardId;
           const id = find();
           if (id) {
-            setSelected(id);
-            setView('card');
+            navigate({ view: 'card', cardId: id }, true);
           } else {
             setReveal('pending:' + active.id);
           }
@@ -693,22 +740,29 @@ function App() {
     if (view !== 'play' || !reveal.startsWith('pending:')) return;
     const round = s.rounds.find((r) => r.id === reveal.slice(8));
     if (round?.cardId) {
-      setSelected(round.cardId);
-      setView('card');
+      navigate({ view: 'card', cardId: round.cardId }, true);
       setReveal('');
       setError('');
     }
-  }, [s.rounds, reveal, view]);
+  }, [s.rounds, reveal, view, navigate]);
   useEffect(() => {
-    if (view === 'play' && active?.stage === 'done' && active.setupId && !active.cardId) {
-      if (releasingRound.current === active.id || actionRunning.current) return;
-      // A late commit after an uncertain response still gets exactly one throw.
-      releasingRound.current = active.id;
-      void run('Releasing…', releaseToSea).finally(() => {
-        releasingRound.current = '';
-      });
-    }
-  }, [view, active?.stage, active?.setupId, active?.cardId, busy]);
+    if (!s.connected || view !== 'play' || active?.stage !== 'done' || actionRunning.current)
+      return;
+    // A restored or late-finished round opens its existing result; history never
+    // starts a fresh round or repeats a release ritual.
+    // A two-step new-tide recovery may close the old round before its new start
+    // fails. Keep that failure visible when leaving the now-abandoned editor.
+    const recoveryError = !active.cardId && !active.setupId ? error : '';
+    navigate(
+      active.cardId
+        ? { view: 'card', cardId: active.cardId }
+        : active.setupId
+          ? { view: 'beginning', beginningId: active.setupId }
+          : { view: 'today' },
+      true,
+    );
+    if (recoveryError) setError(recoveryError);
+  }, [s.connected, view, active?.stage, active?.setupId, active?.cardId, busy, error, navigate]);
   const controlsDisabled = !!busy || !s.connected || (!!s.service?.botRequired && !gateReady);
   const needsShoreCheck = !!s.service?.botRequired && !gateReady;
   const reset = new Date((nowDay + 1) * 86400000).toLocaleTimeString([], {
@@ -716,8 +770,7 @@ function App() {
     minute: '2-digit',
   });
   function showBeginning(id: string) {
-    setSelectedBeginningId(id);
-    setView('beginning');
+    navigate({ view: 'beginning', beginningId: id });
     setError('');
   }
   async function copyInvitation(id: string) {
@@ -728,8 +781,7 @@ function App() {
   }
   function showCard(id: string) {
     setReturnedNotice((current) => (current === id ? '' : current));
-    setSelected(id);
-    setView('card');
+    navigate({ view: 'card', cardId: id });
     setError('');
   }
   return (
@@ -745,7 +797,7 @@ function App() {
           <button
             className="wordmark"
             onClick={() => {
-              setView('today');
+              navigate({ view: 'today' });
               setError('');
             }}
             aria-label="Drift home"
@@ -764,7 +816,9 @@ function App() {
             <button
               className="shore-back"
               onClick={() => {
-                setView(view === 'card' || view === 'beginning' ? 'collection' : 'today');
+                navigate({
+                  view: view === 'card' || view === 'beginning' ? 'collection' : 'today',
+                });
                 setError('');
               }}
             >
@@ -858,7 +912,7 @@ function App() {
               actionLabel={writeRound ? 'Continue your beginning' : 'Write a beginning'}
               onAction={beginCatch}
               onWrite={begin}
-              onCollection={() => setView('collection')}
+              onCollection={() => navigate({ view: 'collection' })}
               unopenedCount={unopenedIds.size}
               returnedCount={returnedToday}
               empty={emptyTide}
@@ -902,7 +956,7 @@ function App() {
                     actionLabel="Catch a bottle"
                     onAction={() => run('Finding a bottle…', () => pickUp(active.id))}
                     onWrite={begin}
-                    onCollection={() => setView('collection')}
+                    onCollection={() => navigate({ view: 'collection' })}
                     unopenedCount={unopenedIds.size}
                     returnedCount={returnedToday}
                     empty={emptyTide}
@@ -1020,7 +1074,40 @@ function App() {
                           )}
                         </div>
                       )}
-                    {checksExhausted && (
+                    {closedWrite && (
+                      <div className="quota-recovery expiry-recovery" role="status">
+                        <p>
+                          <strong>This tide has closed.</strong> Your beginning is still here. Today
+                          has a new prompt.
+                        </p>
+                        <div>
+                          {draft.trim() && (
+                            <button
+                              className="text-button"
+                              disabled={!!busy}
+                              onClick={() => void copyDraft(draft)}
+                            >
+                              <Copy size={14} /> Copy my draft
+                            </button>
+                          )}
+                          <button
+                            className="text-button"
+                            disabled={controlsDisabled || !!s.service?.paused}
+                            onClick={() =>
+                              void run('Opening today’s beginning…', async (stillHere) => {
+                                await closeRound(active.id);
+                                if (!stillHere()) return;
+                                const id = await startBeginning();
+                                if (stillHere()) navigate({ view: 'play', roundId: id });
+                              })
+                            }
+                          >
+                            Start today’s beginning <ArrowRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {checksExhausted && !closedWrite && (
                       <div className="quota-recovery">
                         <p>
                           This round has used its three story checks. Your words are saved here.
@@ -1038,10 +1125,12 @@ function App() {
                             className="text-button"
                             disabled={controlsDisabled}
                             onClick={() =>
-                              run('Closing this round…', async () => {
-                                await game.abandon(active.id);
-                                setView('today');
-                                setToast('Round closed. Your draft is kept on this browser.');
+                              run('Closing this round…', async (stillHere) => {
+                                await closeRound(active.id);
+                                if (stillHere()) {
+                                  navigate({ view: 'today' });
+                                  setToast('Round closed. Your draft is kept on this browser.');
+                                }
                               })
                             }
                           >
@@ -1056,6 +1145,7 @@ function App() {
                         onClick={submit}
                         disabled={
                           controlsDisabled ||
+                          closedWrite ||
                           !!checksExhausted ||
                           count !== 6 ||
                           (active.stage === 'reply' && (remaining <= 0 || assignmentUnavailable))
@@ -1089,13 +1179,10 @@ function App() {
                             <button
                               disabled={controlsDisabled || !!checksExhausted}
                               onClick={() =>
-                                run('Finding a fresh bottle…', async () => {
+                                run('Finding a fresh bottle…', async (stillHere) => {
                                   if (active.day !== nowDay) {
-                                    await withinDeadline(
-                                      game.abandon(active.id),
-                                      'Your earlier round is taking a moment to close. Your draft is saved.',
-                                    );
-                                    await pickUp();
+                                    await closeRound(active.id);
+                                    if (stillHere()) await pickUp();
                                   } else await pickUp(active.id);
                                 })
                               }
@@ -1196,6 +1283,19 @@ function App() {
                         Copy text
                       </button>
                     </div>
+                    {parentBeginning && (
+                      <div className="other-endings">
+                        <button
+                          className="text-button"
+                          onClick={() => showBeginning(parentBeginning.id)}
+                        >
+                          {otherEndings
+                            ? `Other endings from this bottle (${otherEndings})`
+                            : 'View this bottle'}
+                          <ArrowRight size={14} aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
                     {
                       <div className="card-management">
                         {ownership && (
@@ -1280,7 +1380,7 @@ function App() {
                   <p>Release a beginning, or pick up someone else’s.</p>
                   <button
                     className="button primary"
-                    onClick={needsShoreCheck ? () => setView('today') : begin}
+                    onClick={needsShoreCheck ? () => navigate({ view: 'today' }) : begin}
                     disabled={needsShoreCheck ? !!busy : controlsDisabled || !!s.service?.paused}
                   >
                     {needsShoreCheck ? 'Start at the sea' : 'Write a beginning'}
@@ -1493,7 +1593,7 @@ function App() {
                                 !!s.service?.paused ||
                                 (!catchRound && dailyRounds >= 3)
                           }
-                          onClick={needsShoreCheck ? () => setView('today') : beginCatch}
+                          onClick={needsShoreCheck ? () => navigate({ view: 'today' }) : beginCatch}
                         >
                           Find today’s bottle
                         </button>
@@ -1722,11 +1822,13 @@ function App() {
               className="button primary"
               disabled={!!busy}
               onClick={() =>
-                run('Hiding…', async () => {
+                run('Hiding…', async (stillHere) => {
                   await game.hide(card.id);
-                  setModal(null);
-                  setView('collection');
-                  setToast('Postcard hidden');
+                  if (stillHere()) {
+                    setModal(null);
+                    navigate({ view: 'collection' });
+                    setToast('Postcard hidden');
+                  }
                 })
               }
             >
@@ -1752,14 +1854,15 @@ function App() {
               disabled={!!busy || !s.connected}
               onClick={() => {
                 const bottleId = beginning.id;
-                void run('Withdrawing…', async () => {
+                void run('Withdrawing…', async (stillHere) => {
                   await confirmWithdrawal(bottleId);
                   if (
+                    stillHere() &&
                     navigation.current.view === 'beginning' &&
                     navigation.current.selectedBeginningId === bottleId
                   ) {
                     setModal(null);
-                    setView('collection');
+                    navigate({ view: 'collection' });
                   }
                   setToast('Bottle withdrawn');
                 });
@@ -1791,15 +1894,17 @@ function App() {
                 disabled={!!busy}
                 key={reason}
                 onClick={() =>
-                  run('Sending report…', async () => {
+                  run('Sending report…', async (stillHere) => {
                     await game.report(
                       view === 'play' ? active!.id : '',
                       view === 'card' ? selected : '',
                       reason,
                     );
-                    setModal(null);
-                    if (view === 'card' && ownership) setView('collection');
-                    setToast('Reported. Thank you for looking out.');
+                    if (stillHere()) {
+                      setModal(null);
+                      if (view === 'card' && ownership) navigate({ view: 'collection' });
+                      setToast('Reported. Thank you for looking out.');
+                    }
                   })
                 }
               >

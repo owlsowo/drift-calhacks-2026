@@ -2223,3 +2223,16 @@ a {
   display: flex;
   padding: 8px 12px 12px;
 }
+
+.sea-world .has-postcard .reveal-copy > .other-endings {
+  order: 3;
+  display: flex;
+  justify-content: center;
+}
+.sea-world .other-endings .text-button {
+  color: #f1ead8;
+  background: #15263ac9;
+  border: 1px solid #d3d9e43b;
+  border-radius: 3px;
+  padding: 0 14px;
+}
