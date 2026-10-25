@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T03:45:17.755Z",
+  "sourceCommit": "731bbaed634e52d67a2ce828f3c2abf643f50995",
+  "cloudflareVersion": "df0db6c3-5e66-4316-a1f1-b52a7ef5e989",
+  "ci": {
+    "run": 40159243555,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-CKpeTLXx.js",
+      "sha256": "8e3b53bf7fd7314dc1c80dbb5983b2fb13425856c580f49c7f8ebb2afc8bd37c",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-s38fGgsU.css",
+      "sha256": "d594df19a8663ff3b90673f4b8c67690f2c578987f1934b5ea1d941c92256c50",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend correction for missing CSS ball/sheet keyframes. Four Chrome/WebKit intermediate-frame cases, eight rendering fault cases and three delayed-texture scheduling cases pass. No new provider call or backend update; supplied failing invitation is being investigated separately."
+}
