@@ -11,7 +11,12 @@ const engine = process.env.DRIFT_TEST_ENGINE === 'webkit' ? 'WebKit' : 'Chrome';
 const browser =
   engine === 'WebKit'
     ? await webkit.launch({ headless: true })
-    : await chromium.launch({ channel: 'chrome', headless: true });
+    : await chromium.launch({
+        headless: true,
+        ...(process.env.DRIFT_CHROMIUM_PATH
+          ? { executablePath: process.env.DRIFT_CHROMIUM_PATH }
+          : { channel: 'chrome' }),
+      });
 const contexts = [];
 const errors = [];
 const checks = [];
@@ -133,6 +138,9 @@ try {
   await A.locator('.shore-home').waitFor();
   await A.waitForFunction(() => window.driftTestGame.snapshot().book.beginningIds.length === 1);
   const aState = await state(A);
+  const storyPrompt = await A.evaluate(() =>
+    JSON.parse(window.driftTestGame.snapshot().today.promptJson),
+  );
   const beginningId = aState.book.beginningIds[0];
   assert.equal(aState.rounds[0].stage, 'done');
   assert.equal(aState.rounds[0].setupId, beginningId);
@@ -246,7 +254,18 @@ try {
   await A.setViewportSize({ width: 360, height: 800 });
   await button(A, 'Open returned postcard').click();
   await A.locator('.postcard-paper.paper-open').waitFor();
-  assert.equal(await A.locator('.postcard .card-half').nth(1).innerText(), cReply);
+  assert.equal(await A.locator('.postcard .card-half p').nth(1).innerText(), cReply);
+  assert.equal(await A.locator('.postcard .card-half p').nth(0).innerText(), setupText);
+  assert.ok(
+    (await A.locator('.postcard .setup-half .story-context').innerText()).includes(
+      storyPrompt.setup,
+    ),
+  );
+  assert.ok(
+    (await A.locator('.postcard .card-half:not(.setup-half) .story-context').innerText()).includes(
+      storyPrompt.reply,
+    ),
+  );
   await home(A);
   await releaseButton(A).click();
   assert.equal(
@@ -291,7 +310,7 @@ try {
   const png = await fs.readFile(exportFile);
   assert.equal(png.subarray(1, 4).toString(), 'PNG');
   assert.equal(png.readUInt32BE(16), 1080);
-  assert.equal(png.readUInt32BE(20), 1350);
+  assert.equal(png.readUInt32BE(20), 1650);
   const copiedWords = await B.evaluate(async () => {
     const { game } = await import('/src/game.ts');
     const { cardText } = await import('/src/export.ts');
@@ -299,9 +318,12 @@ try {
     const id = state.ownership.find((o) => o.role === 'reply').id;
     return cardText(state.cards.find((c) => c.id === id));
   });
-  assert.equal(copiedWords, setupText + '\n' + bReply);
+  assert.equal(
+    copiedWords,
+    `Original prompt: ${storyPrompt.setup}\nBeginning: ${setupText}\n\nHow to respond: ${storyPrompt.reply}\nEnding: ${bReply}`,
+  );
   pass(
-    'The actual PNG export downloads at 1080×1350 while Copy text keeps only the two creative lines for a peer story',
+    'The actual PNG export downloads at 1080×1650 while Copy text keeps both human lines with their original question and response instruction',
   );
   await A.locator('.ending-preview').filter({ hasText: bReply }).click();
   await A.locator('.postcard-paper.paper-open').waitFor();

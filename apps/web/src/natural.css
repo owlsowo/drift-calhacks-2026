@@ -962,3 +962,39 @@ input:focus-visible {
     font-size: 25px;
   }
 }
+
+/* Story context stays in the UI face; handwritten text remains the contribution. */
+.sea-world .story-context {
+  display: block;
+  color: var(--letter-pencil, #626b77);
+  font: 400 14px/1.55 var(--letter-ui);
+  margin: 0 0 10px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.sea-world .writing-context {
+  margin: 16px 0;
+}
+.sea-world .writing-context strong {
+  display: block;
+  font: 600 13px/1.5 var(--letter-ui);
+  color: var(--letter-pencil, #626b77);
+}
+.sea-world .writing-context p {
+  margin: 4px 0 0;
+  font: 400 16px/1.55 var(--letter-ui);
+  color: var(--letter-ink, #263342);
+  overflow-wrap: anywhere;
+}
+.sea-world .unfinished-bottle .story-context {
+  margin-top: 8px;
+}
+.sea-world .beginning-preview {
+  flex-wrap: wrap;
+}
+.sea-world .beginning-preview > .story-context {
+  flex-basis: 100%;
+}
+.sea-world .unfinished-bottle .story-context {
+  color: #ccd9e2;
+}
