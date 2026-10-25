@@ -152,7 +152,15 @@ function emit(patch: Partial<Snapshot> = {}) {
     };
   } else state = { ...state, ...patch };
   const book = mergeBook(mergeBook(state.book, loadBottleBook(bookScope)), {
-    beginningIds: state.outgoing.map((beginning) => beginning.id),
+    beginningIds: [
+      ...state.outgoing.map((beginning) => beginning.id),
+      ...state.ownership
+        .filter((item) => item.role === 'setup' && !item.hidden)
+        .flatMap((item) => {
+          const id = state.cards.find((card) => card.id === item.id)?.beginningId;
+          return id ? [id] : [];
+        }),
+    ],
     pairIds: state.ownership.filter((item) => item.role === 'reply').map((item) => item.id),
   });
   if (

@@ -59,6 +59,7 @@ import * as AdminAiUsageProcedure from "./admin_ai_usage_procedure";
 import * as AdminProbeClaudeProcedure from "./admin_probe_claude_procedure";
 import * as AdminReportsProcedure from "./admin_reports_procedure";
 import * as AdminStatusProcedure from "./admin_status_procedure";
+import * as AdminUpgradeLettersProcedure from "./admin_upgrade_letters_procedure";
 import * as GetHelloProcedure from "./get_hello_procedure";
 import * as RequestNudgeProcedure from "./request_nudge_procedure";
 import * as ServerTimeProcedure from "./server_time_procedure";
@@ -201,6 +202,7 @@ const proceduresSchema = __procedures(
   __procedureSchema("admin_probe_claude", AdminProbeClaudeProcedure.params, AdminProbeClaudeProcedure.returnType),
   __procedureSchema("admin_reports", AdminReportsProcedure.params, AdminReportsProcedure.returnType),
   __procedureSchema("admin_status", AdminStatusProcedure.params, AdminStatusProcedure.returnType),
+  __procedureSchema("admin_upgrade_letters", AdminUpgradeLettersProcedure.params, AdminUpgradeLettersProcedure.returnType),
   __procedureSchema("get_hello", GetHelloProcedure.params, GetHelloProcedure.returnType),
   __procedureSchema("request_nudge", RequestNudgeProcedure.params, RequestNudgeProcedure.returnType),
   __procedureSchema("server_time", ServerTimeProcedure.params, ServerTimeProcedure.returnType),

@@ -106,10 +106,10 @@ export const Authorship = __t.object("Authorship", {
   id: __t.string(),
   setupOwner: __t.option(__t.identity()),
   replyOwner: __t.identity(),
-  beginningId: __t.string(),
   hidden: __t.bool(),
   setupActions: __t.u32(),
   replyActions: __t.u32(),
+  beginningId: __t.string(),
 });
 export type Authorship = __Infer<typeof Authorship>;
 
@@ -133,6 +133,9 @@ export const Bottle = __t.object("Bottle", {
   text: __t.string(),
   seeded: __t.bool(),
   seedIndex: __t.u32(),
+  claimRound: __t.string(),
+  claimVersion: __t.u32(),
+  claimUntil: __t.f64(),
   cardId: __t.string(),
   hidden: __t.bool(),
   starterKind: __t.string(),
@@ -180,6 +183,15 @@ export const IdAllocator = __t.object("IdAllocator", {
 });
 export type IdAllocator = __Infer<typeof IdAllocator>;
 
+export const LetterUpgradeInfo = __t.object("LetterUpgradeInfo", {
+  alreadyApplied: __t.bool(),
+  beginnings: __t.u32(),
+  pairs: __t.u32(),
+  rounds: __t.u32(),
+  orphanPairs: __t.u32(),
+});
+export type LetterUpgradeInfo = __Infer<typeof LetterUpgradeInfo>;
+
 export const Maintenance = __t.object("Maintenance", {
   id: __t.u64(),
   scheduledAt: __t.scheduleAt(),
@@ -221,13 +233,13 @@ export type OwnedCard = __Infer<typeof OwnedCard>;
 
 export const Postcard = __t.object("Postcard", {
   id: __t.string(),
-  beginningId: __t.string(),
   promptId: __t.string(),
   setup: __t.string(),
   reply: __t.string(),
   seeded: __t.bool(),
   createdMs: __t.f64(),
   starterKind: __t.string(),
+  beginningId: __t.string(),
 });
 export type Postcard = __Infer<typeof Postcard>;
 
@@ -296,6 +308,16 @@ export const Round = __t.object("Round", {
   busyUntil: __t.f64(),
 });
 export type Round = __Infer<typeof Round>;
+
+export const SchemaMigration = __t.object("SchemaMigration", {
+  id: __t.string(),
+  appliedMs: __t.f64(),
+  beginnings: __t.u32(),
+  pairs: __t.u32(),
+  rounds: __t.u32(),
+  orphanPairs: __t.u32(),
+});
+export type SchemaMigration = __Infer<typeof SchemaMigration>;
 
 export const ServiceInfo = __t.object("ServiceInfo", {
   id: __t.u32(),
