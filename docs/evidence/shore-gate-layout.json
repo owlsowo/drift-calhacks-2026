@@ -1,11 +1,11 @@
 {
-  "checkedAt": "2026-10-25T02:55:03.314Z",
+  "checkedAt": "2026-10-25T03:10:54.851Z",
   "mode": "Isolated local sandbox, synthetic gate secret and inert 300px widget placeholder. No challenge solved, valid pass issued, external Turnstile request or provider call; this is layout/accessibility verification, not production human-check verification.",
   "checks": [
     "A newly required human check stays inside the writing view and preserves its local draft",
     "Portrait, narrow-phone and short-landscape shore checks leave the header and dock in view without moving the page or enabling writes",
     "A public invitation shows its words before the inline check, with the write action still protected and the 300px widget fitting a narrow phone",
-    "Read-only postcard views do not load a writing challenge",
+    "Read-only postcards load no challenge, and an empty shelf leads back to verification without a dead writing button",
     "WebKit preserves the phone-sized shore with the same blocked-write layout"
   ],
   "errors": []

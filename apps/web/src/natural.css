@@ -835,6 +835,44 @@ input:focus-visible {
   font: 400 12px/1.6 var(--letter-ui);
   text-shadow: none;
 }
+
+.sea-world .daily-tide {
+  left: 50%;
+  right: auto;
+  width: min(480px, calc(100% - 40px));
+  transform: translateX(-50%);
+  isolation: isolate;
+}
+.sea-world .daily-tide::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: -16px -28px;
+  background: radial-gradient(ellipse, #06172ee8 0%, #06172ebd 58%, transparent 76%);
+  filter: blur(12px);
+  pointer-events: none;
+}
+.sea-world .daily-tide time {
+  display: block;
+  margin-bottom: 8px;
+  color: #d8e2ec;
+  font: 400 11px/1.5 var(--letter-ui);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.sea-world .daily-tide h2 {
+  margin: 0;
+  color: #f0eee7;
+  font: 400 24px/1.4 var(--letter-hand);
+}
+.sea-world .daily-tide p {
+  margin: 6px 0 0;
+  color: #e0e7ef;
+  font: 400 13px/1.6 var(--letter-ui);
+}
+.sea-world .daily-tide .tide-status {
+  margin-top: 12px;
+}
 @media (max-width: 340px) {
   .sea-world .shore-gate {
     width: 100vw;
@@ -842,6 +880,12 @@ input:focus-visible {
   }
 }
 @media (max-height: 480px) {
+  .sea-world.has-shore-check .daily-tide {
+    visibility: hidden;
+  }
+  .sea-world .daily-tide > p:not(.tide-status) {
+    display: none;
+  }
   .sea-world .shore-gate--shore {
     top: 76px;
     max-height: calc(100svh - 88px);

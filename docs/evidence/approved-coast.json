@@ -1,10 +1,11 @@
 {
-  "checkedAt": "2026-10-25T02:17:17.164Z",
+  "checkedAt": "2026-10-25T03:10:47.086Z",
   "mode": "Isolated local sandbox; no submitted story or model call. Real Chrome WebGPU pixels; forced unsupported-GPU and hidden-page conditions; emulated WebKit phone viewport, not a physical phone.",
   "checks": [
     "Chrome WebGPU renders moving water with the approved transparent lighthouse aligned to its 40% horizon",
     "Actual water pixels move, pause through Help, remain still and resume after the art change",
     "Hidden pages pause the simulation, and the approved headland remains aligned in a portrait viewport",
+    "The shared daily theme and tide caption stay readable above the dock on desktop, portrait, narrow-phone and short-landscape views",
     "Unsupported WebGPU loads the approved wide/portrait landscape with one baked-in lighthouse and no duplicate overlay",
     "WebKit fallback uses the portrait art, controls pass selected accessibility checks, and credits accurately disclose the approved generated scene"
   ],

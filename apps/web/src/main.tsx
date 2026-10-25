@@ -366,6 +366,9 @@ function App() {
     const t = setInterval(update, 1000);
     return () => clearInterval(t);
   }, [s.clockOffsetMs]);
+  useEffect(() => {
+    if (s.connected && s.today && s.today.day !== nowDay) void game.refresh().catch(() => {});
+  }, [s.connected, s.today?.day, nowDay]);
   // Restore before paint so switching between independent drafts never exposes an empty input.
   useLayoutEffect(() => {
     setDraft({ key: currentDraftKey, text: currentDraftKey ? saved(currentDraftKey) : '' });
@@ -594,7 +597,7 @@ function App() {
         Skip to the game
       </a>
       <div
-        className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}${ritual ? ' has-bottle-ritual' : ''}`}
+        className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}${ritual ? ' has-bottle-ritual' : ''}${view === 'today' && needsShoreCheck ? ' has-shore-check' : ''}`}
       >
         <Ocean paused={seaPaused} />
         <header className="site-header" inert={!!ritual}>
@@ -687,6 +690,7 @@ function App() {
           {view === 'today' && (
             <Shore
               mode="home"
+              day={s.today?.day}
               restingMessage={
                 !writeRound && !catchRound && dailyRounds >= 3
                   ? `Today’s limit reached. Try again at ${reset}.`

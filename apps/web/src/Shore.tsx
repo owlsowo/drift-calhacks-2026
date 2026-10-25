@@ -98,6 +98,7 @@ export function Shore({
   empty = false,
   headingRef,
   restingMessage,
+  day,
 }: {
   mode: 'home' | 'catch';
   prompt?: Prompt;
@@ -114,7 +115,9 @@ export function Shore({
   empty?: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
   restingMessage?: string;
+  day?: number;
 }) {
+  const tide = day === undefined ? undefined : day - FIRST_TIDE_DAY + 1;
   const grip = useRef<HTMLButtonElement>(null);
   const emptyHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -252,9 +255,20 @@ export function Shore({
       <h1 ref={headingRef} tabIndex={-1} className="sr-only">
         {mode === 'catch' ? 'Find a bottle on the shore' : 'Drift, a few words between strangers'}
       </h1>
-      {mode === 'home' && !empty && restingMessage && (
-        <div className="shore-whisper">
-          <p>{restingMessage}</p>
+      {mode === 'home' && !empty && (prompt || restingMessage) && (
+        <div className={`shore-whisper${prompt ? ' daily-tide' : ''}`}>
+          {prompt && (
+            <>
+              {tide !== undefined && tide > 0 && (
+                <time dateTime={new Date(day! * 86400000).toISOString().slice(0, 10)}>
+                  Tide {String(tide).padStart(2, '0')}
+                </time>
+              )}
+              <h2>{prompt.title}</h2>
+              <p>Six words from you. Six from someone else.</p>
+            </>
+          )}
+          {restingMessage && <p className="tide-status">{restingMessage}</p>}
         </div>
       )}
       {empty && (
