@@ -8,6 +8,7 @@ if (
   ![
     'gate-layout',
     'daily-clarity',
+    'shelf-render',
     'shore-motion',
     'qr-invitation',
     'shared-landing',
@@ -105,6 +106,7 @@ try {
     }
   }
   const sceneFiles = {
+    'shelf-render': 'shelf-render-check.mjs',
     'shore-motion': 'shore-motion-ui.mjs',
     'qr-invitation': 'qr-invitation-ui.mjs',
     'daily-clarity': 'daily-clarity-ui.mjs',

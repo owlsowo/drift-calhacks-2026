@@ -58,7 +58,8 @@
     "test:daily-clarity": "node scripts/test-room.mjs daily-clarity",
     "test:shared-landing": "node scripts/test-room.mjs shared-landing",
     "test:qr-invitation": "node scripts/test-room.mjs qr-invitation",
-    "test:shore-motion": "node scripts/test-room.mjs shore-motion"
+    "test:shore-motion": "node scripts/test-room.mjs shore-motion",
+    "test:shelf-render": "node scripts/test-room.mjs shelf-render"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
