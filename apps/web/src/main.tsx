@@ -343,6 +343,7 @@ function App() {
   const [ritual, setRitual] = useState<{
     kind: BottleRitualKind;
     phase: 'waiting' | 'moving';
+    pickupStep?: 'choose' | 'open';
   } | null>(null);
   const ritualDone = useRef<((opened: boolean) => void) | null>(null);
   const actionRunning = useRef(false);
@@ -621,10 +622,10 @@ function App() {
     ritualDone.current = null;
     resolve?.(opened);
   }
-  function playRitual(kind: BottleRitualKind) {
+  function playRitual(kind: BottleRitualKind, pickupStep: 'choose' | 'open' = 'choose') {
     return new Promise<boolean>((resolve) => {
       ritualDone.current = resolve;
-      setRitual({ kind, phase: 'moving' });
+      setRitual({ kind, phase: 'moving', pickupStep });
     });
   }
   const changeDraft = (value: string) => {
@@ -712,7 +713,11 @@ function App() {
   async function pickUp(roundId?: string, skip = false, invitationId?: string) {
     const startedAt = navigationGeneration.current;
     const stillHere = () => navigationGeneration.current === startedAt;
-    setRitual({ kind: 'pickup', phase: 'waiting' });
+    const before = game.snapshot();
+    const alreadyHolding = before.rounds.some(
+      (round) => (!roundId || round.id === roundId) && !!assignedBottle(before, round.id),
+    );
+    const needsChoice = !invitationId && (skip || !alreadyHolding);
     const id =
       roundId ??
       (await withinDeadline(
@@ -720,6 +725,7 @@ function App() {
         'Your bottle is taking a moment. Try picking up again.',
       ));
     if (!stillHere()) return;
+    setRitual({ kind: 'pickup', phase: 'waiting', pickupStep: needsChoice ? 'choose' : 'open' });
     const priorVersion = game.snapshot().rounds.find((item) => item.id === id)?.version ?? -1;
     if (skip)
       await withinDeadline(game.skip(id), 'Your bottle is taking a moment. Try picking up again.');
@@ -734,7 +740,17 @@ function App() {
       return received && (!invitationId || received.id === invitationId) ? received : undefined;
     }, 'Your bottle is taking a moment. Try picking up again.');
     if (!stillHere()) return;
-    const opened = await playRitual('pickup');
+    if (needsChoice) {
+      const chosen = await playRitual('pickup', 'choose');
+      if (!stillHere()) return;
+      if (!chosen) {
+        navigate({ view: 'today' });
+        return;
+      }
+    }
+    if (!assignedBottle(game.snapshot(), id))
+      throw Error('Your bottle expired. Pick up another one.');
+    const opened = await playRitual('pickup', 'open');
     if (!stillHere()) return;
     if (!opened) {
       navigate(invitationId ? { view: 'beginning', beginningId: invitationId } : { view: 'today' });
@@ -1116,7 +1132,7 @@ function App() {
                   </div>
                 ) : active.stage === 'catch' ? (
                   <Shore
-                    mode="catch"
+                    mode="home"
                     prompt={prompt}
                     disabled={controlsDisabled || !!s.service?.paused}
                     writeDisabled={
@@ -1166,12 +1182,6 @@ function App() {
                         <p>{assignment.text}</p>
                       </div>
                     )}
-                    {active.stage === 'write' && (
-                      <div className="writing-context">
-                        <strong>How someone will respond</strong>
-                        <p>{prompt.reply}</p>
-                      </div>
-                    )}
                     <label className="sr-only" htmlFor="six-words">
                       {active.stage === 'write'
                         ? 'Your six-word beginning'
@@ -1199,6 +1209,12 @@ function App() {
                         <span className="character-count">{[...draft].length}/160</span>
                       )}
                     </div>
+                    {active.stage === 'write' && (
+                      <div className="writing-context">
+                        <strong>How someone will respond</strong>
+                        <p>{prompt.reply}</p>
+                      </div>
+                    )}
                     {active.stage === 'reply' && s.service?.aiReady && (
                       <div className="nudge-area">
                         <button
@@ -1999,9 +2015,11 @@ function App() {
         </main>
         {ritual && (
           <BottleRitual
+            key={`${ritual.kind}:${ritual.pickupStep ?? 'choose'}`}
             worldScene={worldScene}
             kind={ritual.kind}
             phase={ritual.phase}
+            pickupStep={ritual.pickupStep}
             onComplete={() => finishRitual(true)}
             onCancel={() => finishRitual(false)}
           />
@@ -2284,6 +2302,7 @@ function App() {
                     if (stillHere()) {
                       setModal(null);
                       if (view === 'card' && ownership) navigate({ view: 'collection' });
+                      if (view === 'play') navigate({ view: 'today' });
                       setToast('Reported. Thank you for looking out.');
                     }
                   })

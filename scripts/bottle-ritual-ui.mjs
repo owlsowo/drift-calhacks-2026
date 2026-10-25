@@ -8,7 +8,13 @@ if (!origin || !process.env.DRIFT_TEST_DATABASE?.startsWith('drift-test-'))
   throw Error('Use npm run test:ritual.');
 const engine = process.env.DRIFT_TEST_ENGINE === 'webkit' ? 'WebKit' : 'Chrome';
 const browser =
-  engine === 'WebKit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' });
+  engine === 'WebKit'
+    ? await webkit.launch()
+    : await chromium.launch(
+        process.env.DRIFT_CHROMIUM_PATH
+          ? { executablePath: process.env.DRIFT_CHROMIUM_PATH }
+          : { channel: 'chrome' },
+      );
 const checks = [],
   errors = [];
 const out = new URL('../docs/evidence/', import.meta.url);
@@ -27,6 +33,10 @@ async function ready(context) {
 async function pickup(page) {
   await button(page, 'Pick up a bottle. Write an ending').click();
   await page.locator('.bottle-ritual--arrived').waitFor();
+  if (await page.locator('.bottle-ritual[data-pickup-step="choose"]').count()) {
+    await page.locator('[data-bottle-choice]').first().click();
+    await page.locator('.bottle-ritual[data-pickup-step="open"].bottle-ritual--arrived').waitFor();
+  }
 }
 async function drag(page, offsets) {
   const box = await button(page, 'Open bottle').boundingBox();

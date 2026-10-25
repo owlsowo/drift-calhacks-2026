@@ -13,6 +13,7 @@ import './daylight-coast.css';
 function BottlePreview() {
   const [scene] = useState(() => new ShoreScene());
   const [ritual, setRitual] = useState<BottleRitualKind | null>(null);
+  const [pickupStep, setPickupStep] = useState<'choose' | 'open'>('choose');
   const [opened, setOpened] = useState(0);
   const [paused, setPaused] = useState(false);
   const [period, setPeriod] = useState<'day' | 'night'>('day');
@@ -28,7 +29,14 @@ function BottlePreview() {
       <header className="site-header">
         <span className="wordmark">drift</span>
         <nav aria-label="Bottle preview">
-          <button onClick={() => setRitual('pickup')}>Pick up</button>
+          <button
+            onClick={() => {
+              setPickupStep('choose');
+              setRitual('pickup');
+            }}
+          >
+            Pick up
+          </button>
           <button onClick={() => setRitual('release')}>Release bottle</button>
           <button onClick={() => setPaused(!paused)}>{paused ? 'Resume sea' : 'Pause sea'}</button>
           <button onClick={() => setPeriod(period === 'day' ? 'night' : 'day')}>
@@ -39,10 +47,16 @@ function BottlePreview() {
       <output aria-label="Opened bottles">{opened}</output>
       {ritual && (
         <BottleRitual
+          key={`${ritual}:${pickupStep}`}
           kind={ritual}
           phase="moving"
           worldScene={scene}
+          pickupStep={pickupStep}
           onComplete={() => {
+            if (ritual === 'pickup' && pickupStep === 'choose') {
+              setPickupStep('open');
+              return;
+            }
             if (ritual === 'pickup') setOpened((n) => n + 1);
             setRitual(null);
           }}

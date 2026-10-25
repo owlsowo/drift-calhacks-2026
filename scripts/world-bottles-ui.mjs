@@ -39,19 +39,21 @@ for (const engine of ['chrome', 'webkit']) {
     }, count);
   async function checkExit(action) {
     const result = await page.evaluate(async (action) => {
+      const initial = document.querySelector('.bottle-ritual');
+      const initialStep = initial?.getAttribute('data-pickup-step');
       const choices = [...document.querySelectorAll('[data-bottle-choice]')];
       if (action === 'cancel') document.querySelector('.bottle-ritual__cancel').click();
-      if (action === 'open') choices[0].click();
+      if (action === 'open') (choices[0] ?? document.querySelector('.bottle-ritual__open')).click();
       if (action === 'open-last') choices.at(-1).click();
       const samples = [];
       const started = performance.now();
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => reject(Error('The exit never completed.')), 3000);
         const sample = () => {
-          const dialog = document.querySelector('.bottle-ritual');
+          const dialog = initial?.isConnected ? initial : null;
           if (!dialog) {
             clearTimeout(timeout);
-            resolve({ samples, elapsed: performance.now() - started });
+            resolve({ samples, elapsed: performance.now() - started, step: initialStep });
             return;
           }
           if (dialog.classList.contains('bottle-ritual--leaving')) {
@@ -70,7 +72,7 @@ for (const engine of ['chrome', 'webkit']) {
       result.samples.some((s) => s.opacity > 0.01 && s.opacity < 0.95),
       `${engine}/${action}: the dialog must visibly fade before it unmounts.`,
     );
-    if (engine === 'webkit' && action !== 'release')
+    if (engine === 'webkit' && result.step === 'choose')
       assert.ok(
         result.samples.some((s) => s.glass > 0 && s.glass < 0.95),
         'The fallback bottle fades with the overlay instead of popping away.',
@@ -207,10 +209,15 @@ for (const engine of ['chrome', 'webkit']) {
       await expect(choice).toBeEnabled();
       if (i === 0) await checkExit('open');
       else await choice.click();
+      await expect(page.locator('.bottle-ritual[data-pickup-step="open"]')).toHaveClass(
+        /bottle-ritual--arrived/,
+      );
+      await expect(page.getByLabel('Opened bottles')).toHaveText(String(i));
+      await page.getByRole('button', { name: 'Open bottle', exact: true }).click();
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(page.getByLabel('Opened bottles')).toHaveText(String(i + 1));
     }
-    pass('Each of the five choices opens once, with no walking or distance gate.');
+    pass('Each choice leads to the separate shake/open stage before the bottle opens once.');
     await page.getByRole('button', { name: 'Release bottle', exact: true }).click();
     if (engine === 'chrome')
       await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '1');
@@ -234,6 +241,10 @@ for (const engine of ['chrome', 'webkit']) {
     if (engine === 'chrome')
       await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '4');
     await page.locator('[data-bottle-choice]').last().click();
+    await expect(page.locator('.bottle-ritual[data-pickup-step="open"]')).toHaveClass(
+      /bottle-ritual--arrived/,
+    );
+    await page.getByRole('button', { name: 'Open bottle', exact: true }).click();
     await expect(page.getByLabel('Opened bottles')).toHaveText('6');
     await page.getByRole('button', { name: 'Night', exact: true }).click();
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -242,6 +253,10 @@ for (const engine of ['chrome', 'webkit']) {
     await expect(page.locator('[data-bottle-choice]').last()).toBeEnabled();
     await page.screenshot({ path: new URL(`${engine}-night-reduced.png`, output).pathname });
     await checkExit('open-last');
+    await expect(page.locator('.bottle-ritual[data-pickup-step="open"]')).toHaveClass(
+      /bottle-ritual--arrived/,
+    );
+    await checkExit('open');
     await expect(page.getByLabel('Opened bottles')).toHaveText('7');
     pass('Paused sea and reduced-motion night remain usable without restarting the scene.');
     pass(

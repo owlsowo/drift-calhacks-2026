@@ -6,6 +6,7 @@ process.chdir(root);
 const mode = process.argv[2] || 'ui';
 if (
   ![
+    'pickup-flow',
     'story-review',
     'response-context',
     'gate-layout',
@@ -110,6 +111,7 @@ try {
     }
   }
   const sceneFiles = {
+    'pickup-flow': 'pickup-flow-ui.mjs',
     'story-review': 'story-review-ui.mjs',
     votes: 'votes-ui.mjs',
     'response-context': 'response-context-ui.mjs',

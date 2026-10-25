@@ -8,7 +8,13 @@ if (!origin || !process.env.DRIFT_TEST_DATABASE?.startsWith('drift-test-'))
   throw Error('Use npm run test:invitations.');
 const engine = process.env.DRIFT_TEST_ENGINE === 'webkit' ? 'WebKit' : 'Chrome';
 const browser =
-  engine === 'WebKit' ? await webkit.launch() : await chromium.launch({ channel: 'chrome' });
+  engine === 'WebKit'
+    ? await webkit.launch()
+    : await chromium.launch(
+        process.env.DRIFT_CHROMIUM_PATH
+          ? { executablePath: process.env.DRIFT_CHROMIUM_PATH }
+          : { channel: 'chrome' },
+      );
 const out = new URL('../docs/evidence/', import.meta.url),
   checks = [],
   errors = [];

@@ -25,6 +25,7 @@
     "test:coast-time": "node scripts/coast-time-ui.mjs",
     "test:coast-gpu": "node scripts/coast-gpu-ui.mjs",
     "test:response-context": "node scripts/test-room.mjs response-context",
+    "test:pickup-flow": "node scripts/test-room.mjs pickup-flow",
     "test:retention": "node scripts/test-room.mjs retention",
     "test:hint-retries": "node scripts/test-room.mjs hint-retries",
     "test:keepsake": "node scripts/test-room.mjs keepsake",

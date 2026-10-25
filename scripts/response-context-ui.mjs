@@ -50,6 +50,10 @@ async function home(page) {
 }
 async function pickup(page) {
   await button(page, 'Pick up a bottle. Write an ending').click();
+  await page.locator('.bottle-ritual--arrived').waitFor();
+  if (await page.locator('.bottle-ritual[data-pickup-step="choose"]').count())
+    await page.locator('[data-bottle-choice]').first().click();
+  await page.locator('.bottle-ritual[data-pickup-step="open"]').waitFor();
   await button(page, 'Open bottle').click();
   await page.getByRole('textbox', { name: 'Your six-word ending', exact: true }).waitFor();
 }
@@ -219,6 +223,8 @@ try {
     beginning: oldAssignment.text,
   });
   await button(draftWriter, 'Skip this bottle').click();
+  await draftWriter.locator('[data-bottle-choice]').first().click();
+  await draftWriter.locator('.bottle-ritual[data-pickup-step="open"]').waitFor();
   await button(draftWriter, 'Open bottle').click();
   await draftWriter.getByRole('textbox', { name: 'Your six-word ending', exact: true }).waitFor();
   await draftWriter.waitForFunction(

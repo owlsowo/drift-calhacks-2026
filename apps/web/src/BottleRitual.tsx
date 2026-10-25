@@ -13,6 +13,7 @@ type BottleRitualProps = {
   onComplete: () => void;
   onCancel: () => void;
   worldScene?: ShoreScene;
+  pickupStep?: 'choose' | 'open';
 };
 
 const THROW_MS = 1450;
@@ -24,7 +25,16 @@ type MotionConstructor = typeof DeviceMotionEvent & { requestPermission?: () => 
 let phoneShakeOptedIn = false;
 
 /** The sea stays visible underneath this brief, user-triggered interaction. */
-export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: BottleRitualProps) {
+export function BottleRitual({
+  kind,
+  phase,
+  onComplete,
+  onCancel,
+  worldScene,
+  pickupStep = 'choose',
+}: BottleRitualProps) {
+  const choosing = !!worldScene && kind === 'pickup' && pickupStep === 'choose';
+  const worldRitual = !!worldScene && (kind === 'release' || choosing);
   const labelId = useId();
   const statusId = useId();
   const shadeId = useId();
@@ -69,7 +79,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
   const [motionMessage, setMotionMessage] = useState('');
 
   useEffect(() => {
-    if (!worldScene || kind !== 'pickup') return;
+    if (!worldScene || !choosing) return;
     const paint = () => {
       for (let i = 0; i < choiceCount; i++) {
         const target = worldButtons.current.get(i);
@@ -103,7 +113,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
       unsubscribe();
       worldScene.showChoices(false);
     };
-  }, [worldScene, kind, choiceCount]);
+  }, [worldScene, choosing, choiceCount]);
   useEffect(() => {
     if (worldScene && kind === 'release' && phase === 'moving') worldScene.throwBottle();
   }, [worldScene, kind, phase]);
@@ -125,7 +135,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
     // The glass lives in the ocean renderer, outside the dialog. Fade it with
     // the veil, including when the sea is paused or using the SVG fallback.
     const bottles =
-      worldScene && kind === 'pickup'
+      worldScene && choosing
         ? worldScene.bottles
             .slice(0, choiceCount)
             .map((bottle) => ({ bottle, opacity: bottle.opacity }))
@@ -150,7 +160,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
       cancelAnimationFrame(frame);
       animation?.cancel();
     };
-  }, [leaving, reducedMotion, worldScene, kind, choiceCount]);
+  }, [leaving, reducedMotion, worldScene, choosing, choiceCount]);
 
   useEffect(() => {
     mounted.current = true;
@@ -231,7 +241,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
   const openRef = useRef(open);
   openRef.current = open;
   useEffect(() => {
-    if (worldScene || !motion || kind !== 'pickup' || !arrived || opening || hidden) return;
+    if (choosing || !motion || kind !== 'pickup' || !arrived || opening || hidden) return;
     phoneMeter.current.reset();
     const listener = (event: DeviceMotionEvent) => {
       if (openingRef.current || pointer.current || document.visibilityState !== 'visible') return;
@@ -249,7 +259,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
       window.removeEventListener('devicemotion', listener);
       phoneMeter.current.reset();
     };
-  }, [worldScene, motion, kind, arrived, opening, hidden]);
+  }, [choosing, motion, kind, arrived, opening, hidden]);
 
   async function enableMotion() {
     if (motionPending) return;
@@ -350,7 +360,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
     }
     if (event.key !== 'Tab') return;
     const buttons = [
-      ...(worldScene ? worldButtons.current.values() : [openButton.current, motionButton.current]),
+      ...(choosing ? worldButtons.current.values() : [openButton.current, motionButton.current]),
       cancelButton.current,
     ].filter((button): button is HTMLButtonElement => Boolean(button && !button.disabled));
     if (!buttons.length) {
@@ -373,7 +383,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
   const state = leaving ? 'leaving' : opening ? 'opening' : arrived ? 'arrived' : phase;
   return (
     <div
-      className={`bottle-ritual${worldScene ? ' bottle-ritual--world' : ''} bottle-ritual--${kind} bottle-ritual--${state}${reducedMotion ? ' bottle-ritual--reduced' : ''}${hidden ? ' bottle-ritual--hidden' : ''}${dragging ? ' bottle-ritual--dragging' : ''}`}
+      className={`bottle-ritual${worldRitual ? ' bottle-ritual--world' : ''} bottle-ritual--${kind} bottle-ritual--${state}${reducedMotion ? ' bottle-ritual--reduced' : ''}${hidden ? ' bottle-ritual--hidden' : ''}${dragging ? ' bottle-ritual--dragging' : ''}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby={labelId}
@@ -383,6 +393,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
       onKeyDown={keyDown}
       data-kind={kind}
       data-phase={state}
+      data-pickup-step={kind === 'pickup' ? (choosing ? 'choose' : 'open') : undefined}
     >
       <h2 id={labelId} className="bottle-ritual__sr-only">
         {kind === 'release' ? 'Release bottle' : 'Pick up bottle'}
@@ -391,7 +402,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
         {kind === 'release'
           ? 'Releasing your bottle.'
           : arrived
-            ? worldScene
+            ? choosing
               ? `${choiceCount} bottles are ready. Choose any bottle to open.`
               : 'A bottle is ready to open.'
             : 'Finding a bottle.'}
@@ -404,7 +415,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
         <i />
         <i />
       </div>
-      {worldScene && kind === 'pickup' ? (
+      {choosing ? (
         <>
           <svg className="bottle-ritual__world-shade" aria-hidden="true">
             <defs>
@@ -483,7 +494,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
           </span>
         </button>
       )}
-      {kind === 'pickup' && !worldScene && arrived && !opening && (
+      {kind === 'pickup' && !choosing && arrived && !opening && (
         <div className="bottle-ritual__gesture">
           <p>Drag to shake, or tap to open.</p>
           <span className="bottle-ritual__beats" aria-hidden="true">
