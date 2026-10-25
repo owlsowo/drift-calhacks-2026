@@ -69,3 +69,12 @@ The user authorizes status posts and project-related replies in the Calhacks gro
 - Normal hosted preflight screenshots confirm the real Cloudflare widget's new placement. In the same configured 390×844 viewport, full-page capture height falls from 1018px to 844px. This is controlled browser layout evidence, not a physical phone or performance claim.
 - Both hosted attempts stop at a manual human checkbox before any story/model action. Server status remains `[9,1000,false,0,0,0]`; no spend or data inventory was added. The new hosted full Claude flow still needs human interaction; no bypass or budget increase was attempted.
 - Next: request that human functional check when teammates return, while continuing the daily identity/return-cue improvements identified by the winner review.
+
+## 2026-10-25 03:14 UTC — shared daily premise live
+
+- Product `2ddd7c6` is pushed; CI `40157360264` passed; Cloudflare `3df5e6f4-488d-48a0-9bff-fa08f13abcf4` serves matching tested entry/ocean files. The connected live shore shows Tide 02, the shared theme and the six-word premise.
+- The date/edition and theme come from the server day projection; an open page requests refresh when its synchronized day changes. A soft caption scrim preserves legibility over the approved water. Short landscape prioritizes the human-check panel when needed. No extra dashboard panel or engagement signal was added.
+- Six current coast/layout cases, five synthetic human-check layout cases, seven Chrome invitation checks, build/typechecks and full CI pass. Caption geometry and the actual server theme were checked on desktop, portrait, 320px phone and short landscape; Chrome WebGPU and WebKit fallback remain covered. This is controlled browser evidence, not physical-phone or overnight use.
+- No backend update, provider call or story was needed. The human functional check requested in Discord remains pending; no challenge bypass or budget increase was attempted.
+- Track value: the initial screen now explains the small daily collaboration before a judge opens a note, while preserving the familiar sea/bottle ritual. The visible shared prompt also clarifies Claude's contextual role and Spacetime's shared day. These are product arguments, not eligibility/outcome claims.
+- Next: inspect the completed-note return path on the shore, including notification placement and real saved-story cues.

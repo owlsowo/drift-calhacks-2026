@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T03:14:30.159Z",
+  "sourceCommit": "2ddd7c606ab66ef30495d659cb62264496219f21",
+  "cloudflareVersion": "3df5e6f4-488d-48a0-9bff-fa08f13abcf4",
+  "ci": {
+    "run": 40157360264,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-epoE7CZu.js",
+      "sha256": "4f2b0e2794e8df40b79b4f4ec6694b44d2b88ef8c4f82004f45c882c08ccb16a",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DHUie8mn.css",
+      "sha256": "29a0c93e5d9b1762ff763ee21132c404867a0199a9d01bfb9ad222fb1539c094",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend daily-theme introduction only. Six coast/layout checks retain real Chrome water/fallback and WebKit coverage; five local synthetic human-check layout cases and seven Chrome invitation checks pass. This is not physical-phone or overnight-user evidence. No story, provider call, backend publication or protection change."
+}
