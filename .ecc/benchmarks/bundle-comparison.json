@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-25T00:54:37.178Z",
+  "scope": "Same gzip calculation for currently deployed first-party bundles and local production build, not field load/performance metrics",
+  "assets": [
+    {
+      "type": "js",
+      "beforePath": "/assets/index-DTRSY7hX.js",
+      "afterPath": "/assets/index-DqxdKsom.js",
+      "beforeGzipBytes": 121790,
+      "afterGzipBytes": 122062,
+      "beforeSha256": "0474decdf34c3c1b548010a1961aa4ed43d936cb62a11bdd472db62b3cfc2edb",
+      "afterSha256": "e1b9440ad82d5e0f36e2363b863634c412ed4ae8f1a745edefcec8800b6bd7c7"
+    },
+    {
+      "type": "css",
+      "beforePath": "/assets/index-D6xaydzj.css",
+      "afterPath": "/assets/index-DBfOWLEA.css",
+      "beforeGzipBytes": 11790,
+      "afterGzipBytes": 11823,
+      "beforeSha256": "da207cc5effc276e9bd04eb4a9fb4e4fca914f6646664cc6b08bd18fa0f06faf",
+      "afterSha256": "d391f0d44e495b34ac0900b30a37162461afb4622d2ab3ff7a69b790069a0840"
+    }
+  ]
+}

@@ -72,6 +72,8 @@ The integration tests require the local database server. Each creates a disposab
 
 `test:coldstart` disables all starter fallback in an AI-off sandbox and exercises the two-identity flow at phone/desktop sizes in Chrome and WebKit. A writer can leave a published beginning drifting; a later peer can finish it and return the shared postcard after that original round closes. Closing still counts toward the daily limit. See [empty-sea recovery](docs/coldstart.md).
 
+The [note-opening comparison](docs/note-opening.md) covers image delays, a complete mesh/CSS opening and stable visible controls. `npm run test:paper-fallbacks` exercises rendering failures and dynamic reduced motion; `DRIFT_BENCHMARK_LABEL=after npm run benchmark:paper` records the controlled timing diagnostic, separate from production page metrics.
+
 `npm run demo:rehearse` discovers and exercises the recording flow in a disposable local sandbox. After it passes, `npm run demo:record` records two isolated browser identities and assembles a 1280×720 MP4 in the task’s `outputs/` folder. Chrome, Playwright’s FFmpeg helper (`npx playwright install ffmpeg`) and a system `ffmpeg` are required. The video is visibly labeled as synthetic sandbox participation with model checks off. It is a product demonstration, not live AI or attendee evidence. The recorded checkpoint and its provenance are in `docs/evidence/local-sandbox-demo.mp4` and `demo-run.json`. See `docs/deployment.md` for the real release handoff.
 
 ## Architecture and boundaries

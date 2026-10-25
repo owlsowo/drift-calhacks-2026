@@ -936,6 +936,10 @@
 .paper-unfolding .paper-content > * {
   opacity: 0;
 }
+.paper-waiting .paper-content,
+.paper-waiting .unfolding-ball {
+  animation-play-state: paused;
+}
 .unfolding-ball {
   position: absolute;
   z-index: 4;
@@ -960,16 +964,16 @@
   visibility: hidden;
   animation: none;
 }
-.paper-open .paper-content > * {
-  animation: note-ink-appear 300ms ease-out both;
+.paper-open .paper-content > h1,
+.paper-open .paper-content > .caught-note,
+.paper-open .paper-content > .postcard {
+  animation: note-ink-settle 300ms ease-out both;
 }
-@keyframes note-ink-appear {
+@keyframes note-ink-settle {
   from {
-    opacity: 0;
     transform: translateY(3px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
