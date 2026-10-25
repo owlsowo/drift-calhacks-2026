@@ -82,8 +82,10 @@ const read = (key: string) => {
     return undefined;
   }
 };
+const hasRetainedText = (key: string) =>
+  key.startsWith('drift:draft:') || key.startsWith('drift:request:');
 export const persist = (key: string, value: string) => {
-  if (key.startsWith('drift:draft:')) value = encodeDraft(value);
+  if (hasRetainedText(key)) value = encodeDraft(value);
   memory.set(key, value);
   try {
     localStorage.setItem(key, value);
@@ -93,7 +95,7 @@ export const persist = (key: string, value: string) => {
 };
 export const saved = (key: string) => {
   const raw = read(key) || '';
-  if (!raw || !key.startsWith('drift:draft:')) return raw;
+  if (!raw || !hasRetainedText(key)) return raw;
   const item = decodeDraft(raw);
   if (item.expired) {
     memory.delete(key);
@@ -107,13 +109,25 @@ export const saved = (key: string) => {
   if (item.legacy) persist(key, item.text);
   return item.text;
 };
-function pruneDrafts() {
+function forget(key: string) {
+  memory.delete(key);
   try {
-    const keys = Array.from({ length: localStorage.length }, (_, i) => localStorage.key(i));
-    for (const key of keys) if (key?.startsWith('drift:draft:')) saved(key);
+    localStorage.removeItem(key);
   } catch {
     storageUnavailable();
   }
+}
+function pruneLocalText() {
+  const keys = new Set(memory.keys());
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) keys.add(key);
+    }
+  } catch {
+    storageUnavailable();
+  }
+  for (const key of keys) if (hasRetainedText(key)) saved(key);
 }
 export function localDrafts(identity: string) {
   if (!identity) return [];
@@ -191,13 +205,14 @@ async function syncClock(conn: DbConnection) {
 }
 function connect() {
   if (connection) return;
-  pruneDrafts();
+  pruneLocalText();
   connection = DbConnection.builder()
     .withUri(host)
     .withDatabaseName(database)
     .withToken(read(tokenKey))
     .withAutomaticReconnect({})
     .onConnect((conn, identity, token) => {
+      if (connection !== conn) return;
       persist(tokenKey, token);
       state = { ...state, identity: identity.toHexString() };
       for (const table of [
@@ -218,13 +233,18 @@ function connect() {
       }
       conn
         .subscriptionBuilder()
-        .onApplied(() => emit({ connected: true, connecting: false, error: '' }))
-        .onError(() =>
-          emit({
-            error: 'Your connection needs a moment. Your draft is saved.',
-            connected: false,
-            connecting: false,
-          }),
+        .onApplied(() => {
+          if (connection === conn && conn.isActive)
+            emit({ connected: true, connecting: false, error: '' });
+        })
+        .onError(
+          () =>
+            connection === conn &&
+            emit({
+              error: 'Your connection needs a moment. Your draft is saved.',
+              connected: false,
+              connecting: false,
+            }),
         )
         .subscribe([
           'SELECT * FROM my_round',
@@ -240,7 +260,8 @@ function connect() {
         ]);
       void syncClock(conn);
     })
-    .onAutomaticReconnect((_conn, identity, token) => {
+    .onAutomaticReconnect((conn, identity, token) => {
+      if (connection !== conn) return;
       persist(tokenKey, token);
       emit({
         identity: identity.toHexString(),
@@ -250,19 +271,23 @@ function connect() {
       });
       if (connection) void syncClock(connection);
     })
-    .onConnectError(() =>
-      emit({
-        connected: false,
-        connecting: false,
-        error: 'The shore is out of reach. Your draft stays here.',
-      }),
+    .onConnectError(
+      (conn) =>
+        connection === conn &&
+        emit({
+          connected: false,
+          connecting: false,
+          error: 'The shore is out of reach. Your draft stays here.',
+        }),
     )
-    .onDisconnect(() =>
-      emit({
-        connected: false,
-        connecting: true,
-        error: 'Reconnecting. Your words are safe here.',
-      }),
+    .onDisconnect(
+      (conn) =>
+        connection === conn &&
+        emit({
+          connected: false,
+          connecting: true,
+          error: 'Reconnecting. Your words are safe here.',
+        }),
     )
     .build();
 }
@@ -327,7 +352,7 @@ export const game = {
   reconnect() {
     connection?.disconnect();
     connection = undefined;
-    emit({ connecting: true, error: '' });
+    emit({ connected: false, connecting: true, error: '' });
     connect();
   },
   async start() {
@@ -369,7 +394,13 @@ export const game = {
     const key = `drift:request:${state.identity}:${operation}:${roundId}`;
     let prior: { text: string; id: string } | undefined;
     try {
-      prior = JSON.parse(saved(key));
+      const item = JSON.parse(saved(key));
+      if (
+        typeof item?.text === 'string' &&
+        typeof item?.id === 'string' &&
+        /^[a-f0-9-]{36}$/i.test(item.id)
+      )
+        prior = item;
     } catch {
       /* First dispatch. */
     }
@@ -382,12 +413,13 @@ export const game = {
         : operation === 'reply'
           ? await connection.procedures.submitReply(args)
           : await connection.procedures.requestNudge(args);
-    if (!value.message.includes('pending or uncertain')) persist(key, '');
+    if (!value.message.includes('pending or uncertain')) forget(key);
     if (!value.ok) throw Error(value.message);
     return value;
   },
 };
 setInterval(() => {
+  pruneLocalText();
   void game.refresh().catch(() => {});
 }, 60000);
 if (import.meta.hot) import.meta.hot.dispose(() => connection?.disconnect());

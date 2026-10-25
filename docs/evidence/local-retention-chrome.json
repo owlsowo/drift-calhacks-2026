@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-25T02:04:45.329Z",
+  "engine": "Chrome",
+  "mode": "Isolated local sandbox, synthetic words, no provider calls. Response-loss, time and storage failures are injected; server commit/replay and SQL readback are real.",
+  "checks": [
+    "Connection startup removes expired retry and draft text, including inactive identities",
+    "Legacy pending retry text migrates into a seven-day envelope without replacing its request ID",
+    "An injected response loss after a real local commit preserves the original retry ID and text",
+    "Reload replay uses the same server request, creates no duplicate, and immediately removes the confirmed retry text",
+    "A malformed cached ID cannot become an invalid paid-call argument",
+    "Exact seven-day expiry removes persistent and memory-only retry text while preserving it before the deadline"
+  ],
+  "errors": []
+}

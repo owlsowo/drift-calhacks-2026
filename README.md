@@ -55,6 +55,8 @@ npm run check:scripts
 npm run build
 npm run test:letters
 DRIFT_TEST_ENGINE=webkit npm run test:letters
+npm run test:retention
+DRIFT_TEST_ENGINE=webkit npm run test:retention
 npm run test:ritual
 DRIFT_TEST_ENGINE=webkit npm run test:ritual
 npm run test:migration
@@ -89,7 +91,7 @@ The [note-opening comparison](docs/note-opening.md) covers image delays, a compl
 - Setup moderation runs before delivery; pair moderation runs before postcard publication. Uncertain or malformed responses withhold text and preserve drafts.
 - Only the database owner can pause dispatch/publication or invoke the purge reducer. The application cap starts at 1,000 dispatches, including uncertain calls. Provider budget alerts are a separate control.
 
-An hourly private maintenance schedule enforces seven days for submitted request text, and thirty days for published beginnings, cards, reports and rounds. It also purges orphaned hidden-card author mappings and expired hello details. Browser drafts expire seven days after the latest edit. The owner can also run `purge_old_data` manually. Hiding cannot retract downloaded images or screenshots.
+An hourly private maintenance schedule enforces seven days for submitted request text, and thirty days for published beginnings, cards, reports and rounds. It also purges orphaned hidden-card author mappings and expired hello details. Browser drafts expire seven days after the latest edit. Unsettled retry records expire seven days after the latest attempt and are removed sooner after a confirmed result; cleanup runs on reads/visits and while the page remains open. See [local retry retention](docs/local-retry-retention.md). The owner can also run `purge_old_data` manually. Hiding cannot retract downloaded images or screenshots.
 
 ## Competition evidence
 

@@ -1,3 +1,4 @@
+import { waitForGameConnection } from './browser-game-state.mjs';
 import { chromium, webkit } from '@playwright/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -20,7 +21,7 @@ async function ready(context) {
   const page = await context.newPage();
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(origin);
-  await page.waitForFunction(async () => (await import('/src/game.ts')).game.snapshot().connected);
+  await waitForGameConnection(page);
   return page;
 }
 async function pickup(page) {

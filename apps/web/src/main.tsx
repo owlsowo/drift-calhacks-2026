@@ -1295,7 +1295,9 @@ function App() {
           <p>
             Unpublished submissions are retained for seven days; published beginnings, pairs, and
             reports for thirty days. Hourly cleanup removes expired data and hidden-card author
-            mappings. Saved browser drafts expire seven days after their latest edit.
+            mappings. Saved browser drafts expire seven days after their latest edit. Temporary
+            request records used for retrying expire seven days after the latest attempt, and are
+            removed sooner when the server confirms a result.
           </p>
           <p>
             Usage and cost records contain no story text or identity. Individual records expire
