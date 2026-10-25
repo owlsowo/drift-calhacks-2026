@@ -256,7 +256,7 @@ try {
     'Legacy postcards are not automatically backfilled',
   );
   pass(
-    'Actual additive publish preserves every compared old row and field, including a completed pair, private thanks and an active reply; all four new tables start empty',
+    'Actual additive publish preserves every compared old row and field, including a completed pair, private thanks and an active reply; all expected newly added tables start empty',
   );
   command(['call', room, 'set_pause', 'false']);
   await until(
