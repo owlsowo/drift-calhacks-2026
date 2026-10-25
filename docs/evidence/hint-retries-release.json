@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-25T04:13:25.694Z",
+  "sourceCommit": "5e1b6b7eb5244fef1da7e8f46ea28164fa9d9bac",
+  "cloudflareVersion": "8b508317-8cd9-40b4-9d0a-dcc220cafc24",
+  "ci": {
+    "run": 40160785029,
+    "conclusion": "success"
+  },
+  "database": {
+    "identity": "c20021eee2fe643cce13a21845d5dcb1a168026f58ec4ac83d36ebd86563be60",
+    "migrationPlan": "No table/view/schema operations",
+    "readback": "hint-retries-upgrade-hosted.json"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-KGFmQ5iB.js",
+      "sha256": "9d7bc90808cdb4f0cc71f595aee0ada1f98087d7784c5e5f576cc6969fec941a",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-s38fGgsU.css",
+      "sha256": "d594df19a8663ff3b90673f4b8c67690f2c578987f1934b5ea1d941c92256c50",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Assignment-bound retry records, legacy cached-request guard, bounded Hint wait, live committed-reply confirmation and navigation protection. 79 server checks, seven retry/confirmation cases per Chrome/WebKit, six retention cases per engine and eleven Chrome letter checks pass. Hint transport and clocks are injected; local replies commit/replay against real disposable databases. No provider call or production story was created by these checks."
+}
