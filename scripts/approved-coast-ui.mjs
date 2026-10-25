@@ -45,6 +45,21 @@ async function capture(page, name) {
     scan.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) })),
     [],
   );
+  const prompt = await page.evaluate(() =>
+    JSON.parse(window.driftTestGame.snapshot().today.promptJson),
+  );
+  assert.equal(await page.locator('.daily-tide h2').innerText(), prompt.title);
+  const boxes = await page.evaluate(() => {
+    const box = (s) => {
+      const r = document.querySelector(s).getBoundingClientRect();
+      return { top: r.top, bottom: r.bottom };
+    };
+    return { tide: box('.daily-tide'), dock: box('.shore-dock'), header: box('.site-header') };
+  });
+  assert.ok(
+    boxes.tide.bottom + 12 < boxes.dock.top && boxes.tide.top > boxes.header.bottom + 8,
+    JSON.stringify(boxes),
+  );
 }
 async function pauseSea(page, paused) {
   await button(page, 'How to play').click();
@@ -116,6 +131,16 @@ try {
   await plain.setViewportSize({ width: 390, height: 844 });
   await background(plain, 'coast-night-mobile.webp');
   await capture(plain, 'fallback-mobile');
+  for (const [width, height] of [
+    [320, 740],
+    [740, 360],
+  ]) {
+    await plain.setViewportSize({ width, height });
+    await capture(plain, `daily-${width}x${height}`);
+  }
+  pass(
+    'The shared daily theme and tide caption stay readable above the dock on desktop, portrait, narrow-phone and short-landscape views',
+  );
   pass(
     'Unsupported WebGPU loads the approved wide/portrait landscape with one baked-in lighthouse and no duplicate overlay',
   );
