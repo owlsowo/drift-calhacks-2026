@@ -133,3 +133,9 @@ Six retention checks, ten letter checks and six ritual checks pass per Chrome/We
 The owner approved restoring the PR landscape and lighthouse in Codex. Frontend `98f854b` is live as Cloudflare `527fbfff-d9bb-4c89-b756-df1fb9349441`; CI `40154046528` passed. All three approved image files match the original PR exactly. The transparent headland sits over live simulated water; unsupported WebGPU gets the responsive landscape/portrait art. Paper remains photographed and the dock remains CSS. Credits disclose generated artwork accurately.
 
 Twenty-five targeted scene/ritual/paper checks passed after this change. The served JS/CSS, ocean chunk, three images and credits page match the tested build. The connected public scene was inspected; no story or paid call was created, and no database change occurred. See `approved-coast.md`, `approved-coast-release.json` and `approved-coast-live.png`.
+
+## 2026-10-25 — direct co-writing invitations
+
+`0462e9b` is live as Cloudflare `74a2867b-2dbf-460d-9bc4-5836e884a965`; CI `40155096372` passed. Backend publication kept the same database identity, used `--delete-data=never` and required no table migration or backfill. Paused before/after owner readback preserved existing rows/fields with zero completed-release changes. The shore is unpaused.
+
+All 75 server and 27 unit checks, fourteen local Chrome/WebKit invitation checks and the current Chrome letter regression pass. The live public invitation view was inspected and the new hosted reducer rejects an unverified guest. Served entry/ocean files match the tested build. No hosted story or paid model call was created by these release probes; this is not yet the new hosted multi-writer Claude completion gate. See `bottle-invitations.md`, `invitation-upgrade-hosted.json`, `hosted-invitation-check.json`, `invitation-release.json` and `invitation-live-public.png`.

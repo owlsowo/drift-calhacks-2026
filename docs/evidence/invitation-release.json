@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-10-25T02:39:06.253Z",
+  "sourceCommit": "0462e9b79385be3327853b786e76605904f0f78f",
+  "cloudflareVersion": "74a2867b-2dbf-460d-9bc4-5836e884a965",
+  "ci": {
+    "run": 40155096372,
+    "conclusion": "success"
+  },
+  "databaseIdentity": "c20021eee2fe643cce13a21845d5dcb1a168026f58ec4ac83d36ebd86563be60",
+  "schemaChange": "None; existing database published with --delete-data=never; plan had no table operations.",
+  "assets": [
+    {
+      "asset": "/assets/index-BfAjyWHR.js",
+      "sha256": "b51b8d7fddde82153c61d50db5adec69a5805c6b44950f662459dd9abe0435c3",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-D2JFqn4s.css",
+      "sha256": "a1dad4d284ea14b4de41bbd9d277d03d9fac3018c4f319456d4fb87577292a90",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "75 server tests, 27 unit tests, seven local invitation checks per Chrome/WebKit and current Chrome letter regression pass. Owner SQL before/after comparison preserved records. These release probes create no story/provider call. New hosted multi-writer Claude verification remains separate."
+}
