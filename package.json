@@ -59,7 +59,8 @@
     "test:shared-landing": "node scripts/test-room.mjs shared-landing",
     "test:qr-invitation": "node scripts/test-room.mjs qr-invitation",
     "test:shore-motion": "node scripts/test-room.mjs shore-motion",
-    "test:shelf-render": "node scripts/test-room.mjs shelf-render"
+    "test:shelf-render": "node scripts/test-room.mjs shelf-render",
+    "test:type-layout": "node scripts/test-room.mjs type-layout"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",

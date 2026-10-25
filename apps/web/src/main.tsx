@@ -1801,10 +1801,12 @@ function App() {
                                 <Heart size={12} aria-hidden="true" /> Thanks received
                               </span>
                             )}
-                            {new Date(pair.createdMs).toLocaleDateString([], {
-                              month: 'short',
-                              day: 'numeric',
-                            })}
+                            <time dateTime={new Date(pair.createdMs).toISOString()}>
+                              {new Date(pair.createdMs).toLocaleDateString([], {
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </time>
                           </small>
                           <ArrowUpRight size={16} />
                         </button>
