@@ -37,6 +37,7 @@ import {
 import AbandonRoundReducer from "./abandon_round_reducer";
 import ClaimBottleReducer from "./claim_bottle_reducer";
 import HideMyCardReducer from "./hide_my_card_reducer";
+import PickUpBeginningReducer from "./pick_up_beginning_reducer";
 import PurgeOldDataReducer from "./purge_old_data_reducer";
 import ReconcileAiCallReducer from "./reconcile_ai_call_reducer";
 import RecordCardActionReducer from "./record_card_action_reducer";
@@ -178,6 +179,7 @@ const reducersSchema = __reducers(
   __reducerSchema("abandon_round", AbandonRoundReducer),
   __reducerSchema("claim_bottle", ClaimBottleReducer),
   __reducerSchema("hide_my_card", HideMyCardReducer),
+  __reducerSchema("pick_up_beginning", PickUpBeginningReducer),
   __reducerSchema("purge_old_data", PurgeOldDataReducer),
   __reducerSchema("reconcile_ai_call", ReconcileAiCallReducer),
   __reducerSchema("record_card_action", RecordCardActionReducer),

@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-25T02:34:20.178Z",
+  "engine": "Chrome",
+  "mode": "Isolated local sandbox; synthetic writers and words, model calls disabled. Copy adapter injected; actual server assignments, moderation sandbox transitions, reloads and live multi-writer subscriptions.",
+  "checks": [
+    "The author’s prominent invitation control copies a public bottle-ID URL through an injected clipboard adapter without creating a round",
+    "A fresh recipient reads the exact beginning and its theme before choosing to write; viewing alone consumes no daily round",
+    "Invitation cancel, resume and reload retain the exact assignment, original deadline and independent ending draft",
+    "Finishing the invitation returns a real pair live to its author and the same identity cannot add another ending through the link",
+    "Two invited writers finish the same selected beginning as distinct pairs, even with another public beginning available",
+    "Another invitation cannot silently replace an open bottle or its draft; the recipient can resume that existing ending",
+    "The invitation respects the shared three-round daily quota while its public beginning and replies remain readable"
+  ],
+  "errors": []
+}

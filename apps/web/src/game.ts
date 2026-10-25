@@ -365,6 +365,11 @@ export const game = {
     await connection.reducers.startCatching({});
     return waitForRound('catch');
   },
+  async startInvited(beginningId: string) {
+    if (!connection?.isActive) throw Error('Connect before opening this invitation.');
+    await connection.reducers.pickUpBeginning({ beginningId });
+    return waitForRound('catch');
+  },
   async verifyGate(token: string) {
     if (!connection?.isActive) throw Error('Reconnect before verifying your shore check.');
     const value = await connection.procedures.verifyShore({ token });
