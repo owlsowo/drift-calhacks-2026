@@ -2236,3 +2236,100 @@ a {
   border-radius: 3px;
   padding: 0 14px;
 }
+
+/* A small receipt and private continuations belong on the shelf, away from the sea ritual. */
+.daily-turn-receipt {
+  padding: 14px 16px;
+  margin: 0 0 22px;
+  border: 1px solid #b5b5a5;
+  border-radius: 4px;
+  background: #f3eddd;
+  color: #344749;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.daily-turn-receipt > div {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.daily-turn-receipt strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.daily-turn-receipt > div > span {
+  font-size: 11px;
+}
+.daily-turn-receipt p {
+  margin: 8px 0 0;
+  color: inherit;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.sea-world .daily-turn-receipt {
+  color: #e9edf0;
+  background: #14293be8;
+  border-color: #8c9eac6b;
+}
+.sea-world .shelf-in-progress {
+  margin: 24px 0;
+}
+.sea-world .shelf-in-progress h2 {
+  margin: 0 0 12px;
+  color: #e1e7eb;
+  font: 400 14px/1.5 var(--letter-ui);
+  letter-spacing: 0;
+}
+.unfinished-bottles {
+  display: grid;
+  gap: 10px;
+}
+.sea-world .unfinished-bottle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 60px;
+  padding: 14px 16px;
+  border: 1px solid #8c9eac6b;
+  border-radius: 4px;
+  background: #14293be8;
+  color: #eff0e7;
+  text-align: left;
+  font: 400 13px/1.5 var(--letter-ui);
+}
+.unfinished-bottle > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.unfinished-bottle strong,
+.unfinished-bottle small {
+  display: block;
+}
+.unfinished-bottle strong {
+  font-weight: 500;
+}
+.unfinished-bottle small {
+  margin-top: 4px;
+  color: #ccd9e2;
+  font-size: 11px;
+}
+.unfinished-bottle > svg {
+  flex-shrink: 0;
+}
+.unfinished-bottle:focus-visible {
+  outline: 2px solid #f4dca0;
+  outline-offset: 3px;
+}
+
+.sea-world .collection-in-progress {
+  padding: 4px 0 16px;
+}
+.sea-world .collection-in-progress h2 {
+  font-size: 17px;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}

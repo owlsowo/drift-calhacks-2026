@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-25T05:31:00.199Z",
+  "engine": "Chrome",
+  "scope": "Disposable local database, real start/close/withdraw/assignment state and synthetic stories; provider key absent. Prior-day rounds, exhausted checks, empty-pool pickup stage, pause/gate and disconnection are explicitly injected client states. No hosted, physical-phone, real midnight, or paid-model claim.",
+  "checks": [
+    "A new writer sees the same daily allowance in My bottles and Help, before allocating a turn",
+    "Public bottle and reply reading is free, grants no author controls, and leaves the original private beginning intact",
+    "Separate beginning and ending continuations restore their own exact drafts and assignment, without starting, claiming, skipping or submitting anything",
+    "An injected prior-day ending with a still-valid lease remains resumable and is excluded from today’s turn count",
+    "Injected exhausted checks offer review for both drafts and disable publication, without allocating replacement turns",
+    "An injected expired lease changes the ending to Review without silently claiming another bottle or discarding its words",
+    "Existing drafts remain readable while the client sees a paused service or expired writing pass; a missing pass still blocks publication",
+    "A real author withdrawal changes the live continuation to Review, preserves copyable ending words, and refunds neither writer’s used turn",
+    "At three used turns, both the shelf and stale private-history recovery resume an existing beginning without an additional start",
+    "Closing all three rounds never refunds quota; empty shelf and missing-round recovery block a fourth start while keeping both beginning drafts",
+    "Disconnected client state hides the numeric allowance in both Help and the shelf instead of presenting stale quota as current",
+    "An injected previous-day beginning is offered as copy-only earlier words, not a resumable current turn, and copying leaves the private draft unchanged",
+    "Resuming an injected empty-pool pickup stage reopens the shore without issuing a claim, changing its real assignment or consuming a second turn"
+  ]
+}
