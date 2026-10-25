@@ -1,0 +1,34 @@
+{
+  "checkedAt": "2026-10-25T06:51:38.398Z",
+  "mergeCommit": "269447f",
+  "pullRequest": 4,
+  "head": "bfc05494cb612d50bbb80425db8ef991a0f6fdd4",
+  "checks": {
+    "unit": 51,
+    "server": 132,
+    "responseContext": {
+      "Chrome": 4,
+      "WebKit": 4
+    },
+    "votes": {
+      "Chrome": 8,
+      "WebKit": 8
+    },
+    "daylightFallback": 5,
+    "actualMetalGpu": 3,
+    "sceneSamplesPerEngine": 4,
+    "sceneAssetFailures": 16,
+    "sceneResults": 9,
+    "dailyClarityChrome": 13,
+    "navigationChrome": 10,
+    "typeLayoutChrome": 2
+  },
+  "fixes": [
+    "Resolved test-room merge conflict preserving voting and response-context modes",
+    "Added WebKit context checks",
+    "Fixed preview favicon 404 instead of ignoring console errors",
+    "Updated PNG dimension/text-coordinate assertions for intentional 1080x1650 export",
+    "Privacy explains locally retained original prompts and caught beginning"
+  ],
+  "scope": "Local keyless synthetic story/browser checks; emulated sizes/clocks and actual headless Chromium Metal WebGPU. Four existing teammate-recorded Claude scene outputs reused. No new model/provider calls, hosted stories, physical-phone or FPS claim. Ocean resolution, simulation and animation cadence preserved; daylight changes lighting only."
+}

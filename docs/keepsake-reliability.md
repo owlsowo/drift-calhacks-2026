@@ -2,7 +2,7 @@
 
 The previous PNG path awaited the paper image, an explicit handwriting font and the entire document's font readiness without deadlines. A controlled stalled-paper reproduction was still pending after four seconds. Native Share also awaited that PNG before opening the platform sheet, risking expiration of the original click's user activation.
 
-Image/font preparation now has bounded waits and a readable cream-paper/system-serif fallback. Unrelated page fonts do not block export. A fallback that draws no photo does not claim to contain the photograph; normal exports retain photo attribution. PNG encoding has its own bounded error path. The final image remains 1080×1350 with both creative lines, date and neutral contribution caption.
+Image/font preparation now has bounded waits and a readable cream-paper/system-serif fallback. Unrelated page fonts do not block export. A fallback that draws no photo does not claim to contain the photograph; normal exports retain photo attribution. PNG encoding has its own bounded error path. The current image is 1080×1650 with both creative lines, original prompt/response context, date and neutral contribution caption. The original deadline checks used the earlier 1080×1350 layout; current export/fallback regressions are recorded with the prompt-context release.
 
 Opening a full postcard prepares its image in a small memory-only cache (at most six entries, usable for five minutes). Save image reuses that work. Native Share invokes the platform immediately: a prepared PNG when supported, or the exact public story URL while the image is not ready. Cancellation remains cancellation; denial/unsupported sharing uses the existing copy-link path. No hint, draft or credential is included in a share payload.
 

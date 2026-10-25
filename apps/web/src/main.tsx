@@ -2031,9 +2031,10 @@ function App() {
           <p>
             Leave out names, contact details, and identifying information. First-party cookies save
             the IDs of your beginnings and completed pairs for thirty days. They contain no message
-            text. Your drafts and anonymous session token stay in this browser. Cookies let you
-            reopen the public letters by ID; author-only actions still require your session token.
-            Clearing browser data can lose that access.
+            text. Your drafts, their original prompts and the caught beginning stay in this browser
+            with your anonymous session token. Cookies let you reopen the public letters by ID;
+            author-only actions still require your session token. Clearing browser data can lose
+            that access.
           </p>
           <p>
             Either author can hide a postcard. The beginning’s author can also withdraw the entire
