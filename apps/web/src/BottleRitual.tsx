@@ -26,9 +26,13 @@ let phoneShakeOptedIn = false;
 export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: BottleRitualProps) {
   const labelId = useId();
   const statusId = useId();
+  const shadeId = useId();
+  const featherId = useId();
+  const [choiceCount] = useState(() => 3 + Math.floor(Math.random() * (AMBIENT_BOTTLE_COUNT - 2)));
   const dialog = useRef<HTMLDivElement>(null);
   const openButton = useRef<HTMLButtonElement>(null);
   const worldButtons = useRef(new Map<number, HTMLButtonElement>());
+  const lightOpenings = useRef(new Map<number, SVGEllipseElement>());
   const cancelButton = useRef<HTMLButtonElement>(null);
   const motionButton = useRef<HTMLButtonElement>(null);
   const grip = useRef<HTMLSpanElement>(null);
@@ -64,7 +68,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
   useEffect(() => {
     if (!worldScene || kind !== 'pickup') return;
     const paint = () => {
-      for (let i = 0; i < AMBIENT_BOTTLE_COUNT; i++) {
+      for (let i = 0; i < choiceCount; i++) {
         const target = worldButtons.current.get(i);
         if (!target) continue;
         const point = worldScene.choiceTarget(i);
@@ -72,16 +76,31 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
         target.style.width = `${size}px`;
         target.style.height = `${size}px`;
         target.style.transform = `translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%)`;
+        const radiusX = Math.max(62, size * 1.3);
+        const radiusY = Math.max(44, size * 0.95);
+        target.style.setProperty('--spotlight-width', `${radiusX * 2}px`);
+        target.style.setProperty('--spotlight-height', `${radiusY * 2}px`);
+        target.style.setProperty(
+          '--beam-height',
+          `${Math.max(140, point.y - innerHeight * 0.12)}px`,
+        );
+        const opening = lightOpenings.current.get(i);
+        if (opening) {
+          opening.setAttribute('cx', String(point.x));
+          opening.setAttribute('cy', String(point.y));
+          opening.setAttribute('rx', String(radiusX));
+          opening.setAttribute('ry', String(radiusY));
+        }
       }
     };
     const unsubscribe = worldScene.subscribe(paint);
-    worldScene.showChoices(true);
+    worldScene.showChoices(true, choiceCount);
     paint();
     return () => {
       unsubscribe();
       worldScene.showChoices(false);
     };
-  }, [worldScene, kind]);
+  }, [worldScene, kind, choiceCount]);
   useEffect(() => {
     if (worldScene && kind === 'release' && phase === 'moving') worldScene.throwBottle();
   }, [worldScene, kind, phase]);
@@ -323,7 +342,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
           ? 'Releasing your bottle.'
           : arrived
             ? worldScene
-              ? 'Five bottles are ready. Choose any bottle to open.'
+              ? `${choiceCount} bottles are ready. Choose any bottle to open.`
               : 'A bottle is ready to open.'
             : 'Finding a bottle.'}
       </p>
@@ -337,8 +356,35 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
       </div>
       {worldScene && kind === 'pickup' ? (
         <>
+          <svg className="bottle-ritual__world-shade" aria-hidden="true">
+            <defs>
+              <filter id={featherId} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="12" />
+              </filter>
+              <mask id={shadeId} maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+                <rect width="100%" height="100%" fill="white" />
+                <g fill="black" filter={`url(#${featherId})`}>
+                  {Array.from({ length: choiceCount }, (_, index) => (
+                    <ellipse
+                      key={index}
+                      ref={(node) => {
+                        if (node) lightOpenings.current.set(index, node);
+                        else lightOpenings.current.delete(index);
+                      }}
+                    />
+                  ))}
+                </g>
+              </mask>
+            </defs>
+            <rect
+              width="100%"
+              height="100%"
+              fill="rgba(3, 13, 29, 0.74)"
+              mask={`url(#${shadeId})`}
+            />
+          </svg>
           <p className="bottle-ritual__world-title">Pick the one that calls to you.</p>
-          {Array.from({ length: AMBIENT_BOTTLE_COUNT }, (_, index) => (
+          {Array.from({ length: choiceCount }, (_, index) => (
             <button
               type="button"
               key={index}
