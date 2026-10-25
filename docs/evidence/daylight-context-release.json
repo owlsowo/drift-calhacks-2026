@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-25T06:52:25.963Z",
+  "sourceCommit": "21c058043015b4ea973dac6121804aa5da5a0166",
+  "cloudflareVersion": "331bae27-117f-442f-97d6-a040c6a90d9d",
+  "assets": [
+    {
+      "asset": "/assets/index-nBVgRzJm.js",
+      "sha256": "62a1b6292fe8b16352023273f81ea969c486a475b4053916088dca578bada45b",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/index-BqF9xhkD.css",
+      "sha256": "6819c960f747980c07ec11d3637623be77382bf13c930e731d94d3c7dc971222",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/main--IVA6crH.js",
+      "sha256": "4a49e2a2b7fb6ae9a7f92be3d541836356f908acdd917568d952430710b38bf3",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/coast-day-wide.webp",
+      "sha256": "5a3f11d0fe86f2fea80603dcb35af02b72dacec123b77fb70d967d387536d45b",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/coast-day-mobile.webp",
+      "sha256": "407971c54b48d3fb877454da4a41848ccf00598d2e19ebf8a6d9e06464ed9551",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/coast-headland-day.webp",
+      "sha256": "12635ea82fe4574bba7cebc767112ecadeaf52b4a4feb1b7b03431b10127be34",
+      "localBytesMatch": true
+    }
+  ],
+  "scope": "Matching tested frontend bytes, including new daylight lighting engine and three inspected daytime assets. Existing hosted public postcard visibly shows its original question and reply instruction; no hosted writing, voting or model call. Night coast observed at current local clock; daylight/06:00/18:00 transition and actual Metal WebGPU verified locally. Backend stays at 014437e. Physical phones remain unverified.",
+  "ci": {
+    "run": 40170612637,
+    "conclusion": "success"
+  }
+}
