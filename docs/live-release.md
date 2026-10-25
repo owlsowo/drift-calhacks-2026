@@ -99,3 +99,9 @@ The backend update adds an optional development-starter switch for a genuinely e
 The current 614,737-byte source snapshot `drift-source-6beae71.zip` contains 182 files and passes clean installs plus frontend/server/module builds after extraction without env files. `coldstart-source-snapshot.json` records the archive hash and commands. The ten-route plan adds Most Technically Complex as a stretch category using existing evidence; it does not establish eligibility, category caps or a final entry.
 
 The refreshed `drift-review-pack-6beae71.zip` is 6,862,813 bytes / 28 files. It pairs the clean-build source with the ten-route plan, current cold-start/recovery notes and the earlier explicitly labeled 2:31 video. Relative file links, source/video hashes, credential pattern/value checks and ZIP integrity pass (`current-review-pack.json`). Nothing was uploaded or submitted by packaging.
+
+## Complete note-opening release
+
+Frontend version `fe7e22a3-c759-4a3c-bd66-b799d71db0f0` deploys `3ab064d`. A ready note mesh starts at zero and completes its final frame; slow or failed textures use a complete CSS opening after a bounded 200 ms renderer choice. Context loss and reduced motion leave readable controls, and controls no longer fade through low contrast. The sea no longer requests unnecessary multisample antialiasing for its full-screen quad; no phone battery or field-performance improvement is claimed.
+
+The controlled before/after diagnostic, eight Chrome/WebKit failure cases, ten shore checks, nine WebKit game checks and production build passed. CI run `40148987110` succeeded. Both hosted entry assets match the tested local build byte for byte (`note-opening-release.json`), and the connected live shore was inspected after deployment. These probes created no production story or paid model call. See `docs/note-opening.md` for measured tradeoffs and test limits.
