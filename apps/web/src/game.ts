@@ -15,6 +15,8 @@ import type {
   OwnedCard,
   Outgoing,
   Postcard,
+  PostcardScene,
+  PostcardSceneStatus,
   ServiceInfo,
   HelloAvailability,
   ReportedCard,
@@ -36,6 +38,8 @@ export type Snapshot = {
   appreciation: Appreciation[];
   outgoing: Outgoing[];
   cards: Postcard[];
+  scenes: PostcardScene[];
+  sceneStatuses: PostcardSceneStatus[];
   beginnings: Beginning[];
   book: BottleBook;
   bookStored: boolean;
@@ -58,6 +62,8 @@ const blank: Snapshot = {
   appreciation: [],
   outgoing: [],
   cards: [],
+  scenes: [],
+  sceneStatuses: [],
   beginnings: [],
   book: emptyBook(),
   bookStored: true,
@@ -166,6 +172,8 @@ function emit(patch: Partial<Snapshot> = {}) {
       appreciation: [...connection.db.myAppreciation.iter()],
       outgoing: [...connection.db.myOutgoing.iter()],
       cards: [...connection.db.postcard.iter()],
+      scenes: [...connection.db.postcardScene.iter()],
+      sceneStatuses: [...connection.db.postcardSceneStatus.iter()],
       beginnings: [...connection.db.beginning.iter()],
       hellos: [...connection.db.myHello.iter()],
       reported: [...connection.db.myReportedCards.iter()],
@@ -231,6 +239,8 @@ function connect() {
         conn.db.myAppreciation,
         conn.db.myOutgoing,
         conn.db.postcard,
+        conn.db.postcardScene,
+        conn.db.postcardSceneStatus,
         conn.db.beginning,
         conn.db.serviceStatus,
         conn.db.today,
@@ -264,6 +274,8 @@ function connect() {
           'SELECT * FROM my_appreciation',
           'SELECT * FROM my_outgoing',
           'SELECT * FROM postcard',
+          'SELECT * FROM postcard_scene',
+          'SELECT * FROM postcard_scene_status',
           'SELECT * FROM beginning',
           'SELECT * FROM service_status',
           'SELECT * FROM today',
@@ -332,6 +344,10 @@ function waitForRound(kind: 'write' | 'catch'): Promise<string> {
   });
 }
 export const game = {
+  async illustrate(cardId: string) {
+    if (!connection?.isActive) throw Error('Reconnect to illustrate this postcard.');
+    return connection.procedures.illustrateCard({ cardId });
+  },
   async cardAction(cardId: string, action: CardAction) {
     if (!connection?.isActive || !state.identity) return;
     const key = `${state.identity}:${cardId}:${action}`;

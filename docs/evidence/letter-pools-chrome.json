@@ -1,11 +1,11 @@
 {
-  "checkedAt": "2026-10-25T05:15:21.737Z",
+  "checkedAt": "2026-10-25T05:22:53.471Z",
   "engine": "Chrome",
   "mode": "Isolated local sandbox; synthetic writers; AI checks off; no paid model calls",
-  "beginningId": "d4aba9e8-ce13-47e6-bfa7-bce80771cadf-2",
+  "beginningId": "122d0e0f-ab47-4d43-a3cc-7c17274ffab9-2",
   "completedPairIds": [
-    "bdffe2e6-f727-4cc8-b8b4-eda79959f52d-6",
-    "fa62f07a-3f9d-4d4a-bc0a-96ec3c6d3124-9"
+    "e01f3bdc-8f70-4b66-b9fc-7565009a9817-6",
+    "55541252-95d9-4280-94ca-b22481d9a716-9"
   ],
   "checks": [
     "Release publishes only a beginning, returns to the sea, and saves its ID in first-party cookies",
@@ -17,7 +17,7 @@
     "Reload restores the original beginning and the completed pair with their exact saved IDs",
     "Release and Pick up keep separate drafts and resume the same rounds after reload within the three-action quota",
     "Finishing the release preserves the independent pick-up draft and quota still allows that draft to resume",
-    "Contribution labels use private ownership for each author and stay neutral when only public bookmark cookies are recovered",
+    "Both writers and a reader with recovered bookmark cookies see the ending submission timestamp",
     "Cookies alone recover approved beginnings and pairs for a new identity without granting author controls; bottle-ID links retrieve all endings"
   ],
   "errors": []

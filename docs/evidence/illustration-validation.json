@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-10-25T05:24:12Z",
+  "source": "PR 2 with export-failure, trusted-description, offline-save and upgrade-readback fixes",
+  "checks": {
+    "sceneFlow": "Passed against an actual disposable keyless scheduler; includes disconnected writers, shared public status, private thanks, reader denial, withdrawal cleanup",
+    "recordedCompositions": "Four teammate-recorded Claude layouts rendered, exported and matched at 1080\u00d71350, with mobile overflow checks",
+    "projectedSceneResults": {
+      "Chrome": 9,
+      "WebKit": 9
+    },
+    "assetFailures": {
+      "Chrome": 8,
+      "WebKit": 8
+    },
+    "upgradeReadbackFixtures": 9,
+    "navigationChrome": 10,
+    "lettersChrome": 11,
+    "keepsakeChromeAndWebKit": 12,
+    "unitTests": 42,
+    "serverTests": 122,
+    "productionBuild": "passed",
+    "serverAndScriptTypes": "passed"
+  },
+  "limits": [
+    "No new paid scene evaluation; the existing evaluation allowance is exhausted.",
+    "Browser stories and failures are synthetic/local; native operating-system share sheets and physical phones are unverified.",
+    "The migration proof initially targets the teammate PR; repeat against the merge commit before hosted publication."
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T04:25:35.782Z",
+  "checkedAt": "2026-10-25T05:23:14.659Z",
   "mode": "Isolated browser export functions with synthetic story text. Image/font stalls and native sharing/clipboard adapters are injected; actual PNG is encoded and decoded. This is not a physical OS share-sheet check.",
   "checks": [
     {
@@ -10,18 +10,18 @@
         "width": 1080,
         "height": 1350,
         "type": "image/png",
-        "bytes": 776746,
+        "bytes": 776093,
         "text": [
           "I challenged their shark to",
           "poker.",
           "Our lawyers would like",
           "another hand.",
           "Oct 24, 2026",
-          "Two writers. One little story.",
-          "127.0.0.1:65482",
-          "Drift · 127.0.0.1:65482"
+          "Oct 24, 2026, 5:00 AM PDT",
+          "127.0.0.1:53194",
+          "Drift · 127.0.0.1:53194"
         ],
-        "elapsedMs": 1805
+        "elapsedMs": 1480
       }
     },
     {
@@ -32,18 +32,18 @@
         "width": 1080,
         "height": 1350,
         "type": "image/png",
-        "bytes": 776746,
+        "bytes": 776093,
         "text": [
           "I challenged their shark to",
           "poker.",
           "Our lawyers would like",
           "another hand.",
           "Oct 24, 2026",
-          "Two writers. One little story.",
-          "127.0.0.1:65482",
-          "Drift · 127.0.0.1:65482"
+          "Oct 24, 2026, 5:00 AM PDT",
+          "127.0.0.1:53194",
+          "Drift · 127.0.0.1:53194"
         ],
-        "elapsedMs": 108
+        "elapsedMs": 68
       }
     },
     {
@@ -54,18 +54,18 @@
         "width": 1080,
         "height": 1350,
         "type": "image/png",
-        "bytes": 1456154,
+        "bytes": 1455601,
         "text": [
           "I challenged their shark to",
           "poker.",
           "Our lawyers would like",
           "another hand.",
           "Oct 24, 2026",
-          "Two writers. One little story.",
-          "127.0.0.1:65482",
-          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:65482/credits.html"
+          "Oct 24, 2026, 5:00 AM PDT",
+          "127.0.0.1:53194",
+          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:53194/credits.html"
         ],
-        "elapsedMs": 2797
+        "elapsedMs": 1433
       }
     },
     {
@@ -76,18 +76,18 @@
         "width": 1080,
         "height": 1350,
         "type": "image/png",
-        "bytes": 1461363,
+        "bytes": 1460773,
         "text": [
           "I challenged their shark to",
           "poker.",
           "Our lawyers would like",
           "another hand.",
           "Oct 24, 2026",
-          "Two writers. One little story.",
-          "127.0.0.1:65482",
-          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:65482/credits.html"
+          "Oct 24, 2026, 5:00 AM PDT",
+          "127.0.0.1:53194",
+          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:53194/credits.html"
         ],
-        "elapsedMs": 176
+        "elapsedMs": 102
       }
     },
     {
@@ -106,18 +106,18 @@
         "width": 1080,
         "height": 1350,
         "type": "image/png",
-        "bytes": 1253987,
+        "bytes": 1254788,
         "text": [
           "I challenged their shark to",
           "poker.",
           "Our lawyers would like",
           "another hand.",
           "Oct 24, 2026",
-          "Two writers. One little story.",
-          "127.0.0.1:65482",
-          "Drift · 127.0.0.1:65482"
+          "Oct 24, 2026 at 5:00 AM PDT",
+          "127.0.0.1:53194",
+          "Drift · 127.0.0.1:53194"
         ],
-        "elapsedMs": 1320
+        "elapsedMs": 1326
       }
     },
     {
@@ -128,18 +128,18 @@
         "width": 1080,
         "height": 1350,
         "type": "image/png",
-        "bytes": 1254372,
+        "bytes": 1255187,
         "text": [
           "I challenged their shark to",
           "poker.",
           "Our lawyers would like",
           "another hand.",
           "Oct 24, 2026",
-          "Two writers. One little story.",
-          "127.0.0.1:65482",
-          "Drift · 127.0.0.1:65482"
+          "Oct 24, 2026 at 5:00 AM PDT",
+          "127.0.0.1:53194",
+          "Drift · 127.0.0.1:53194"
         ],
-        "elapsedMs": 197
+        "elapsedMs": 129
       }
     },
     {
@@ -150,18 +150,18 @@
         "width": 1080,
         "height": 1350,
         "type": "image/png",
-        "bytes": 1603297,
+        "bytes": 1603596,
         "text": [
           "I challenged their shark to",
           "poker.",
           "Our lawyers would like",
           "another hand.",
           "Oct 24, 2026",
-          "Two writers. One little story.",
-          "127.0.0.1:65482",
-          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:65482/credits.html"
+          "Oct 24, 2026 at 5:00 AM PDT",
+          "127.0.0.1:53194",
+          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:53194/credits.html"
         ],
-        "elapsedMs": 1314
+        "elapsedMs": 1302
       }
     },
     {
@@ -172,18 +172,18 @@
         "width": 1080,
         "height": 1350,
         "type": "image/png",
-        "bytes": 1609368,
+        "bytes": 1609749,
         "text": [
           "I challenged their shark to",
           "poker.",
           "Our lawyers would like",
           "another hand.",
           "Oct 24, 2026",
-          "Two writers. One little story.",
-          "127.0.0.1:65482",
-          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:65482/credits.html"
+          "Oct 24, 2026 at 5:00 AM PDT",
+          "127.0.0.1:53194",
+          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:53194/credits.html"
         ],
-        "elapsedMs": 277
+        "elapsedMs": 156
       }
     },
     {

@@ -1,0 +1,87 @@
+{
+  "mode": "Disposable keyless local database; recorded Claude composition; injected static asset abort/stall and resize error; synthetic native share; no live model calls or challenge passes.",
+  "checkedAt": "2026-10-25T05:21:50.902Z",
+  "checks": [
+    {
+      "engine": "Chrome",
+      "fault": "aborted",
+      "message": "Asset failure settles within the load bound; a readable 1080×1350 PNG retains both original lines and the UI explains its fallback"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "aborted",
+      "message": "Fallback shares synchronously inside the click and downloads a valid PNG without art or provider calls"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "aborted",
+      "message": "The same recorded composition upgrades after explicit preparation retry and renders normally after refresh"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "aborted",
+      "message": "A later ResizeObserver paint exception becomes a coherent fallback without an uncaught page error"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "stalled",
+      "message": "Asset failure settles within the load bound; a readable 1080×1350 PNG retains both original lines and the UI explains its fallback"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "stalled",
+      "message": "Fallback shares synchronously inside the click and downloads a valid PNG without art or provider calls"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "stalled",
+      "message": "The same recorded composition upgrades after explicit preparation retry and renders normally after refresh"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "stalled",
+      "message": "A later ResizeObserver paint exception becomes a coherent fallback without an uncaught page error"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "aborted",
+      "message": "Asset failure settles within the load bound; a readable 1080×1350 PNG retains both original lines and the UI explains its fallback"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "aborted",
+      "message": "Fallback shares synchronously inside the click and downloads a valid PNG without art or provider calls"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "aborted",
+      "message": "The same recorded composition upgrades after explicit preparation retry and renders normally after refresh"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "aborted",
+      "message": "A later ResizeObserver paint exception becomes a coherent fallback without an uncaught page error"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "stalled",
+      "message": "Asset failure settles within the load bound; a readable 1080×1350 PNG retains both original lines and the UI explains its fallback"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "stalled",
+      "message": "Fallback shares synchronously inside the click and downloads a valid PNG without art or provider calls"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "stalled",
+      "message": "The same recorded composition upgrades after explicit preparation retry and renders normally after refresh"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "stalled",
+      "message": "A later ResizeObserver paint exception becomes a coherent fallback without an uncaught page error"
+    }
+  ],
+  "errors": []
+}

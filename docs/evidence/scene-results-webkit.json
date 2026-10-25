@@ -1,0 +1,17 @@
+{
+  "mode": "Synthetic browser snapshot projections; recorded Sonnet layout; no provider calls or fixture database writes.",
+  "checks": [
+    "reply author sees pending art and shares its live link while image export waits",
+    "reply author can download the original words while reconnecting to pending art",
+    "reply author reconnects into the same illustration without layout shifts or overflow",
+    "reply author retains both lines and export access after a failed illustration",
+    "setup author sees pending art and shares its live link while image export waits",
+    "setup author can download the original words while reconnecting to pending art",
+    "setup author reconnects into the same illustration without layout shifts or overflow",
+    "setup author retains both lines and export access after a failed illustration"
+  ],
+  "sharedSceneMatches": true,
+  "errors": [],
+  "engine": "WebKit",
+  "scope": "Injected client snapshot states using a teammate-recorded Claude composition. No new provider calls, physical-phone claim or production writes."
+}

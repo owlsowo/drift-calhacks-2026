@@ -1,5 +1,7 @@
 import type { Card } from '../../../packages/game-rules/index';
-import { contribution } from './contribution';
+import { submissionTime } from './submission-time';
+import type { SceneSpec } from '../../../packages/scene-contracts/index';
+import { prepareScene, drawScene } from './scene-renderer';
 const provenance = (card: Card) =>
   card.seeded
     ? card.starterKind === 'team'
@@ -39,7 +41,12 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, width: number) {
   if (line) lines.push(line);
   return lines;
 }
-export async function postcardPng(card: Card): Promise<Blob> {
+async function renderPostcard(card: Card, scene?: SceneSpec) {
+  // A composition enhances the human exchange; a missing static asset must not
+  // prevent saving those words. The renderer bounds every asset load at 8s.
+  const illustrationReady = scene
+    ? prepareScene(scene).catch(() => undefined)
+    : Promise.resolve(undefined);
   const paper = new Image();
   paper.decoding = 'async';
   const paperReady = new Promise<boolean>((resolve) => {
@@ -64,7 +71,27 @@ export async function postcardPng(card: Card): Promise<Blob> {
       fontTimer = setTimeout(() => resolve(false), 1200);
     }),
   ]).finally(() => clearTimeout(fontTimer));
-  const [hasPaper, hasHandwriting] = await Promise.all([paperReady, handwritingReady]);
+  const [hasPaper, hasHandwriting, preparedIllustration] = await Promise.all([
+    paperReady,
+    handwritingReady,
+    illustrationReady,
+  ]);
+  // Draw into a separate layer first. A failed draw cannot leave partial art or
+  // a changed context transform behind on the words-only keepsake.
+  let illustration: HTMLCanvasElement | undefined;
+  if (preparedIllustration) {
+    try {
+      const layer = document.createElement('canvas');
+      layer.width = 900;
+      layer.height = 600;
+      const context = layer.getContext('2d');
+      if (!context) throw Error('Illustration canvas is unavailable.');
+      drawScene(context, preparedIllustration, 0, 0, 900, 600);
+      illustration = layer;
+    } catch {
+      /* Keep both original lines when the illustration cannot be painted. */
+    }
+  }
   const handwriting = hasHandwriting ? 'Kalam' : 'Georgia, serif';
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
@@ -85,29 +112,32 @@ export async function postcardPng(card: Card): Promise<Blob> {
   c.fillStyle = edgeShade;
   c.fillRect(0, 0, canvas.width, canvas.height);
 
-  const fold = c.createLinearGradient(0, 658, 0, 692);
+  if (illustration) c.drawImage(illustration, 90, 150);
+  const foldY = illustration ? 985 : 675;
+  const fold = c.createLinearGradient(0, foldY - 17, 0, foldY + 17);
   fold.addColorStop(0, 'rgba(38,51,66,0)');
   fold.addColorStop(0.46, 'rgba(38,51,66,.055)');
   fold.addColorStop(0.5, 'rgba(38,51,66,.10)');
   fold.addColorStop(0.54, 'rgba(255,255,255,.25)');
   fold.addColorStop(1, 'rgba(255,255,255,0)');
   c.fillStyle = fold;
-  c.fillRect(0, 658, canvas.width, 34);
+  c.fillRect(0, foldY - 17, canvas.width, 34);
 
   c.fillStyle = '#263342';
   c.textBaseline = 'middle';
   const parts = [
-    { text: card.setup, center: 390 },
-    { text: card.reply, center: 920 },
+    { text: card.setup, center: illustration ? 870 : 390 },
+    { text: card.reply, center: illustration ? 1095 : 920 },
   ];
   for (const part of parts) {
-    let size = 70;
+    let size = illustration ? 58 : 70;
     let lines: string[] = [];
     do {
       c.font = `400 ${size}px ${handwriting}`;
       lines = wrap(c, part.text, 880);
       if (
-        (lines.length * size * 1.4 <= 380 && lines.every((l) => c.measureText(l).width <= 880)) ||
+        (lines.length * size * 1.4 <= (illustration ? 175 : 380) &&
+          lines.every((l) => c.measureText(l).width <= 880)) ||
         size === 20
       )
         break;
@@ -131,18 +161,19 @@ export async function postcardPng(card: Card): Promise<Blob> {
     100,
   );
   c.textAlign = 'left';
-  c.fillText(contribution(card), 100, 1220);
+  c.fillText(submissionTime(card.createdMs), 100, 1220);
   c.fillText(location.host, 100, 1270);
   c.font = '400 16px Arial, sans-serif';
   c.fillText(
-    hasPaper
-      ? 'Paper photo: D Sharon Pruitt · CC BY 2.0 · ' + location.host + '/credits.html'
-      : 'Drift · ' + location.host,
+    (illustration ? 'AI composition · ' : '') +
+      (hasPaper
+        ? 'Paper photo: D Sharon Pruitt · CC BY 2.0 · ' + location.host + '/credits.html'
+        : 'Drift · ' + location.host),
     100,
     1310,
     880,
   );
-  return new Promise((resolve, reject) => {
+  const blob = await new Promise<Blob>((resolve, reject) => {
     const timer = setTimeout(
       () => reject(Error('Couldn’t create your image. Try copying the text instead.')),
       2000,
@@ -153,10 +184,17 @@ export async function postcardPng(card: Card): Promise<Blob> {
       else reject(Error('Couldn’t create your image. Try copying the text instead.'));
     }, 'image/png');
   });
+  return { blob, illustrated: !!illustration };
+}
+export async function postcardPng(card: Card, scene?: SceneSpec): Promise<Blob> {
+  return (await renderPostcard(card, scene)).blob;
 }
 
-const prepared = new Map<string, { expiresAt: number; promise: Promise<Blob>; blob?: Blob }>();
-const postcardKey = (card: Card) =>
+const prepared = new Map<
+  string,
+  { expiresAt: number; promise: Promise<Blob>; blob?: Blob; illustrated?: boolean }
+>();
+const postcardKey = (card: Card, scene?: SceneSpec) =>
   JSON.stringify([
     card.id,
     card.setup,
@@ -165,22 +203,28 @@ const postcardKey = (card: Card) =>
     card.starterKind,
     card.createdMs,
     location.host,
+    // A newly arrived scene must not reuse the text-only postcard prepared earlier.
+    scene ?? null,
   ]);
-export function preparePostcard(card: Card): Promise<Blob> {
-  const key = postcardKey(card);
+export function preparePostcard(card: Card, scene?: SceneSpec): Promise<Blob> {
+  const key = postcardKey(card, scene);
   for (const [oldKey, entry] of prepared)
     if (entry.expiresAt <= Date.now()) prepared.delete(oldKey);
   const existing = prepared.get(key);
-  if (existing) return existing.promise;
+  // Keep a fallback ready for the native share click, but let a later explicit
+  // preparation retry the same composition after its static asset recovers.
+  if (existing && (!scene || existing.illustrated !== false)) return existing.promise;
   while (prepared.size >= 6) prepared.delete(prepared.keys().next().value!);
   const entry = {
     expiresAt: Date.now() + 300000,
-    promise: postcardPng(card),
-    blob: undefined as Blob | undefined,
+    promise: undefined as unknown as Promise<Blob>,
+    blob: existing?.blob,
+    illustrated: undefined as boolean | undefined,
   };
-  entry.promise = entry.promise
-    .then((blob) => {
+  entry.promise = renderPostcard(card, scene)
+    .then(({ blob, illustrated }) => {
       entry.blob = blob;
+      entry.illustrated = illustrated;
       return blob;
     })
     .catch((error) => {
@@ -190,8 +234,8 @@ export function preparePostcard(card: Card): Promise<Blob> {
   prepared.set(key, entry);
   return entry.promise;
 }
-export async function savePng(card: Card) {
-  const blob = await preparePostcard(card);
+export async function savePng(card: Card, scene?: SceneSpec) {
+  const blob = await preparePostcard(card, scene);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -199,11 +243,15 @@ export async function savePng(card: Card) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
-export async function shareCard(card: Card) {
+export async function shareCard(
+  card: Card,
+  scene?: SceneSpec,
+  { preferLink = false }: { preferLink?: boolean } = {},
+) {
   const url = cardUrl(card);
   if (navigator.share) {
     try {
-      const cached = prepared.get(postcardKey(card));
+      const cached = preferLink ? undefined : prepared.get(postcardKey(card, scene));
       const blob = cached && cached.expiresAt > Date.now() ? cached.blob : undefined;
       const file = blob
         ? new File([blob], `drift-${card.id.slice(0, 8)}.png`, { type: 'image/png' })
@@ -222,7 +270,7 @@ export async function shareCard(card: Card) {
           files: [file],
         });
       else {
-        void preparePostcard(card).catch(() => {});
+        if (!preferLink) void preparePostcard(card, scene).catch(() => {});
         await navigator.share({ title: 'Drift', text: cardText(card), url });
       }
       return 'Shared';

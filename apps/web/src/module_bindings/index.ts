@@ -64,6 +64,7 @@ import * as AdminReportsProcedure from "./admin_reports_procedure";
 import * as AdminStatusProcedure from "./admin_status_procedure";
 import * as AdminUpgradeLettersProcedure from "./admin_upgrade_letters_procedure";
 import * as GetHelloProcedure from "./get_hello_procedure";
+import * as IllustrateCardProcedure from "./illustrate_card_procedure";
 import * as RequestNudgeProcedure from "./request_nudge_procedure";
 import * as ServerTimeProcedure from "./server_time_procedure";
 import * as SubmitReplyProcedure from "./submit_reply_procedure";
@@ -81,6 +82,8 @@ import MyReportedCardsRow from "./my_reported_cards_table";
 import MyRoundRow from "./my_round_table";
 import MyUnopenedReturnsRow from "./my_unopened_returns_table";
 import PostcardRow from "./postcard_table";
+import PostcardSceneRow from "./postcard_scene_table";
+import PostcardSceneStatusRow from "./postcard_scene_status_table";
 import ServiceStatusRow from "./service_status_table";
 import TodayRow from "./today_table";
 
@@ -116,6 +119,28 @@ const tablesSchema = __schema({
       { name: 'postcard_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, PostcardRow),
+  postcardScene: __table({
+    name: 'postcard_scene',
+    indexes: [
+      { accessor: 'cardId', name: 'postcard_scene_card_id_idx_btree', algorithm: 'btree', columns: [
+        'cardId',
+      ] },
+    ],
+    constraints: [
+      { name: 'postcard_scene_card_id_key', constraint: 'unique', columns: ['cardId'] },
+    ],
+  }, PostcardSceneRow),
+  postcardSceneStatus: __table({
+    name: 'postcard_scene_status',
+    indexes: [
+      { accessor: 'cardId', name: 'postcard_scene_status_card_id_idx_btree', algorithm: 'btree', columns: [
+        'cardId',
+      ] },
+    ],
+    constraints: [
+      { name: 'postcard_scene_status_card_id_key', constraint: 'unique', columns: ['cardId'] },
+    ],
+  }, PostcardSceneStatusRow),
   today: __table({
     name: 'today',
     indexes: [
@@ -226,6 +251,7 @@ const proceduresSchema = __procedures(
   __procedureSchema("admin_status", AdminStatusProcedure.params, AdminStatusProcedure.returnType),
   __procedureSchema("admin_upgrade_letters", AdminUpgradeLettersProcedure.params, AdminUpgradeLettersProcedure.returnType),
   __procedureSchema("get_hello", GetHelloProcedure.params, GetHelloProcedure.returnType),
+  __procedureSchema("illustrate_card", IllustrateCardProcedure.params, IllustrateCardProcedure.returnType),
   __procedureSchema("request_nudge", RequestNudgeProcedure.params, RequestNudgeProcedure.returnType),
   __procedureSchema("server_time", ServerTimeProcedure.params, ServerTimeProcedure.returnType),
   __procedureSchema("submit_reply", SubmitReplyProcedure.params, SubmitReplyProcedure.returnType),
