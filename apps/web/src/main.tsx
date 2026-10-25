@@ -1241,7 +1241,7 @@ function App() {
               <strong>Release.</strong> Write a six-word beginning for today’s prompt.
             </li>
             <li>
-              <strong>Pick up.</strong> Add a six-word ending to someone’s beginning.
+              <strong>Pick up.</strong> Shake or tap a bottle, then add a six-word ending.
             </li>
             <li>
               <strong>My bottles.</strong> Read replies to your beginnings and revisit the pairs you
@@ -1309,6 +1309,10 @@ function App() {
           <p>
             AI guidance is optional and stays separate from your words. Starter content is always
             labeled.
+          </p>
+          <p>
+            Phone shake is optional and can be turned off on the bottle screen. Motion readings stay
+            on your device and are never saved or sent.
           </p>
         </Modal>
       )}
