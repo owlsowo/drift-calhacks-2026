@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T05:17:37.657Z",
+  "sourceCommit": "f9444acbb385a7d4260f867f4a08b99db35f8331",
+  "cloudflareVersion": "3e7cc8f2-df11-4b6c-b54e-00c31b649e9c",
+  "ci": {
+    "run": 40164935569,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-Cj6vha6D.js",
+      "sha256": "4c18114062761bc0b250ee75cb4bf7b67c62d06c2dd3c0d1b61260d6500d87e0",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-W0CI9K65.css",
+      "sha256": "1d111970876351b910908604c3e9dc73f0546974450022e5b24f9c64611fee33",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend-only release. Ten navigation/recovery cases and five inert human-check loader cases per Chrome/WebKit; seven Chrome hint/reply cases, eleven Chrome letter cases, 34 unit tests, build and scripts typecheck pass. Hosted read-only public beginning→exact pair→other endings navigation observed. No backend publication, provider call or public story created. Full-quality ocean unchanged. Physical phones and overnight transitions remain unverified."
+}
