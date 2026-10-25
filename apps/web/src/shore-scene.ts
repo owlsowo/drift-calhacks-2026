@@ -81,13 +81,14 @@ export class ShoreScene {
     this.seed.forEach((p, i) => Object.assign(this.bottles[i], p));
     this.notify();
   }
-  showChoices(show: boolean) {
+  showChoices(show: boolean, count = AMBIENT_BOTTLE_COUNT) {
     this.layout(this.width, this.height);
     if (show) {
       this.throwAge = -1;
       this.bottles[RELEASED_BOTTLE_INDEX].opacity = 0;
     }
-    for (let i = 0; i < AMBIENT_BOTTLE_COUNT; i++) this.bottles[i].opacity = show ? 1 : 0;
+    for (let i = 0; i < AMBIENT_BOTTLE_COUNT; i++)
+      this.bottles[i].opacity = show && i < count ? 1 : 0;
     this.notify();
     this.wake();
   }

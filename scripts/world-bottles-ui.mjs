@@ -12,7 +12,9 @@ for (const engine of ['chrome', 'webkit']) {
   const browser =
     engine === 'chrome'
       ? await chromium.launch({
-          channel: 'chrome',
+          ...(process.env.DRIFT_CHROMIUM_PATH
+            ? { executablePath: process.env.DRIFT_CHROMIUM_PATH }
+            : { channel: 'chrome' }),
           headless: true,
           args: ['--enable-unsafe-webgpu', '--use-angle=metal', '--ignore-gpu-blocklist'],
         })
@@ -30,6 +32,10 @@ for (const engine of ['chrome', 'webkit']) {
     checks.push(`${engine}: ${text}`);
     console.log('PASS', engine, text);
   };
+  const chooseCount = (count) =>
+    page.evaluate((n) => {
+      Math.random = () => (n - 3 + 0.5) / 3;
+    }, count);
   try {
     await page.goto(`${origin}/bottle-preview.html`);
     if (engine === 'chrome')
@@ -51,46 +57,110 @@ for (const engine of ['chrome', 'webkit']) {
       [320, 568],
       [740, 360],
     ]) {
-      await page.setViewportSize({ width, height });
-      await page.getByRole('button', { name: 'Pick up', exact: true }).click();
-      const choices = page.locator('[data-bottle-choice]');
-      await expect(choices).toHaveCount(5);
-      await expect(choices.first()).toBeEnabled();
-      if (engine === 'chrome')
-        await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '5');
-      else await expect(page.locator('.world-bottle-sprite:visible')).toHaveCount(5);
-      for (let i = 0; i < 5; i++) {
-        const box = await choices.nth(i).boundingBox();
-        assert.ok(
-          box &&
-            box.width >= 48 &&
-            box.height >= 48 &&
-            box.x >= 0 &&
-            box.y >= 0 &&
-            box.x + box.width <= width &&
-            box.y + box.height <= height,
-          JSON.stringify({ width, height, i, box }),
+      for (const count of [3, 4, 5]) {
+        await page.setViewportSize({ width, height });
+        await chooseCount(count);
+        await page.getByRole('button', { name: 'Pick up', exact: true }).click();
+        const choices = page.locator('[data-bottle-choice]');
+        await expect(choices).toHaveCount(count);
+        await expect(choices.first()).toBeEnabled();
+        if (engine === 'chrome')
+          await expect(page.locator('.fft-surface')).toHaveAttribute(
+            'data-bottle-count',
+            String(count),
+          );
+        else await expect(page.locator('.world-bottle-sprite:visible')).toHaveCount(count);
+        await expect(page.locator('.bottle-ritual [role="status"]')).toContainText(
+          `${count} bottles are ready`,
+        );
+        const openings = page.locator('.bottle-ritual__world-shade ellipse');
+        await expect(openings).toHaveCount(count);
+        for (let i = 0; i < count; i++) {
+          const box = await choices.nth(i).boundingBox();
+          assert.ok(
+            box &&
+              box.width >= 48 &&
+              box.height >= 48 &&
+              box.x >= 0 &&
+              box.y >= 0 &&
+              box.x + box.width <= width &&
+              box.y + box.height <= height,
+            JSON.stringify({ width, height, i, box }),
+          );
+          const light = await openings.nth(i).evaluate((node) => ({
+            width: node.rx.baseVal.value * 2,
+            height: node.ry.baseVal.value * 2,
+          }));
+          assert.ok(
+            light.width > box.width * 2.2 && light.height > box.height * 1.5,
+            'Each soft opening includes a generous patch of water around the bottle.',
+          );
+        }
+        await page.screenshot({
+          path: new URL(`${engine}-${width}x${height}-${count}.png`, output).pathname,
+        });
+        // Every choice is keyboard reachable in a bounded modal loop.
+        await choices.first().focus();
+        for (let i = 1; i < count; i++) {
+          await page.keyboard.press('Tab');
+          await expect(choices.nth(i)).toBeFocused();
+        }
+        await page.keyboard.press('Tab');
+        await expect(page.getByRole('button', { name: 'Back to sea', exact: true })).toBeFocused();
+        await page.keyboard.press('Tab');
+        await expect(choices.first()).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        if (engine === 'chrome')
+          await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '0');
+        pass(
+          `${count} reachable choices with large soft spotlights fit ${width}×${height}; Escape clears them.`,
         );
       }
-      await page.screenshot({ path: new URL(`${engine}-${width}x${height}.png`, output).pathname });
-      // Every choice is keyboard reachable in a bounded modal loop.
-      await choices.first().focus();
-      for (let i = 1; i < 5; i++) {
-        await page.keyboard.press('Tab');
-        await expect(choices.nth(i)).toBeFocused();
-      }
-      await page.keyboard.press('Tab');
-      await expect(page.getByRole('button', { name: 'Back to sea', exact: true })).toBeFocused();
-      await page.keyboard.press('Tab');
-      await expect(choices.first()).toBeFocused();
-      await page.keyboard.press('Escape');
-      await expect(page.getByRole('dialog')).toHaveCount(0);
-      if (engine === 'chrome')
-        await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '0');
-      pass(`Five reachable spotlit choices fit ${width}×${height}; Escape clears them.`);
     }
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('button', { name: 'Pause sea', exact: true }).click();
+    const unshaded = await page.screenshot();
+    await chooseCount(5);
+    await page.getByRole('button', { name: 'Pick up', exact: true }).click();
+    await expect(page.locator('[data-bottle-choice]').first()).toBeEnabled();
+    const litPoint = await page
+      .locator('.bottle-ritual__world-shade ellipse')
+      .first()
+      .evaluate((node) => ({
+        x: Math.round(node.cx.baseVal.value + node.rx.baseVal.value * 0.3),
+        y: Math.round(node.cy.baseVal.value + node.ry.baseVal.value * 0.5),
+      }));
+    const shaded = await page.screenshot({
+      path: new URL(`${engine}-spotlight-contrast.png`, output).pathname,
+    });
+    const contrast = await page.evaluate(
+      async ({ before, after, inside }) => {
+        const sample = async (raw) => {
+          const bytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
+          const bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width;
+          canvas.height = bitmap.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(bitmap, 0, 0);
+          const light = ({ x, y }) => {
+            const [r, g, b] = ctx.getImageData(x, y, 1, 1).data;
+            return r * 0.2126 + g * 0.7152 + b * 0.0722;
+          };
+          return { inside: light(inside), outside: light({ x: 16, y: 790 }) };
+        };
+        return { before: await sample(before), after: await sample(after) };
+      },
+      { before: unshaded.toString('base64'), after: shaded.toString('base64'), inside: litPoint },
+    );
+    assert.ok(contrast.after.outside < contrast.before.outside * 0.42, JSON.stringify(contrast));
+    assert.ok(contrast.after.inside > contrast.before.inside * 0.68, JSON.stringify(contrast));
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Resume sea', exact: true }).click();
+    pass('Actual pixels darken the sea outside the spotlights while keeping the lit water clear.');
     for (let i = 0; i < 5; i++) {
+      await chooseCount(5);
       await page.getByRole('button', { name: 'Pick up', exact: true }).click();
       const choice = page.locator('[data-bottle-choice]').nth(i);
       await expect(choice).toBeEnabled();
@@ -105,24 +175,27 @@ for (const engine of ['chrome', 'webkit']) {
     else await expect(page.locator('.world-bottle-sprite:visible')).toHaveCount(1);
     await page.screenshot({ path: new URL(`${engine}-throw.png`, output).pathname });
     await expect(page.getByRole('dialog')).toHaveCount(0);
+    await chooseCount(3);
     await page.getByRole('button', { name: 'Pick up', exact: true }).click();
     await expect(page.locator('[data-bottle-choice]').first()).toBeEnabled();
     if (engine === 'chrome')
-      await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '5');
-    else await expect(page.locator('.world-bottle-sprite:visible')).toHaveCount(5);
+      await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '3');
+    else await expect(page.locator('.world-bottle-sprite:visible')).toHaveCount(3);
     await page.keyboard.press('Escape');
     pass(
-      'Accepted release shows the wave-backed throw; the next pickup contains exactly five choices.',
+      'Accepted release shows the wave-backed throw; the next pickup clears it and draws a fresh count.',
     );
     await page.getByRole('button', { name: 'Pause sea', exact: true }).click();
+    await chooseCount(4);
     await page.getByRole('button', { name: 'Pick up', exact: true }).click();
     await expect(page.locator('[data-bottle-choice]').last()).toBeEnabled();
     if (engine === 'chrome')
-      await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '5');
+      await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '4');
     await page.locator('[data-bottle-choice]').last().click();
     await expect(page.getByLabel('Opened bottles')).toHaveText('6');
     await page.getByRole('button', { name: 'Night', exact: true }).click();
     await page.emulateMedia({ reducedMotion: 'reduce' });
+    await chooseCount(3);
     await page.getByRole('button', { name: 'Pick up', exact: true }).click();
     await expect(page.locator('[data-bottle-choice]').last()).toBeEnabled();
     await page.screenshot({ path: new URL(`${engine}-night-reduced.png`, output).pathname });
