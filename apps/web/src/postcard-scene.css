@@ -1,0 +1,88 @@
+.sea-world .postcard-illustrated .scene-illustration,
+.sea-world .postcard-illustrated .scene-placeholder {
+  margin: 0 28px 15px;
+  width: calc(100% - 56px);
+}
+.sea-world .postcard-illustrated .card-half,
+.sea-world .reveal-art .postcard-illustrated .card-half {
+  padding-top: 12px;
+  padding-bottom: 15px;
+}
+.sea-world .postcard-illustrated .card-half p,
+.sea-world .reveal-art .postcard-illustrated .card-half p {
+  font-size: clamp(23px, 2.7vw, 28px);
+}
+.scene-placeholder {
+  aspect-ratio: 3 / 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  box-shadow: inset 0 0 0 1px #74695819;
+  color: #637178;
+  overflow: hidden;
+}
+.scene-placeholder svg {
+  width: 38%;
+  max-width: 180px;
+  flex: 0 1 auto;
+  overflow: visible;
+}
+.scene-placeholder p {
+  margin: 6px 16px 0;
+  text-align: center;
+  color: #626b77;
+  font: 400 14px/1.5 var(--letter-hand, Georgia, serif);
+}
+.scene-placeholder.is-drawing .scene-sketch-bottle {
+  transform-origin: 90px 108px;
+  animation: scene-bottle-sway 3.6s ease-in-out infinite;
+}
+.scene-placeholder.is-drawing .scene-sketch-water {
+  animation: scene-water-sway 3.6s ease-in-out infinite;
+}
+.scene-placeholder.is-unavailable svg {
+  opacity: 0.55;
+}
+.postcard-save-label {
+  display: inline-grid;
+}
+.postcard-save-label > span {
+  grid-area: 1 / 1;
+}
+.postcard-save-label > [aria-hidden='true'] {
+  visibility: hidden;
+}
+@keyframes scene-bottle-sway {
+  0%,
+  100% {
+    transform: rotate(-5deg) translateY(0);
+  }
+  50% {
+    transform: rotate(5deg) translateY(-3px);
+  }
+}
+@keyframes scene-water-sway {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateX(-3px);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(3px);
+  }
+}
+@media (max-width: 700px) {
+  .sea-world .postcard-illustrated .scene-illustration,
+  .sea-world .postcard-illustrated .scene-placeholder {
+    margin-inline: 20px;
+    width: calc(100% - 40px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-placeholder.is-drawing .scene-sketch-bottle,
+  .scene-placeholder.is-drawing .scene-sketch-water {
+    animation: none;
+  }
+}

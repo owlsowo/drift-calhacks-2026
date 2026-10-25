@@ -34,7 +34,8 @@ import { savePng, shareCard, cardText, copyText, preparePostcard } from './expor
 import './style.css';
 import { HelloPanel } from './HelloPanel';
 import { friendlyError } from './errors';
-import { contribution } from './contribution';
+import { Postcard } from './Postcard';
+import { usePostcardScene } from './usePostcardScene';
 import { Shore } from './Shore';
 import { Ocean } from './Ocean';
 import { PaperNote } from './PaperNote';
@@ -42,6 +43,7 @@ import { ShoreGate } from './ShoreGate';
 import { EarlierDrafts } from './EarlierDrafts';
 import { BottleRitual, type BottleRitualKind } from './BottleRitual';
 import './natural.css';
+import './postcard-scene.css';
 
 function Bottle({ small = false }: { small?: boolean }) {
   return (
@@ -107,40 +109,6 @@ function Bottle({ small = false }: { small?: boolean }) {
       <circle cx="99" cy="221" r="4" stroke="#95b3a7" strokeWidth="2" />
       <circle cx="333" cy="207" r="7" stroke="#95b3a7" strokeWidth="2" />
     </svg>
-  );
-}
-function Postcard({
-  card,
-  role = 'public',
-  children,
-}: {
-  card: Card;
-  role?: string;
-  children?: React.ReactNode;
-}) {
-  return (
-    <article className="postcard" aria-label="Your completed postcard" data-card-id={card.id}>
-      <time className="letter-date" dateTime={new Date(card.createdMs).toISOString()}>
-        {new Date(card.createdMs).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        })}
-      </time>
-      {card.seeded && (
-        <small className="starter-source">
-          {card.starterKind === 'team' ? 'Beginning by the Drift team' : 'Sample beginning'}
-        </small>
-      )}
-      <div className="card-half setup-half">
-        <p>{card.setup}</p>
-      </div>
-      <div className="letter-fold" aria-hidden="true" />
-      <div className="card-half">
-        <p>{card.reply}</p>
-      </div>
-      <p className="contribution-note">{contribution(card, role)}</p>
-      {children}
-    </article>
   );
 }
 function Modal({
@@ -414,10 +382,11 @@ function App() {
   const ownership = s.ownership.find((o) => o.id === selected);
   const appreciation = s.appreciation.find((item) => item.cardId === selected);
   const cardId = card?.id;
-  useEffect(() => {
-    if (view === 'card' && card) void preparePostcard(card).catch(() => {});
-  }, [view, card]);
   const ownsVisibleCard = !!ownership && !ownership.hidden;
+  const illustration = usePostcardScene(cardId, s.scenes, s.sceneStatuses);
+  useEffect(() => {
+    if (view === 'card' && card) void preparePostcard(card, illustration.scene).catch(() => {});
+  }, [view, card, illustration.scene]);
   const recordOpen = useCallback(() => {
     if (cardId) setOpenedCardId(cardId);
     if (cardId && ownsVisibleCard && s.connected) void game.cardAction(cardId, 'open');
@@ -1151,7 +1120,9 @@ function App() {
                         onClick={() =>
                           run('Opening share…', async () => {
                             try {
-                              const msg = await shareCard(card);
+                              const msg = await shareCard(card, illustration.scene, {
+                                preferLink: illustration.status === 'pending',
+                              });
                               setToast(msg === 'Shared' ? 'Share sheet opened' : msg);
                               if (ownership)
                                 void game.cardAction(
@@ -1169,18 +1140,23 @@ function App() {
                         Share
                       </button>
                       <button
-                        className="button secondary"
+                        className="button secondary postcard-save"
                         onClick={() =>
                           run('Making your image…', async () => {
-                            await savePng(card);
+                            await savePng(card, illustration.scene);
                             setToast('Postcard image saved');
                             if (ownership) void game.cardAction(card.id, 'png_requested');
                           })
                         }
-                        disabled={!!busy}
+                        disabled={!!busy || illustration.status === 'pending'}
                       >
                         <Download size={17} />
-                        Save image
+                        <span className="postcard-save-label">
+                          <span aria-hidden="true">Save image</span>
+                          <span>
+                            {illustration.status === 'pending' ? 'Drawing…' : 'Save image'}
+                          </span>
+                        </span>
                       </button>
                       <button
                         className="text-button"
@@ -1224,7 +1200,13 @@ function App() {
               {card && (
                 <div className="reveal-art">
                   <PaperNote key={card.id} postcard onOpen={recordOpen}>
-                    <Postcard card={card} role={ownership?.role}>
+                    <Postcard
+                      card={card}
+                      role={ownership?.role}
+                      scene={illustration.scene}
+                      illustrationStatus={illustration.status}
+                      connected={s.connected}
+                    >
                       {appreciation && ownership && !ownership.hidden && (
                         <div
                           className="co-writer-thanks"

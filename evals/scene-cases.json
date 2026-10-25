@@ -1,0 +1,50 @@
+[
+  {
+    "id": "demo-card-d04-b02-to-c02",
+    "promptId": "pigeon-mayor",
+    "setup": "Every statue receives a tiny umbrella.",
+    "reply": "Our monuments deserve protection from constituents.",
+    "createdMs": 1793106840000,
+    "synthetic": true,
+    "provenanceId": "drift-synthetic-ten-days-2026-10-24",
+    "promptTitle": "City hall has wings",
+    "seeded": true,
+    "starterKind": "sample"
+  },
+  {
+    "id": "demo-card-d06-b03-to-a03",
+    "promptId": "dragon-airways",
+    "setup": "Our dragon volunteered for birthday candles.",
+    "reply": "Boarding resumes after the final wish.",
+    "createdMs": 1793283330000,
+    "synthetic": true,
+    "provenanceId": "drift-synthetic-ten-days-2026-10-24",
+    "promptTitle": "Your flight is slightly on fire",
+    "seeded": true,
+    "starterKind": "sample"
+  },
+  {
+    "id": "demo-card-d08-a03-to-b03",
+    "promptId": "bakery-weather",
+    "setup": "The éclairs sparked a chocolate monsoon.",
+    "reply": "Cocoa flooding continues; bring marshmallow rafts.",
+    "createdMs": 1793451810000,
+    "synthetic": true,
+    "provenanceId": "drift-synthetic-ten-days-2026-10-24",
+    "promptTitle": "A chance of falling pastries",
+    "seeded": true,
+    "starterKind": "sample"
+  },
+  {
+    "id": "discussion-dolphin-poker",
+    "promptId": "aquarium",
+    "promptTitle": "Banned from the aquarium",
+    "setup": "I taught dolphins to play poker.",
+    "reply": "Our lawyers would like another hand.",
+    "createdMs": 1792868400000,
+    "synthetic": true,
+    "provenanceId": "user-product-discussion-example",
+    "seeded": true,
+    "starterKind": "sample"
+  }
+]

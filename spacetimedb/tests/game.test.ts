@@ -7,6 +7,7 @@ import {
   type TestHttpResponder,
 } from 'spacetimedb/server/test-utils';
 import db, * as module from '../src/index';
+import { getScenePack } from '../../packages/scene-contracts/index';
 const env: Record<string, string> = { DRIFT_DEV_MODE: 'true' };
 (globalThis as any).__driftTestEnv = env;
 const auth = (id: number) =>
@@ -1110,6 +1111,339 @@ describe('private AI budget and latency accounting', () => {
     expect(calls()).toHaveLength(0);
     expect(stats()).toMatchObject({ spentEstimateMicros: 61n, reservedMicros: 0n });
   });
+});
+
+describe('durable postcard scene generation', () => {
+  function makeCard() {
+    start(A);
+    expect(setup(A).ok).toBe(true);
+    catchBottle(B);
+    expect(reply(B).ok).toBe(true);
+    return [...h.db.postcard.iter()][0];
+  }
+  function sceneFor(promptId: string) {
+    const pack = getScenePack(promptId);
+    return {
+      version: 1,
+      packId: pack.id,
+      backdrop: 'paper',
+      alt: 'Three characters share a small scene.',
+      nodes: pack.assets.slice(0, 3).map((asset, i) => ({
+        asset: asset.id,
+        x: 25 + i * 25,
+        y: 50,
+        width: 15,
+        rotation: 0,
+        flipX: false,
+      })),
+    };
+  }
+  const sceneCalls = () => [...h.db.aiCall.iter()].filter((call) => call.operation === 'scene');
+  const scheduled = (cardId: string) => [...h.db.sceneSchedule.cardId.filter(cardId)][0];
+  const status = (cardId: string) => h.db.postcardSceneStatus.cardId.find(cardId)!;
+  const run = (cardId: string, responder?: TestHttpResponder<typeof db.schemaType>) =>
+    module.scene_tick(responder ? modelCtx(owner, responder) : h.procedureContext(owner), {
+      arg: scheduled(cardId),
+    });
+  function removeQueue(cardId: string) {
+    tx(owner, (ctx) => {
+      for (const row of ctx.db.sceneSchedule.cardId.filter(cardId))
+        ctx.db.sceneSchedule.scheduledId.delete(row.scheduledId);
+      ctx.db.sceneJob.cardId.delete(cardId);
+      ctx.db.postcardSceneStatus.cardId.delete(cardId);
+    });
+  }
+
+  it('atomically queues every accepted ending without waiting for a results visit or an illustration response', () => {
+    const card = makeCard();
+    expect(status(card.id)).toMatchObject({ state: 'pending', message: '' });
+    expect(h.db.sceneJob.cardId.find(card.id)).toMatchObject({ state: 'queued', costId: '' });
+    expect(scheduled(card.id).scheduledAt.tag).toBe('Interval');
+    expect(sceneCalls()).toHaveLength(0);
+    expect([...h.db.postcardScene.iter()]).toHaveLength(0);
+    expect(module.my_cards(h.viewContext(A)).map((row) => row.id)).toContain(card.id);
+    expect(module.my_cards(h.viewContext(B)).map((row) => row.id)).toContain(card.id);
+    expect(Object.keys(status(card.id)).sort()).toEqual([
+      'cardId',
+      'message',
+      'state',
+      'updatedMs',
+    ]);
+  });
+
+  it('replaying an accepted reply keeps one card, one queued job and one schedule', () => {
+    start(A);
+    setup(A);
+    catchBottle(B);
+    const requestId = crypto.randomUUID();
+    expect(reply(B, requestId).ok).toBe(true);
+    expect(reply(B, requestId).ok).toBe(true);
+    expect([...h.db.postcard.iter()]).toHaveLength(1);
+    expect([...h.db.sceneJob.iter()]).toHaveLength(1);
+    expect([...h.db.sceneSchedule.iter()]).toHaveLength(1);
+  });
+
+  it('dispatches without either writer present, deduplicates overlapping ticks and publishes shared art/status atomically', () => {
+    const card = makeCard();
+    const roundsBefore = [...h.db.round.iter()];
+    const unreadBefore = module.my_unopened_returns(h.viewContext(A));
+    const generated = sceneFor(card.promptId);
+    const originalSchedule = scheduled(card.id);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    // A writer's shore pass can expire after the accepted reply. The worker is
+    // authorized by the durable job, not a live browser session or shore pass.
+    env.DRIFT_TURNSTILE_SECRET = 'synthetic-shore-secret';
+    h.clock.advance(TimeDuration.fromMillis(60_000));
+    let hits = 0;
+    run(card.id, (_test, _request, body) => {
+      hits++;
+      const input = JSON.parse(new TextDecoder().decode(body));
+      expect(input.model).toBe('claude-sonnet-5-5');
+      expect(input.max_tokens).toBe(1024);
+      expect(input.messages[0].content).toContain(card.setup);
+      expect(input.messages[0].content).toContain(card.reply);
+      module.scene_tick(h.procedureContext(owner), { arg: originalSchedule });
+      expect(module.illustrate_card(h.procedureContext(A), { cardId: card.id }).state).toBe(
+        'pending',
+      );
+      expect(module.illustrate_card(h.procedureContext(B), { cardId: card.id }).state).toBe(
+        'pending',
+      );
+      expect(status(card.id).state).toBe('pending');
+      h.clock.advance(TimeDuration.fromMillis(750));
+      return pricedResponse(generated);
+    });
+    module.scene_tick(h.procedureContext(owner), { arg: originalSchedule });
+    expect(hits).toBe(1);
+    expect(sceneCalls()).toHaveLength(1);
+    expect(sceneCalls()[0]).toMatchObject({
+      state: 'settled',
+      outcome: 'scene_published',
+      heldMicros: 0n,
+      elapsedMs: 750,
+    });
+    const stored = h.db.postcardScene.cardId.find(card.id)!;
+    expect(JSON.parse(stored.sceneJson)).toEqual(generated);
+    expect(status(card.id)).toMatchObject({ state: 'ready', message: '' });
+    expect([...h.db.sceneSchedule.iter()]).toHaveLength(0);
+    expect(h.db.postcard.id.find(card.id)).toEqual(card);
+    expect([...h.db.round.iter()]).toEqual(roundsBefore);
+    expect(module.my_unopened_returns(h.viewContext(A))).toEqual(unreadBefore);
+    expect(module.illustrate_card(h.procedureContext(B), { cardId: card.id }).state).toBe('ready');
+  });
+
+  it('does not permit clients to invoke the scheduled worker or queue another writer’s postcard', () => {
+    const card = makeCard();
+    expect(() => module.scene_tick(h.procedureContext(C), { arg: scheduled(card.id) })).toThrow(
+      /scheduled worker/,
+    );
+    expect(module.illustrate_card(h.procedureContext(C), { cardId: card.id }).message).toMatch(
+      /Only this postcard’s writers/,
+    );
+    expect(sceneCalls()).toHaveLength(0);
+  });
+
+  it('backfills legacy cards through the same queue, after author and shore checks', () => {
+    const card = makeCard();
+    removeQueue(card.id);
+    tx(owner, (ctx) => ctx.db.postcard.insert({ ...card, id: 'public-demo' }));
+    expect(
+      module.illustrate_card(h.procedureContext(A), { cardId: 'public-demo' }).message,
+    ).toMatch(/no longer available/);
+    env.DRIFT_TURNSTILE_SECRET = 'synthetic-shore-secret';
+    expect(module.illustrate_card(h.procedureContext(A), { cardId: card.id }).message).toMatch(
+      /shore check/,
+    );
+    delete env.DRIFT_TURNSTILE_SECRET;
+    expect(module.illustrate_card(h.procedureContext(A), { cardId: card.id }).state).toBe(
+      'pending',
+    );
+    expect(module.illustrate_card(h.procedureContext(B), { cardId: card.id }).state).toBe(
+      'pending',
+    );
+    expect([...h.db.sceneJob.iter()]).toHaveLength(1);
+    expect([...h.db.sceneSchedule.iter()]).toHaveLength(1);
+    expect(sceneCalls()).toHaveLength(0);
+  });
+
+  it.each(['unconfigured', 'paused', 'budget', 'dispatch-cap'])(
+    '%s fails only the illustration, preserves the accepted ending and stops the schedule',
+    (reason) => {
+      const card = makeCard();
+      const arg = scheduled(card.id);
+      if (reason !== 'unconfigured') env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+      tx(owner, (ctx) => {
+        const config = ctx.db.config.id.find(0)!;
+        if (reason === 'paused') ctx.db.config.id.update({ ...config, paused: true });
+        if (reason === 'dispatch-cap')
+          ctx.db.config.id.update({ ...config, dispatchCap: config.dispatches });
+        if (reason === 'budget') module.set_ai_budget(ctx, { limitMicros: 0n });
+      });
+      run(card.id);
+      expect(status(card.id).state).toBe('failed');
+      expect(status(card.id).message).toBeTruthy();
+      expect(h.db.postcard.id.find(card.id)).toEqual(card);
+      expect([...h.db.sceneSchedule.iter()]).toHaveLength(0);
+      expect(sceneCalls()).toHaveLength(0);
+      module.scene_tick(h.procedureContext(owner), { arg });
+      expect(module.illustrate_card(h.procedureContext(B), { cardId: card.id }).state).toBe(
+        'failed',
+      );
+      expect(sceneCalls()).toHaveLength(0);
+    },
+  );
+
+  it('rejects invented assets, records usage, and does not retry invalid model output', () => {
+    const card = makeCard();
+    const arg = scheduled(card.id);
+    const invalid = sceneFor(card.promptId);
+    invalid.nodes[0].asset = 'https://example.com/untrusted.svg';
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    let hits = 0;
+    run(card.id, () => {
+      hits++;
+      return pricedResponse(invalid);
+    });
+    module.scene_tick(h.procedureContext(owner), { arg });
+    expect(hits).toBe(1);
+    expect(status(card.id).state).toBe('failed');
+    expect([...h.db.postcardScene.iter()]).toHaveLength(0);
+    expect(sceneCalls()[0]).toMatchObject({
+      state: 'settled',
+      outcome: 'scene_error',
+      estimatedMicros: 1216n,
+      heldMicros: 0n,
+    });
+    expect(h.db.postcard.id.find(card.id)).toEqual(card);
+  });
+
+  it('retains the billing hold after a lost provider response and never repeats that paid dispatch', () => {
+    const card = makeCard();
+    const arg = scheduled(card.id);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    let hits = 0;
+    run(card.id, () => {
+      hits++;
+      throw Error('Synthetic lost provider response.');
+    });
+    module.scene_tick(h.procedureContext(owner), { arg });
+    expect(hits).toBe(1);
+    expect(status(card.id).state).toBe('failed');
+    expect(sceneCalls()[0].state).toBe('uncertain');
+    expect(sceneCalls()[0].heldMicros).toBeGreaterThan(0n);
+    expect([...h.db.sceneSchedule.iter()]).toHaveLength(0);
+  });
+
+  it('expires a crashed or stranded pending attempt through a later tick and refuses its late result', () => {
+    const card = makeCard();
+    const arg = scheduled(card.id);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    let hits = 0;
+    run(card.id, () => {
+      hits++;
+      h.clock.advance(TimeDuration.fromMillis(26_000));
+      module.scene_tick(h.procedureContext(owner), { arg });
+      expect(status(card.id).state).toBe('failed');
+      expect(sceneCalls()[0]).toMatchObject({ state: 'uncertain', outcome: 'scene_uncertain' });
+      expect(sceneCalls()[0].heldMicros).toBeGreaterThan(0n);
+      return pricedResponse(sceneFor(card.promptId));
+    });
+    expect(hits).toBe(1);
+    expect(h.db.postcardScene.cardId.find(card.id)).toBeNull();
+    expect(status(card.id).state).toBe('failed');
+    expect(sceneCalls()[0]).toMatchObject({
+      state: 'settled',
+      outcome: 'scene_not_published',
+      heldMicros: 0n,
+    });
+  });
+
+  it.each(['author', 'withdrawal'])(
+    'does not resurrect an illustration or status after %s removal during generation',
+    (kind) => {
+      const card = makeCard();
+      env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+      run(card.id, () => {
+        if (kind === 'author') tx(A, (ctx) => module.hide_my_card(ctx, { cardId: card.id }));
+        else tx(A, (ctx) => module.withdraw_my_beginning(ctx, { bottleId: card.beginningId }));
+        return pricedResponse(sceneFor(card.promptId));
+      });
+      expect(h.db.postcardScene.cardId.find(card.id)).toBeNull();
+      expect(h.db.postcardSceneStatus.cardId.find(card.id)).toBeNull();
+      expect(h.db.sceneJob.cardId.find(card.id)).toBeNull();
+      expect([...h.db.sceneSchedule.iter()]).toHaveLength(0);
+      expect(sceneCalls()[0]).toMatchObject({
+        state: 'settled',
+        outcome: 'scene_not_published',
+        heldMicros: 0n,
+      });
+    },
+  );
+
+  it('withdrawal before dispatch deletes the queued work and produces no paid call', () => {
+    const card = makeCard();
+    const arg = scheduled(card.id);
+    tx(A, (ctx) => module.withdraw_my_beginning(ctx, { bottleId: card.beginningId }));
+    module.scene_tick(h.procedureContext(owner), { arg });
+    expect(h.db.postcardSceneStatus.cardId.find(card.id)).toBeNull();
+    expect(h.db.sceneJob.cardId.find(card.id)).toBeNull();
+    expect([...h.db.sceneSchedule.iter()]).toHaveLength(0);
+    expect(sceneCalls()).toHaveLength(0);
+  });
+
+  it('keeps the dispatch identity when maintenance runs during an old queued job’s first attempt', () => {
+    const card = makeCard();
+    h.clock.advance(TimeDuration.fromMillis(8 * 86400000));
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    run(card.id, () => {
+      const costId = h.db.sceneJob.cardId.find(card.id)!.costId;
+      tx(owner, (ctx) => module.purge_old_data(ctx, {}));
+      expect(h.db.sceneJob.cardId.find(card.id)).toMatchObject({ state: 'pending', costId });
+      return pricedResponse(sceneFor(card.promptId));
+    });
+    expect(status(card.id).state).toBe('ready');
+    expect(h.db.postcardScene.cardId.find(card.id)).toBeTruthy();
+    expect(sceneCalls()).toHaveLength(1);
+  });
+
+  it('drops the financial-to-author mapping after seven days while retaining cached art and ready status', () => {
+    const card = makeCard();
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    run(card.id, () => pricedResponse(sceneFor(card.promptId)));
+    expect(h.db.sceneJob.cardId.find(card.id)!.costId).toBeTruthy();
+    h.clock.advance(TimeDuration.fromMillis(8 * 86400000));
+    tx(owner, (ctx) => module.purge_old_data(ctx, {}));
+    expect(h.db.sceneJob.cardId.find(card.id)!.costId).toBe('');
+    expect(module.illustrate_card(h.procedureContext(B), { cardId: card.id }).state).toBe('ready');
+    expect(status(card.id).state).toBe('ready');
+    expect(sceneCalls()).toHaveLength(1);
+  });
+
+  it.each(['author', 'moderator', 'beginning', 'expiry'])(
+    'removes published art, status and job through %s removal',
+    (kind) => {
+      const card = makeCard();
+      env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+      run(card.id, () => pricedResponse(sceneFor(card.promptId)));
+      if (kind === 'author') tx(A, (ctx) => module.hide_my_card(ctx, { cardId: card.id }));
+      else if (kind === 'moderator') {
+        tx(C, (ctx) =>
+          module.report_content(ctx, { roundId: '', cardId: card.id, reason: 'other' }),
+        );
+        const reportId = [...h.db.report.iter()][0].id;
+        tx(owner, (ctx) => module.resolve_report(ctx, { reportId, decision: 'hide' }));
+      } else if (kind === 'beginning')
+        tx(owner, (ctx) => module.retire_bottle(ctx, { bottleId: card.beginningId }));
+      else {
+        h.clock.advance(TimeDuration.fromMillis(31 * 86400000));
+        tx(owner, (ctx) => module.purge_old_data(ctx, {}));
+      }
+      expect(h.db.postcardScene.cardId.find(card.id)).toBeNull();
+      expect(h.db.postcardSceneStatus.cardId.find(card.id)).toBeNull();
+      expect(h.db.sceneJob.cardId.find(card.id)).toBeNull();
+      expect([...h.db.sceneSchedule.iter()]).toHaveLength(0);
+    },
+  );
 });
 
 describe('private daily activity diagnostics', () => {

@@ -1,4 +1,9 @@
 import { messages, modelRequest, parseModelResponse } from '../../packages/ai-contracts/index';
+import {
+  getScenePack,
+  sceneModelRequest,
+  parseSceneModelResponse,
+} from '../../packages/scene-contracts/index';
 import { teamStartersFor } from '../../packages/starter-content/index';
 import {
   ACTIVITY_METRICS,
@@ -103,6 +108,51 @@ const postcard = table(
     beginningId: t.string().default('').index('btree'),
   },
 );
+const postcardScene = table(
+  { name: 'postcard_scene', public: true },
+  {
+    cardId: t.string().primaryKey(),
+    packId: t.string(),
+    sceneJson: t.string(),
+    createdMs: t.f64(),
+  },
+);
+// This status contains no participant identity and follows the public postcard.
+const postcardSceneStatus = table(
+  { name: 'postcard_scene_status', public: true },
+  {
+    cardId: t.string().primaryKey(),
+    state: t.string(),
+    message: t.string(),
+    updatedMs: t.f64(),
+  },
+);
+// An interval survives a worker restart before dispatch. Pending jobs never
+// dispatch again: later ticks only enforce their deadline.
+const sceneSchedule = table(
+  { name: 'scene_schedule' },
+  {
+    scheduledId: t.u64().primaryKey().autoInc(),
+    scheduledAt: t.scheduleAt(),
+    cardId: t.string().index('btree'),
+  },
+);
+// One durable attempt per completed postcard prevents two authors or a reconnect
+// from paying for the same illustration. Provider billing remains in ai_call.
+const sceneJob = table(
+  { name: 'scene_job' },
+  {
+    cardId: t.string().primaryKey(),
+    owner: t.identity().index('btree'),
+    packId: t.string(),
+    state: t.string(),
+    message: t.string(),
+    costId: t.string(),
+    createdMs: t.f64(),
+    finishedMs: t.f64(),
+    startedMs: t.f64().default(0),
+  },
+);
 const authorship = table(
   { name: 'authorship' },
   {
@@ -198,7 +248,7 @@ const aiBudget = table(
   },
 );
 // Financial diagnostics contain no story text, owner identity, prompt or contact details.
-// Only the short-lived request row maps this random ID back to a participant.
+// Only private request/job rows map this random ID back to a participant, for seven days.
 const aiCall = table(
   { name: 'ai_call' },
   {
@@ -237,6 +287,10 @@ const db = schema(
     bottle,
     beginning,
     postcard,
+    postcardScene,
+    postcardSceneStatus,
+    sceneJob,
+    sceneSchedule,
     authorship,
     request,
     report,
@@ -260,6 +314,7 @@ const db = schema(
       DRIFT_STARTERS_HUMAN_WRITTEN: t.option(t.string()),
       NUDGE_MODEL: t.option(t.string()),
       MODERATION_MODEL: t.option(t.string()),
+      SCENE_MODEL: t.option(t.string()),
       DRIFT_HELLO_ENABLED: t.option(t.string()),
       DRIFT_MEETING_SPOT: t.option(t.string()),
       DRIFT_MEETING_SPOT_VERIFIED: t.option(t.string()),
@@ -340,6 +395,7 @@ function hideBeginning(ctx: Tx, b: Bottle) {
   ctx.db.beginning.id.delete(b.id);
   for (const card of ctx.db.postcard.beginningId.filter(b.id)) {
     ctx.db.postcard.id.delete(card.id);
+    removeCardScene(ctx, card.id);
     const a = ctx.db.authorship.id.find(card.id);
     if (a) ctx.db.authorship.id.update({ ...a, hidden: true });
     ctx.db.hello.cardId.delete(card.id);
@@ -537,7 +593,7 @@ function budgetFor(ctx: Tx) {
     })
   );
 }
-type ModelWork = ReturnType<typeof modelRequest>;
+type ModelWork = ReturnType<typeof modelRequest> | ReturnType<typeof sceneModelRequest>;
 function reserveAiCall(ctx: Tx, operation: string, work: ModelWork | undefined) {
   const c = ctx.db.config.id.find(0)!;
   if (c.dispatches >= c.dispatchCap)
@@ -722,18 +778,9 @@ export const verify_shore = db.procedure({ token: t.string() }, response, (ctx, 
   }
 });
 
-function callClaude(
-  ctx: Proc,
-  kind: 'moderation' | 'nudge',
-  work: ModelWork | undefined,
-  costId: string,
-): any {
+function callClaudeProvider(ctx: Proc, work: ModelWork | undefined, costId: string): any {
   const key = ctx.env.ANTHROPIC_API_KEY;
-  if (!key) {
-    if (kind === 'moderation' && ctx.env.DRIFT_DEV_MODE === 'true')
-      return { decision: 'allow', reason: 'safe' };
-    throw Error('Claude is not configured.');
-  }
+  if (!key) throw Error('Claude is not configured.');
   if (!work) throw Error('Missing reserved model request.');
   const res = ctx.http.fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -749,8 +796,257 @@ function callClaude(
   const body = JSON.parse(res.text());
   // Meter valid provider usage even if parsing the creative/moderation output fails.
   ctx.withTx((tx) => settleAiUsage(tx, costId, body.usage));
-  return parseModelResponse(kind, body);
+  return body;
 }
+
+function callClaude(
+  ctx: Proc,
+  kind: 'moderation' | 'nudge',
+  work: ModelWork | undefined,
+  costId: string,
+): any {
+  if (!ctx.env.ANTHROPIC_API_KEY && kind === 'moderation' && ctx.env.DRIFT_DEV_MODE === 'true')
+    return { decision: 'allow', reason: 'safe' };
+  return parseModelResponse(kind, callClaudeProvider(ctx, work, costId));
+}
+
+const sceneResult = t.row('SceneResult', { state: t.string(), message: t.string() });
+type SceneResult = { state: 'ready' | 'pending' | 'failed'; message: string };
+const sceneFailure = 'The illustration couldn’t be completed. Your postcard is saved.';
+const sceneUnavailable = 'This postcard is no longer available.';
+const SCENE_WAIT_MS = 25000;
+const SCENES_PER_DAY = 12;
+
+function stopSceneSchedule(ctx: Tx, cardId: string) {
+  for (const scheduled of ctx.db.sceneSchedule.cardId.filter(cardId))
+    ctx.db.sceneSchedule.scheduledId.delete(scheduled.scheduledId);
+}
+
+function writeSceneStatus(ctx: Tx, cardId: string, state: SceneResult['state'], message = '') {
+  const value = { cardId, state, message, updatedMs: now(ctx) };
+  if (ctx.db.postcardSceneStatus.cardId.find(cardId))
+    ctx.db.postcardSceneStatus.cardId.update(value);
+  else ctx.db.postcardSceneStatus.insert(value);
+}
+
+function removeCardScene(ctx: Tx, cardId: string) {
+  const job = ctx.db.sceneJob.cardId.find(cardId);
+  if (job?.state === 'pending' && job.costId) finishAiOutcome(ctx, job.costId, 'scene_removed');
+  ctx.db.postcardScene.cardId.delete(cardId);
+  ctx.db.postcardSceneStatus.cardId.delete(cardId);
+  ctx.db.sceneJob.cardId.delete(cardId);
+  stopSceneSchedule(ctx, cardId);
+}
+
+function queueCardScene(ctx: Tx, cardId: string) {
+  if (ctx.db.sceneJob.cardId.find(cardId) || ctx.db.postcardScene.cardId.find(cardId)) return;
+  const card = ctx.db.postcard.id.find(cardId)!;
+  const author = ctx.db.authorship.id.find(cardId)!;
+  const pack = getScenePack(card.promptId);
+  ctx.db.sceneJob.insert({
+    cardId,
+    owner: author.replyOwner,
+    packId: pack.id,
+    state: 'queued',
+    message: '',
+    costId: '',
+    createdMs: now(ctx),
+    startedMs: 0,
+    finishedMs: 0,
+  });
+  writeSceneStatus(ctx, cardId, 'pending');
+  ctx.db.sceneSchedule.insert({
+    scheduledId: 0n,
+    scheduledAt: ScheduleAt.interval(1_000_000n),
+    cardId,
+  });
+}
+
+function finishSceneJob(ctx: Tx, cardId: string, state: 'ready' | 'failed', message = '') {
+  const job = ctx.db.sceneJob.cardId.find(cardId);
+  if (!job) return;
+  ctx.db.sceneJob.cardId.update({ ...job, state, message, finishedMs: now(ctx) });
+  writeSceneStatus(ctx, cardId, state, message);
+  stopSceneSchedule(ctx, cardId);
+}
+
+function expireSceneAttempt(ctx: Tx, job: Infer<typeof sceneJob.rowType>) {
+  if (job.state !== 'pending' || now(ctx) <= (job.startedMs || job.createdMs) + SCENE_WAIT_MS)
+    return false;
+  // A missing response does not prove that the provider did no work. Preserve
+  // the billing hold and never send the same paid request again automatically.
+  finishAiOutcome(ctx, job.costId, 'scene_uncertain');
+  finishSceneJob(ctx, job.cardId, 'failed', sceneFailure);
+  return true;
+}
+
+function illustrateCard(ctx: Proc, cardId: string): SceneResult {
+  if (!cardId || cardId.length > 128) fail('Invalid postcard identifier.');
+  return ctx.withTx((tx) => {
+    const card = tx.db.postcard.id.find(cardId);
+    const author = tx.db.authorship.id.find(cardId);
+    if (!card || !author || author.hidden) fail(sceneUnavailable);
+    if (!(
+      same(author.replyOwner, tx.sender) ||
+      (author.setupOwner && same(author.setupOwner, tx.sender))
+    ))
+      fail('Only this postcard’s writers can request its illustration.');
+    if (tx.db.postcardScene.cardId.find(cardId)) {
+      writeSceneStatus(tx, cardId, 'ready');
+      return { state: 'ready', message: '' };
+    }
+    const existing = tx.db.sceneJob.cardId.find(cardId);
+    if (existing) {
+      expireSceneAttempt(tx, existing);
+      const status = tx.db.postcardSceneStatus.cardId.find(cardId);
+      if (status) return { state: status.state as SceneResult['state'], message: status.message };
+      return {
+        state: existing.state === 'failed' ? 'failed' : 'pending',
+        message: existing.message,
+      };
+    }
+    // This path only backfills old postcards. New endings enqueue atomically
+    // with their accepted text and do not require either writer to stay online.
+    ready(tx);
+    if (
+      [...tx.db.sceneJob.owner.filter(author.replyOwner)].filter(
+        (job) => dayOf(job.createdMs) === dayOf(now(tx)),
+      ).length >= SCENES_PER_DAY
+    )
+      fail('You’ve illustrated twelve postcards today. Try again tomorrow.');
+    queueCardScene(tx, cardId);
+    return { state: 'pending', message: '' };
+  });
+}
+
+function generateCardScene(ctx: Proc, cardId: string) {
+  const reservation = ctx.withTx((tx) => {
+    const job = tx.db.sceneJob.cardId.find(cardId);
+    const card = tx.db.postcard.id.find(cardId);
+    const author = tx.db.authorship.id.find(cardId);
+    if (!job || !card || !author || author.hidden) {
+      removeCardScene(tx, cardId);
+      return;
+    }
+    if (tx.db.postcardScene.cardId.find(cardId)) {
+      finishSceneJob(tx, cardId, 'ready');
+      return;
+    }
+    if (job.state === 'pending') {
+      expireSceneAttempt(tx, job);
+      return;
+    }
+    if (job.state !== 'queued') {
+      stopSceneSchedule(tx, cardId);
+      return;
+    }
+    try {
+      if (tx.db.config.id.find(0)!.paused)
+        fail('Illustrations are paused. Your postcard is saved.');
+      if (!tx.env.ANTHROPIC_API_KEY)
+        fail('Illustrations aren’t connected yet. Your postcard is saved.');
+      const pack = getScenePack(card.promptId);
+      if (pack.id !== job.packId) fail(sceneFailure);
+      const prompt = PROMPTS.find((item) => item.id === card.promptId);
+      const work = sceneModelRequest(
+        {
+          promptId: card.promptId,
+          promptTitle: prompt?.title ?? 'A bottle exchange',
+          setup: card.setup,
+          reply: card.reply,
+        },
+        tx.env.SCENE_MODEL,
+      );
+      const costId = reserveAiCall(tx, 'scene', work);
+      tx.db.sceneJob.cardId.update({ ...job, state: 'pending', costId, startedMs: now(tx) });
+      return { card, pack, work, costId };
+    } catch (error) {
+      finishSceneJob(
+        tx,
+        cardId,
+        'failed',
+        error instanceof SenderError ? error.message : sceneFailure,
+      );
+      return;
+    }
+  });
+  if (!reservation) return;
+  const { card, pack, work, costId } = reservation;
+  let scene;
+  try {
+    scene = parseSceneModelResponse(callClaudeProvider(ctx, work, costId), pack);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    const outcome = /^provider_http_\d{3}$/.test(message) ? message : 'scene_error';
+    ctx.withTx((tx) => {
+      finishAiOutcome(tx, costId, outcome);
+      const job = tx.db.sceneJob.cardId.find(cardId);
+      if (job?.costId === costId && job.state === 'pending')
+        finishSceneJob(tx, cardId, 'failed', sceneFailure);
+    });
+    return;
+  }
+  ctx.withTx((tx) => {
+    const job = tx.db.sceneJob.cardId.find(cardId);
+    const current = tx.db.postcard.id.find(cardId);
+    const author = tx.db.authorship.id.find(cardId);
+    // Hiding, withdrawing, reporting, expiration and a late response must never
+    // resurrect the public visual or its status.
+    if (
+      !job ||
+      job.costId !== costId ||
+      job.state !== 'pending' ||
+      !current ||
+      !author ||
+      author.hidden ||
+      current.promptId !== card.promptId ||
+      current.setup !== card.setup ||
+      current.reply !== card.reply ||
+      now(tx) > (job.startedMs || job.createdMs) + SCENE_WAIT_MS ||
+      tx.db.config.id.find(0)!.paused
+    ) {
+      finishAiOutcome(tx, costId, 'scene_not_published');
+      if (!current || !author || author.hidden) removeCardScene(tx, cardId);
+      else if (job?.costId === costId) finishSceneJob(tx, cardId, 'failed', sceneFailure);
+      return;
+    }
+    tx.db.postcardScene.insert({
+      cardId,
+      packId: pack.id,
+      sceneJson: JSON.stringify(scene),
+      createdMs: now(tx),
+    });
+    finishSceneJob(tx, cardId, 'ready');
+    finishAiOutcome(tx, costId, 'scene_published');
+  });
+}
+
+export const scene_tick = db.procedure(
+  { onSchedule: sceneSchedule },
+  { arg: sceneSchedule.rowType },
+  t.unit(),
+  (ctx, { arg }) => {
+    if (!same(ctx.sender, ctx.databaseIdentity))
+      fail('Illustrations can only be generated by the scheduled worker.');
+    generateCardScene(ctx, arg.cardId);
+    return {};
+  },
+);
+
+export const illustrate_card = db.procedure(
+  { cardId: t.string() },
+  sceneResult,
+  (ctx, { cardId }) => {
+    try {
+      return illustrateCard(ctx, cardId);
+    } catch (error) {
+      return {
+        state: 'failed',
+        message: error instanceof SenderError ? error.message : sceneFailure,
+      };
+    }
+  },
+);
 
 function paidAction(
   ctx: Proc,
@@ -982,6 +1278,7 @@ function paidAction(
         setupActions: 0,
         replyActions: 0,
       });
+      queueCardScene(tx, id);
       const elapsed = Math.max(0, now(tx) - (r.leaseMs - LEASE_MS));
       const timing: Metric =
         elapsed <= 30_000
@@ -1227,6 +1524,7 @@ function hide(ctx: Tx, id: string) {
   if (!a || !(same(a.replyOwner, ctx.sender) || (a.setupOwner && same(a.setupOwner, ctx.sender))))
     fail('Only the two authors can hide this postcard.');
   ctx.db.postcard.id.delete(id);
+  removeCardScene(ctx, id);
   ctx.db.authorship.id.update({ ...a!, hidden: true });
   ctx.db.hello.cardId.delete(id);
 }
@@ -1608,6 +1906,7 @@ export const resolve_report = db.reducer(
       const a = ctx.db.authorship.id.find(r.target);
       if (a) {
         ctx.db.postcard.id.delete(a.id);
+        removeCardScene(ctx, a.id);
         ctx.db.authorship.id.update({ ...a, hidden: true });
         ctx.db.hello.cardId.delete(a.id);
       }
@@ -1625,11 +1924,33 @@ function purgeExpired(ctx: Tx) {
   for (const c of ctx.db.postcard.iter())
     if (c.createdMs < cutoff) {
       ctx.db.postcard.id.delete(c.id);
+      removeCardScene(ctx, c.id);
       ctx.db.authorship.id.delete(c.id);
       ctx.db.hello.cardId.delete(c.id);
     }
   for (const q of ctx.db.request.iter())
     if (q.createdMs < now(ctx) - 7 * 86400000) ctx.db.request.id.delete(q.id);
+  for (const scene of ctx.db.postcardScene.iter())
+    if (!ctx.db.postcard.id.find(scene.cardId)) removeCardScene(ctx, scene.cardId);
+  for (const status of ctx.db.postcardSceneStatus.iter())
+    if (!ctx.db.postcard.id.find(status.cardId)) removeCardScene(ctx, status.cardId);
+  for (const job of ctx.db.sceneJob.iter()) {
+    if (!ctx.db.postcard.id.find(job.cardId)) {
+      removeCardScene(ctx, job.cardId);
+      continue;
+    }
+    expireSceneAttempt(ctx, job);
+    const next = ctx.db.sceneJob.cardId.find(job.cardId)!;
+    if (
+      (next.state === 'ready' || next.state === 'failed') &&
+      next.costId &&
+      next.createdMs < now(ctx) - 7 * 86400000
+    )
+      ctx.db.sceneJob.cardId.update({ ...next, costId: '' });
+  }
+  for (const scheduled of ctx.db.sceneSchedule.iter())
+    if (!ctx.db.sceneJob.cardId.find(scheduled.cardId))
+      ctx.db.sceneSchedule.scheduledId.delete(scheduled.scheduledId);
   // Completed anonymous cost rows expire after 30 days; totals survive. Unknown holds
   // remain until owner reconciliation and contain no text or participant identity.
   for (const row of ctx.db.aiCall.iter())
@@ -1651,6 +1972,7 @@ function purgeExpired(ctx: Tx) {
   for (const a of ctx.db.authorship.iter())
     if (!ctx.db.postcard.id.find(a.id)) {
       ctx.db.authorship.id.delete(a.id);
+      removeCardScene(ctx, a.id);
       ctx.db.hello.cardId.delete(a.id);
     }
   for (const h of ctx.db.hello.iter())

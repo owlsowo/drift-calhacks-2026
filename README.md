@@ -16,6 +16,31 @@ The full-screen sea uses the locally bundled MIT-licensed Noniv WebGPU FFT engin
 
 Figma Make/Slides and Mana Bottle Kitchen have actual [workflow artifacts](docs/workflow-checkpoint.md). The team handles submission writing. The [final-push priorities](docs/final-twelve-hour-product-priorities.md) separate current organizer guidance, sponsor criteria and product inferences. Original data-preserving migration details remain in [migration evidence](docs/letter-migration.md).
 
+## Illustrated postcards (local implementation)
+
+Every accepted ending now queues its illustration in the same transaction that saves the postcard. A private scheduled worker starts within roughly one second, reads the approved pair, sends its prompt and versioned asset catalog to Claude, validates the response, and stores one public `postcard_scene` per card. Generation continues if either writer closes the page. A separate `postcard_scene_status` publishes pending, ready, or failed to both authors and shared-link readers. The beginning author reaches the same saved visual through My bottles → their beginning → a returned ending; opening or refreshing a result never starts another model call. `illustrate_card` remains an author-only enqueue/status procedure for legacy postcards, which are not automatically backfilled.
+
+The results paper shows an animated ink bottle while drawing, replaced in place by the finished scene. Reduced motion makes it static. During generation, Share sends the live result link and Save image waits; once ready, both use the illustrated postcard. Failures leave the original words and sharing usable. A durable job and budget reservation prevent duplicate paid calls; overlapping timer ticks only inspect a pending attempt, and a 25-second watchdog ends abandoned requests without automatically redispatching an uncertain charge. Missing credentials, paused service, or exhausted budget fail only the illustration. Withdrawing a beginning, hiding a card, or expiring it removes its scene, status and job, and a late provider result cannot recreate them. The existing AI budget, deployment key, and submission verification remain authoritative.
+
+Claude controls 3–8 approved pieces on a 900×600 stage: their centers, proportional width, rotation up to 30 degrees, horizontal flip, stacking order, and one of five quiet backdrops. It cannot introduce URLs, HTML, SVG, CSS, captions, or new story text. Asset aspect ratios and rotated bounds are checked on the server and client. The UI and PNG export use the same canvas renderer. This is a collage composer, so visual interpretation can still be imperfect; native emoji artwork also varies by device.
+
+The default is `claude-sonnet-5-5`, using structured output and no up-front thinking. Four live synthetic fixtures took **2.94–3.57 seconds** and an estimated **$0.0078–$0.0088 each** for the scene call. An explicit `SCENE_MODEL=claude-haiku-5-5` took **1.99–2.62 seconds** and about **$0.0004 each**, but misplaced some props and facing directions. These are a small local sample, not a latency guarantee, and exclude existing moderation calls. Recorded Sonnet outputs and usage are in `evals/scene-results.json`; the three ten-day demo exchanges plus the dolphin-poker example are labeled synthetic.
+
+With Vite running, open `/scene-preview.html` to review those exact recorded outputs and download the illustrated postcards. This separate development entry is excluded from the production build. `npm run eval:scenes -- --dry-run` checks requests without calling Claude; real evaluations require `ANTHROPIC_API_KEY` in the process environment and never read or write a credential file. Use `--model claude-haiku-5-5` for a comparison. The supplied testing key was used only in process memory; no deployment credentials were changed. This implementation has not been published to the hosted game. Release the additive server schema before the matching frontend, using the deployment's existing key.
+
+Verification on the integrated branch: 33 unit/contract tests and 121 server tests pass, along with frontend/server/script typechecks and the production build. `test:scene-flow` uses an actual keyless local database: accepted endings run through the scheduled worker without a result-page visit, including after both writers disconnect; both authors see the shared status through My bottles/results; private thanks and withdrawal remain functional. It intentionally tests the missing-provider failure path, not a live model call. `test:scene-results` injects synthetic pending/ready/failed/reconnecting projections with a recorded Claude scene to test the two-author UI, stable dimensions, reduced motion and sharing. `test:scenes` checks the four recorded scenes and matching PNG pixels. Successful model responses, timer dispatch, and UI delivery were verified separately; a hosted end-to-end generation smoke test is still required after deployment.
+
+These three scene browser scripts use an already running local test preview (`DRIFT_WEB_URL=http://localhost:5173`) instead of creating their own database. The flow script requires its `service.sandbox` flag before writing. Set `DRIFT_CHROMIUM_PATH` if Playwright's default browser is unavailable. Screenshots are saved under ignored `test-results/`. Publishing the new tables may reconnect existing clients; do not accept any data-deletion migration to deploy this feature.
+
+### Preparing each day's art
+
+`packages/scene-contracts/index.ts` pairs prompt IDs with versioned catalogs. Seventeen prompt packs cover the seven game themes and ten demo themes; a generic pack handles unknown prompts. Each pack combines a common emoji registry with prompt-specific emoji and trusted static art. The thirteen original SVG cutouts in `apps/web/public/assets/scenes/` total roughly 11 KB.
+
+1. Prepare a few reusable subjects, props, and environmental anchors beside the daily prompt. Add trusted SVG/PNG/WebP files under `/assets/scenes/`; keep their intrinsic dimensions in the catalog.
+2. Register each piece with a stable ID and a concrete description. Describe facing direction, contact points, and included details (for example, the cake already has lit candles). The model receives these semantics and aspect ratios, not paths or source code.
+3. Add the prompt's catalog selection. Keep previously published asset IDs, files, and pack revisions immutable so older postcards still render; a revision needs a new registered pack ID with the old pack retained.
+4. Run the scene contract tests and evaluate several synthetic exchanges, including awkward combinations. Inspect the actual pictures and exports; valid JSON alone does not establish visual quality. Do not turn generated examples into unlabeled human contributions.
+
 ## Local development
 
 Prerequisites: Node 22.12+ (tested here with 26.7), npm, Chrome, and the [SpacetimeDB 2.13 CLI](https://spacetimedb.com/install).
@@ -41,7 +66,7 @@ The frontend is at `http://localhost:5173`; another device on the same network c
 
 ### Configuration
 
-Server environment values: `ANTHROPIC_API_KEY`, optional `MODERATION_MODEL` (default `claude-haiku-5-5`) and `NUDGE_MODEL` (default `claude-sonnet-5-5`). They are installed as private SpacetimeDB environment values during publish. They are not embedded in the frontend bundle or passed in command arguments.
+Server environment values: `ANTHROPIC_API_KEY`, optional `MODERATION_MODEL` (default `claude-haiku-5-5`), `NUDGE_MODEL` (default `claude-sonnet-5-5`), and `SCENE_MODEL` (default `claude-sonnet-5-5`). They are installed as private SpacetimeDB environment values during publish. They are not embedded in the frontend bundle or passed in command arguments.
 
 Frontend build values: `VITE_SPACETIMEDB_HOST` and `VITE_SPACETIMEDB_DATABASE`. Set them in `apps/web/.env.local` for a hosted database. Without them, the client connects to port 3000 on the current hostname and the `drift-local` database. **Never prefix a secret with `VITE_`.**
 

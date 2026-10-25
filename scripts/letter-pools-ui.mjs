@@ -103,6 +103,23 @@ async function readBookFromCookies(page) {
       : { beginningIds: [], pairIds: [] };
   });
 }
+async function assertSubmittedTime(page, cardId) {
+  const expected = await page.evaluate(async (id) => {
+    const { game } = await import('/src/game.ts');
+    const { submissionTime } = await import('/src/submission-time.ts');
+    const card = game.snapshot().cards.find((item) => item.id === id);
+    if (!card) throw Error('The completed pair is missing from the snapshot.');
+    return {
+      text: submissionTime(card.createdMs),
+      datetime: new Date(card.createdMs).toISOString(),
+    };
+  }, cardId);
+  assert.equal(await page.locator('.contribution-note').innerText(), expected.text);
+  assert.equal(
+    await page.locator('time.contribution-note, .contribution-note time').getAttribute('datetime'),
+    expected.datetime,
+  );
+}
 
 try {
   const { page: A } = await makePage(360);
@@ -263,10 +280,7 @@ try {
   pass(
     'Each ending creates its own pair, finishes its pick-up round, and appears live in the original author’s pool',
   );
-  assert.equal(
-    await B.locator('.contribution-note').innerText(),
-    'Someone began it. You finished it.',
-  );
+  await assertSubmittedTime(B, bCardId);
   const [download] = await Promise.all([
     B.waitForEvent('download'),
     button(B, 'Save image').click(),
@@ -291,10 +305,7 @@ try {
   );
   await A.locator('.ending-preview').filter({ hasText: bReply }).click();
   await A.locator('.postcard-paper.paper-open').waitFor();
-  assert.equal(
-    await A.locator('.contribution-note').innerText(),
-    'You began it. Someone finished it.',
-  );
+  await assertSubmittedTime(A, bCardId);
   await A.screenshot({
     path: new URL(`contribution-${engine.toLowerCase()}-author.png`, evidence).pathname,
     fullPage: true,
@@ -412,9 +423,9 @@ try {
   await D.locator('.collection-card').click();
   await D.getByRole('heading', { name: 'Saved reply', exact: true }).waitFor();
   assert.equal(await button(D, 'Hide').count(), 0);
-  assert.equal(await D.locator('.contribution-note').innerText(), 'Two writers. One little story.');
+  await assertSubmittedTime(D, bCardId);
   pass(
-    'Contribution labels use private ownership for each author and stay neutral when only public bookmark cookies are recovered',
+    'Both writers and a reader with recovered bookmark cookies see the ending submission timestamp',
   );
   await D.goto(`${origin}?bottle=${encodeURIComponent(beginningId)}`);
   await D.getByRole('heading', { name: '2 replies', exact: true }).waitFor();
