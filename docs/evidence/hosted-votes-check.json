@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-10-25T06:40:15.457Z",
+  "checks": [
+    "Hosted service remains live, AI-ready, unpaused and bot-protected",
+    "Public vote totals and sender-scoped selections are subscribable; a fresh guest has no selections",
+    "An unverified fresh guest cannot vote on an existing public postcard and receives the human-check error",
+    "The hosted SDK denies a direct subscription to private individual vote records"
+  ],
+  "scope": "Real hosted SDK/read/negative-write guard probe. No challenge solved, vote recorded, round/story created or provider call. Positive multi-viewer voting remains separately established in the disposable local browser checks."
+}

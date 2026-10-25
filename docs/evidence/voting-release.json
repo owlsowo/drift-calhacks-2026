@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T06:43:39.869Z",
+  "sourceCommit": "014437ea5bc8fd9ac8bbed17c3cf4c331a5de65a",
+  "cloudflareVersion": "242394d1-18ba-434f-a6e7-daf9d733d525",
+  "ci": {
+    "run": 40169598163,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-1ZxFtU02.js",
+      "sha256": "d19a1cb3b692d438f76c7c1288c1d63d150ae91d6847dfeea92b0b1ee542b1b7",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/index-DXezzR5-.css",
+      "sha256": "f84dfd7f979942fe8f025212832a1ca2ab85c43da34f023b0cb90e950c46d9d3",
+      "localBytesMatch": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "localBytesMatch": true
+    }
+  ],
+  "scope": "All-ending discovery and live public vote totals with private per-session selections. Hosted service unpaused and protected; direct private subscription and unverified vote denied. Positive multi-viewer voting verified in disposable local Chrome/WebKit, not a production vote or physical phone. Full-quality ocean retained."
+}

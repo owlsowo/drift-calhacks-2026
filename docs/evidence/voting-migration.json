@@ -1,0 +1,69 @@
+{
+  "checkedAt": "2026-10-25T06:35:05.153Z",
+  "legacyCommit": "4c217cc68b517de7d9d866fb1976316aa8e66257",
+  "candidateCommit": "014437ea5bc8fd9ac8bbed17c3cf4c331a5de65a",
+  "mode": "Actual isolated local SpacetimeDB publish, SQL invariants, old/new generated SDK subscriptions and scheduler. Synthetic stories, cleared provider keys, no browser challenge or model call.",
+  "beforeCounts": {
+    "bottle": 1,
+    "beginning": 1,
+    "postcard": 1,
+    "authorship": 1,
+    "round": 3,
+    "request": 2,
+    "report": 0,
+    "report_resolution": 0,
+    "config": 1,
+    "today": 1,
+    "hello": 0,
+    "shore_pass": 0,
+    "ai_budget": 1,
+    "ai_call": 2,
+    "id_allocator": 1,
+    "activity_day": 1,
+    "schema_migration": 0
+  },
+  "afterCounts": {
+    "bottle": 1,
+    "beginning": 1,
+    "postcard": 1,
+    "authorship": 1,
+    "round": 3,
+    "request": 2,
+    "report": 0,
+    "report_resolution": 0,
+    "config": 1,
+    "today": 1,
+    "hello": 0,
+    "shore_pass": 0,
+    "ai_budget": 1,
+    "ai_call": 2,
+    "id_allocator": 1,
+    "activity_day": 1,
+    "schema_migration": 0
+  },
+  "initialSceneCounts": {
+    "postcard_scene": 0,
+    "postcard_scene_status": 0,
+    "scene_job": 0,
+    "scene_schedule": 0,
+    "card_vote": 0,
+    "vote_rate": 0
+  },
+  "oldClientReconnects": [
+    0,
+    0,
+    0
+  ],
+  "planSha256": "e7d1a1d32711833fa6d480b881e907e851cc28a80a18342c4e85651c71c99c2b",
+  "checks": [
+    "Actual additive publish preserves every compared old row and field, including a completed pair, private thanks and an active reply; all four new tables start empty",
+    "Original generated clients remain subscribed after the upgrade and receive new private thanks, with the held reply ID/version/deadline unchanged",
+    "An old client finishes its preserved reply; both SDKs receive the pair, and the real scheduled worker ends keyless illustration without a provider dispatch or lost text",
+    "Withdrawal through the old client removes both pairs, private thanks and all new scene state for old and new subscribers"
+  ],
+  "limits": [
+    "Not a hosted upgrade or hosted generation check",
+    "No paid call or successful provider scene in this migration test",
+    "Three synthetic writers and two pairs; not a load benchmark"
+  ]
+}
