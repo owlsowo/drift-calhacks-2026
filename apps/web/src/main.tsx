@@ -223,11 +223,34 @@ function withinDeadline<T>(operation: Promise<T>, message: string, milliseconds 
   ]).finally(() => clearTimeout(timer));
 }
 
+async function confirmReply(roundId: string, text: string) {
+  let unsubscribe = () => {};
+  const committed = new Promise<void>((resolve) => {
+    const check = () => {
+      if (game.snapshot().rounds.some((r) => r.id === roundId && r.stage === 'done' && r.cardId))
+        resolve();
+    };
+    unsubscribe = game.subscribe(check);
+    check();
+  });
+  try {
+    await withinDeadline(
+      Promise.race([game.paid('reply', roundId, text), committed]),
+      'Your reply could not be confirmed. Your draft is saved. Reconnect and check My bottles before trying again.',
+      30000,
+    );
+  } finally {
+    unsubscribe();
+  }
+}
+
 function App() {
   const s = useSyncExternalStore(game.subscribe, game.snapshot);
   const [view, setView] = useState<'today' | 'play' | 'collection' | 'card' | 'beginning'>('today');
   const [selected, setSelected] = useState('');
   const [playingRoundId, setPlayingRoundId] = useState('');
+  const navigation = useRef({ view, playingRoundId });
+  navigation.current = { view, playingRoundId };
   const [selectedBeginningId, setSelectedBeginningId] = useState('');
   const [bottleLookup, setBottleLookup] = useState('');
   const [modal, setModal] = useState<'how' | 'report' | 'hide' | 'privacy' | null>(null);
@@ -532,18 +555,27 @@ function App() {
         }
         if (active.stage === 'reply') setReveal('pending:' + active.id);
         try {
-          await game.paid(active.stage === 'write' ? 'setup' : 'reply', active.id, draft);
+          await confirmReply(roundId, text);
         } catch (error) {
           const completed = game.snapshot().rounds.find((r) => r.id === active.id)?.cardId;
           if (active.stage === 'reply' && completed) {
-            setSelected(completed);
-            setView('card');
-            setError('');
+            if (
+              navigation.current.view === 'play' &&
+              navigation.current.playingRoundId === roundId
+            ) {
+              setSelected(completed);
+              setView('card');
+              setError('');
+            }
             return;
           }
           throw error;
         }
-        if (active.stage === 'reply') {
+        if (
+          active.stage === 'reply' &&
+          navigation.current.view === 'play' &&
+          navigation.current.playingRoundId === roundId
+        ) {
           // Find by live state, because procedure and subscription may arrive in either order.
           const find = () => game.snapshot().rounds.find((r) => r.id === active.id)?.cardId;
           const id = find();
@@ -839,7 +871,11 @@ function App() {
                           }
                           onClick={() =>
                             run('Finding a hint…', async () => {
-                              await game.paid('nudge', active.id, draft);
+                              await withinDeadline(
+                                game.paid('nudge', active.id, draft),
+                                'Your hint could not be confirmed. Your draft is saved. Try Hint again to check the same request.',
+                                30000,
+                              );
                             })
                           }
                         >

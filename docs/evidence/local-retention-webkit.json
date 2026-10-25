@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T02:04:52.163Z",
+  "checkedAt": "2026-10-25T04:06:00.394Z",
   "engine": "WebKit",
   "mode": "Isolated local sandbox, synthetic words, no provider calls. Response-loss, time and storage failures are injected; server commit/replay and SQL readback are real.",
   "checks": [

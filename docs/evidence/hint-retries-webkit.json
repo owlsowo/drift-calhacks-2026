@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-25T04:05:57.478Z",
+  "engine": "WebKit",
+  "checks": [
+    "A lost hint response survives reload with the original same-assignment request ID; confirmed replay clears its retry text",
+    "Skipping binds a fresh hint ID even for an unchanged empty draft; a late old response cannot erase the newer pending record",
+    "An older retry cache without assignment metadata preserves its ID for authoritative server replay instead of silently dispatching again",
+    "A response lost after an actual local reply commit still replays successfully after completion/reload and retains the exact single pair",
+    "An actual reply commit unlocks its exact postcard and Save image through the subscription even when its procedure response never resolves",
+    "Navigating away while a reply is pending keeps the chosen view when its real commit arrives; the exact completed pair remains in My bottles",
+    "A never-resolving Hint restores controls after its deadline, preserves the draft and reuses the original ID on an explicit retry"
+  ],
+  "errors": [],
+  "mode": "Disposable local database, real SDK assignment/reply transitions. Hint transport receipts and delayed/lost responses are injected; reply commit/replay is actual local execution with AI off. No provider calls or hosted stories."
+}

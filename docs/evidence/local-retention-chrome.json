@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T02:04:45.329Z",
+  "checkedAt": "2026-10-25T04:01:41.103Z",
   "engine": "Chrome",
   "mode": "Isolated local sandbox, synthetic words, no provider calls. Response-loss, time and storage failures are injected; server commit/replay and SQL readback are real.",
   "checks": [

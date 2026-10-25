@@ -771,10 +771,17 @@ function paidAction(
         existing.text !== text
       )
         fail('That request identifier was already used for different text.');
+      const earlierBottle =
+        operation !== 'setup' && tx.db.round.id.find(args.roundId)?.version !== existing.version;
       return {
-        cached: existing.result
-          ? (JSON.parse(existing.result) as Result)
-          : result(false, 'That request is still pending or uncertain. Your draft is saved.'),
+        cached: earlierBottle
+          ? result(
+              false,
+              'That check belongs to an earlier bottle. Your draft is saved. Try again for this bottle.',
+            )
+          : existing.result
+            ? (JSON.parse(existing.result) as Result)
+            : result(false, 'That request is still pending or uncertain. Your draft is saved.'),
         round: undefined,
         bottle: undefined,
         work: undefined,

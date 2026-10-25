@@ -1,0 +1,19 @@
+# Final twelve-hour product priorities
+
+The owner requested a fresh Slack/winner review on October 24. The already approved research agent independently checked the [official Hive prize feed](https://hive.hackberkeley.org/api/live/prizes), updated `2026-10-24T22:13:17.358Z`, and the [general criteria](https://cal-hacks-13-0.devpost.com/). Earlier primary-source winner reviews remain in `additional-winner-product-review.md` and `past-winner-product-review.md`. Award badges and team claims are separate from our product inferences; there are no calibrated win probabilities.
+
+## Verified event guidance
+
+- An organizer [allows as many applicable tracks as a project qualifies for and confirms public GitHub source for judging](https://cal-hacks-13-0.slack.com/archives/C0C6X34TC6A/p1792841016576229?thread_ts=1792833611.332809). The working repository remains private as instructed. Prepare a reviewed source-only copy before proposing any public publication.
+- Another organizer [describes a best-fitting-track shortlist for live judging](https://cal-hacks-13-0.slack.com/archives/C0C6X34TC6A/p1792896690804899?thread_ts=1792895505.518069). The visible follow-up asks whether this also covers sponsor tracks and has no organizer clarification yet. Unlimited entry does not establish independent chances or multiple live judging slots.
+- MLH [points participants to each category's individual rubric](https://cal-hacks-13-0.slack.com/archives/C0C6X34TC6A/p1792880438518719?thread_ts=1792875228.259239). The authenticated Slack reader also found an [Anthropic staff report of poor venue Wi-Fi](https://cal-hacks-13-0.slack.com/archives/C0C6Z0DP4D8/p1792887029165579?thread_ts=1792878918.869359), reinforcing the practical value of bounded waits and intact drafts.
+
+## Product implications
+
+1. **Reliable Claude + live state loop.** Complete the in-progress assignment-bound retries, bounded Hint wait and subscription-based reply confirmation. The intended evidence is loss/replay/navigation tests, not a claim of better model quality. This supports Spacetime's core live-state criterion, Anthropic's consequential use/failure awareness, and a smooth demo.
+2. **A keepsake that finishes.** Bound image/font waits during PNG preparation, preserve a usable share/copy route, and test cancellation/denial. Current `export.ts` still waits unbounded on image/fonts. This is the payoff of the human connection loop; it is more consequential than adding another logo.
+3. **Author control of released beginnings.** The author can invite people but cannot currently withdraw the beginning. An owner-scoped action can reuse existing server withdrawal logic without adding storage. It must protect guests/cookie-only readers, remove associated publications atomically, handle pending checks and explain limits on retracting saved images. This would strengthen a concrete People-First/Claude-fallibility response.
+
+The current rubric makes Meta's human connection, integrated AI, originality and working demo explicit; it does not require a Meta model switch. Anthropic asks for a named narrow community and firsthand/discussed problem; do not invent interviews or founder history. Mana weights meaningful workflow use (30%), usefulness (25%), originality (25%) and execution (20%), plus a usable app bonus; preserve and demonstrate the actual existing kitchen workflow. Figma's recorded real workflow and deliverables remain separate from these product patches. The owner handles submission writing.
+
+The previous winners support these as inferences: GhostWriter's described live insertion favors authoritative visible results, and SnackSnap's described persistent reward favors a successful keepsake. Their awards do not prove causation. The shipped invite, daily shore, unopened markers, coast and paper fix are already adopted and are not counted as new recommendations.

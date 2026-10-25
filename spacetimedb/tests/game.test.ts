@@ -626,6 +626,64 @@ describe('two-phase model boundary', () => {
     expect(active(A).hint).toBe('');
     expect(active(A).nudges).toBe(1);
   });
+  it('never replays an earlier bottle hint after skip, while same-assignment retry stays idempotent', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    let calls = 0;
+    const ctx = modelCtx(A, () => {
+      calls++;
+      return modelResponse({
+        kind: 'nudge',
+        hint: 'Consider how this creature might take the rules far too literally.',
+      });
+    });
+    const args = { roundId: active(A).id, requestId: crypto.randomUUID(), text: '' };
+    const first = module.request_nudge(ctx, args);
+    expect(first.ok).toBe(true);
+    expect(module.request_nudge(ctx, args)).toEqual(first);
+    expect(calls).toBe(1);
+    skip(A);
+    catchBottle(A);
+    const before = { ...active(A) };
+    expect(module.request_nudge(ctx, args)).toMatchObject({
+      ok: false,
+      hint: '',
+      message: expect.stringMatching(/earlier bottle/),
+    });
+    expect(active(A)).toEqual(before);
+    expect(active(A).hint).toBe('');
+    expect(calls).toBe(1);
+  });
+  it('rejects old hints when an expired beginning is rebound with a new lease version', () => {
+    start(A);
+    setup(A);
+    catchBottle(B);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    let calls = 0;
+    const ctx = modelCtx(B, () => {
+      calls++;
+      return modelResponse({
+        kind: 'nudge',
+        hint: 'Consider how the creature might interpret a perfectly ordinary rule literally.',
+      });
+    });
+    const args = { roundId: active(B).id, requestId: crypto.randomUUID(), text: '' };
+    expect(module.request_nudge(ctx, args).ok).toBe(true);
+    const original = { ...active(B) };
+    h.clock.advance(TimeDuration.fromMillis(600001));
+    catchBottle(B);
+    expect(active(B).assignmentId).toBe(original.assignmentId);
+    expect(active(B).version).toBeGreaterThan(original.version);
+    expect(module.request_nudge(ctx, args)).toMatchObject({
+      ok: false,
+      hint: '',
+      message: expect.stringMatching(/earlier bottle/),
+    });
+    expect(active(B).hint).toBe('');
+    expect(calls).toBe(1);
+  });
 });
 describe('private mutual hello', () => {
   function enableHello() {
