@@ -1,0 +1,13 @@
+# Human-check entry layout
+
+The real hosted three-browser preflight reached Cloudflare's manual Verify you are human checkboxes and stopped before starting any application action. No checkbox was clicked, no demo story was created, and no model call was made. The application ledger remained at five settled retained calls, no holds, and an estimated $0.003729 since its ledger start; that excludes older calls/evaluations and is not a provider balance. `hosted-invitations-smoke.json` records the incomplete gate explicitly.
+
+That preflight exposed a real first-visit layout problem: the check was a normal-flow section above a full-height shore, covering navigation and moving phone controls below the viewport. The check is now a bounded floating panel on the shore. Navigation and dock keep their positions. In a writing view it appears inline without replacing the draft; in an eligible public invitation the words appear before the check. Read-only postcard and collection views do not mount a writing widget. The empty collection and archived-invitation entry actions navigate back to the shore when verification is needed. The loading invitation no longer suggests a broken ID before connection completes.
+
+This changes presentation only. The backend still requires a valid shore pass for all paid story/invitation operations; buttons remain disabled until server verification. No valid token is mocked, no protection is disabled, and the production secret/hostname are unchanged.
+
+`npm run test:gate-layout` passes five checks across Chrome/WebKit, including 320px and 390px portrait, short landscape, a retained writing draft, public-note ordering and read-only navigation. Its 300px widget is an inert placeholder under an explicitly synthetic secret in a disposable `drift-test-*` database. Empty-token rejection occurs locally before external verification. No challenge is solved or pass issued. This is layout/accessibility coverage, not production Turnstile or physical-phone verification. Fourteen Chrome/WebKit invitation checks still pass; build/typechecks and CI are recorded separately.
+
+The hosted script has two explicit modes: `--preflight-only` creates no story/model action, while `--run-once` may attempt at most four normal application actions only after all three profiles verify normally. Tagged demo inventory is retired on completion/failure; model/request accounting follows normal retention. It never clicks a human checkbox or injects a pass. A full new hosted Claude completion remains pending human interaction; other product work continues.
+
+This removes first-visit friction for the connection/general demo and makes the People-First case more concrete without inventing social outcomes or new sponsor use.

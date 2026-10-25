@@ -566,6 +566,7 @@ function App() {
     }
   }, [view, active?.stage, active?.setupId, active?.cardId, busy]);
   const controlsDisabled = !!busy || !s.connected || (!!s.service?.botRequired && !gateReady);
+  const needsShoreCheck = !!s.service?.botRequired && !gateReady;
   const reset = new Date((nowDay + 1) * 86400000).toLocaleTimeString([], {
     hour: 'numeric',
     minute: '2-digit',
@@ -652,9 +653,6 @@ function App() {
             {!s.connecting && <button onClick={() => game.reconnect()}>Reconnect</button>}
           </div>
         )}
-        {s.connected && s.service?.botRequired && !gateReady && (
-          <ShoreGate onVerified={() => setGateReady(true)} />
-        )}
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           {returnedCard ? 'Your bottle came back. Someone added six words.' : ''}
         </div>
@@ -677,6 +675,15 @@ function App() {
           </aside>
         )}
         <main id="main" className={`main view-${view}`} inert={!!ritual}>
+          {s.connected &&
+            s.service?.botRequired &&
+            !gateReady &&
+            (view === 'today' || view === 'play') && (
+              <ShoreGate
+                placement={view === 'today' ? 'shore' : 'inline'}
+                onVerified={() => setGateReady(true)}
+              />
+            )}
           {view === 'today' && (
             <Shore
               mode="home"
@@ -1066,8 +1073,12 @@ function App() {
                   <Bottle />
                   <h2>No saved bottles yet.</h2>
                   <p>Release a beginning, or pick up someone else’s.</p>
-                  <button className="button primary" onClick={begin} disabled={controlsDisabled}>
-                    Write a beginning
+                  <button
+                    className="button primary"
+                    onClick={needsShoreCheck ? () => setView('today') : begin}
+                    disabled={needsShoreCheck ? !!busy : controlsDisabled || !!s.service?.paused}
+                  >
+                    {needsShoreCheck ? 'Start at the sea' : 'Write a beginning'}
                   </button>
                 </div>
               )}
@@ -1200,6 +1211,14 @@ function App() {
                     </details>
                   </PaperNote>
                   <div className="invitation-actions">
+                    {s.connected &&
+                      s.service?.botRequired &&
+                      !gateReady &&
+                      !ownsBeginning &&
+                      !finishedBeginning &&
+                      (beginning.day === nowDay || heldInvitation) && (
+                        <ShoreGate onVerified={() => setGateReady(true)} />
+                      )}
                     {ownsBeginning ? (
                       <>
                         <p>
@@ -1228,11 +1247,13 @@ function App() {
                         <button
                           className="button primary"
                           disabled={
-                            controlsDisabled ||
-                            !!s.service?.paused ||
-                            (!catchRound && dailyRounds >= 3)
+                            needsShoreCheck
+                              ? !!busy
+                              : controlsDisabled ||
+                                !!s.service?.paused ||
+                                (!catchRound && dailyRounds >= 3)
                           }
-                          onClick={beginCatch}
+                          onClick={needsShoreCheck ? () => setView('today') : beginCatch}
                         >
                           Find today’s bottle
                         </button>
@@ -1309,8 +1330,9 @@ function App() {
                 </>
               ) : (
                 <p className="shelf-note">
-                  The ID may be incomplete, or the bottle may have been removed. Your saved pairs
-                  are still in My bottles.
+                  {s.connected
+                    ? 'The ID may be incomplete, or the bottle may have been removed. Your saved pairs are still in My bottles.'
+                    : 'Waiting for the bottle to arrive.'}
                 </p>
               )}
             </section>

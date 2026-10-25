@@ -1,0 +1,20 @@
+{
+  "startedAt": "2026-10-25T02:45:24.652Z",
+  "origin": "https://drift-game.drift-calhacks-2026-owlsowo.workers.dev",
+  "mode": "Real hosted HTTPS/SpacetimeDB preflight with three synthetic browser identities; no Claude call was made.",
+  "status": "human_check_or_connection_needed",
+  "checks": [],
+  "errors": [],
+  "cleanup": {
+    "retired": false,
+    "count": 0,
+    "scope": "No tagged demo beginning was created; no retirement was needed."
+  },
+  "preflight1": "Keeping the bottles human\u2026\n\nRetry shore check",
+  "preflight2": "Keeping the bottles human\u2026\n\nRetry shore check",
+  "preflight3": "Keeping the bottles human\u2026\n\nRetry shore check",
+  "error": "The normal browser preflight did not finish automatically. No test story or provider call was started.",
+  "finishedAt": "2026-10-25T02:45:57.698Z",
+  "applicationActionsAttempted": 0,
+  "review": "Saved screenshots show Cloudflare Verify you are human checkboxes. No checkbox was clicked; application spend was unchanged."
+}

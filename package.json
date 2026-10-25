@@ -16,6 +16,7 @@
     "test:ui": "node scripts/test-room.mjs ui",
     "test:shore": "node scripts/test-room.mjs shore",
     "test:catch-first": "node scripts/test-room.mjs catch-first",
+    "test:gate-layout": "node scripts/test-room.mjs gate-layout",
     "test:invitations": "node scripts/test-room.mjs invite",
     "test:coast": "node scripts/test-room.mjs coast",
     "test:retention": "node scripts/test-room.mjs retention",

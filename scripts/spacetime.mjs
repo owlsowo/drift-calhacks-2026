@@ -22,8 +22,9 @@ if (['publish-test', 'delete-test', 'pause-test', 'resume-test'].includes(action
   if (!/^drift-test-[a-z0-9-]+$/.test(name || ''))
     throw Error('Test databases must use the drift-test- namespace.');
   env.ANTHROPIC_API_KEY = '';
-  env.DRIFT_TURNSTILE_SECRET = '';
-  env.DRIFT_TURNSTILE_HOSTNAME = '';
+  // Only a disposable local layout test may request a synthetic gate. No real key or pass.
+  env.DRIFT_TURNSTILE_SECRET = env.DRIFT_TEST_GATE === 'true' ? 'synthetic-layout-test-secret' : '';
+  env.DRIFT_TURNSTILE_HOSTNAME = env.DRIFT_TEST_GATE === 'true' ? '127.0.0.1' : '';
   env.DRIFT_DEV_MODE = env.DRIFT_TEST_EMPTY === 'true' ? 'false' : 'true';
   env.DRIFT_DEV_STARTERS = env.DRIFT_TEST_COLDSTART === 'true' ? 'false' : 'true';
   env.DRIFT_STARTERS_HUMAN_WRITTEN = 'false';
