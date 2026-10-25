@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-25T04:48:42.416Z",
+  "sourceCommit": "5aa0f28787b6ae05ccbd9401633bca4f9472f7f4",
+  "cloudflareVersion": "93201d15-aec6-4b79-a290-70b32bb79f99",
+  "database": {
+    "identity": "c20021eee2fe643cce13a21845d5dcb1a168026f58ec4ac83d36ebd86563be60",
+    "migrationPlan": "No table/view/schema operations",
+    "readback": "withdrawal-upgrade-hosted.json"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-12YSSFQI.js",
+      "sha256": "c0c6666b25f07486fa227501cd58ce81758e4328aff84f1b070c122ea1dd15ab",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-s38fGgsU.css",
+      "sha256": "d594df19a8663ff3b90673f4b8c67690f2c578987f1934b5ea1d941c92256c50",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Author-only withdrawal with live publication removal and retained recipient drafts. 87 server checks, eight cases per Chrome/WebKit and eleven Chrome letter checks pass. No production story was withdrawn; previous-day client state, clipboard and response loss are injected locally. Full-quality ocean and existing CSS are byte-identical to prior deployment.",
+  "ci": {
+    "run": 40163172419,
+    "conclusion": "success"
+  }
+}
