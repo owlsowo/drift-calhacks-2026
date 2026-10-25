@@ -1,11 +1,11 @@
 {
-  "checkedAt": "2026-10-25T00:56:30.363Z",
-  "sourceCommit": "6fd7247e7c1678851a01f293174dac235b72e518",
+  "checkedAt": "2026-10-25T03:41:33.308Z",
+  "sourceCommit": "c3ca985aab9f2336825187f621cda7d615d7751e",
   "sourceHashes": {
     "apps/web/src/PaperNote.tsx": "efe91f6073aa76bc37c3f4215dc7dc8f52e5f02235fa3fb193722d35405fac2c",
     "apps/web/src/PaperSurface.tsx": "6e1c60881d2dcc3f68210bb6bb3b79110d3c52dfbd0b69a8e2dbc413ee7b3b08",
     "apps/web/src/surface.ts": "18fa1a7bcabde1b03dee42c8a0bd601e7c46b76ea0dfedb2bb40af2b7f0dac96",
-    "apps/web/src/shore.css": "0ae27b429bf600b574486972c0aaade6dc9b4a01399b65551e18fd72889377b8"
+    "apps/web/src/shore.css": "3507a0e620fd0e65bd57d3c9e053b39f1bf8214ef0247ac7d5f49c28f9304db7"
   },
   "viewport": [
     390,
@@ -16,31 +16,32 @@
   "cases": [
     {
       "textureDelayMs": 0,
-      "openMs": 1952,
+      "openMs": 1925,
       "meshFrames": 116,
       "firstMeshProgress": 0,
       "lastMeshProgress": 1,
-      "meshVisibleMs": 1914,
-      "seaAntialias": false
+      "meshVisibleMs": 1905,
+      "seaAntialias": null
     },
     {
       "textureDelayMs": 650,
-      "openMs": 2107,
+      "openMs": 2099,
       "meshFrames": 0,
       "firstMeshProgress": null,
       "lastMeshProgress": null,
       "meshVisibleMs": 0,
-      "seaAntialias": false
+      "seaAntialias": null
     },
     {
       "textureDelayMs": 2500,
-      "openMs": 2109,
+      "openMs": 2100,
       "meshFrames": 0,
       "firstMeshProgress": null,
       "lastMeshProgress": null,
       "meshVisibleMs": 0,
-      "seaAntialias": false
+      "seaAntialias": null
     }
   ],
-  "errors": []
+  "errors": [],
+  "sourceState": "Working tree at measurement; sourceHashes identify the tested content"
 }

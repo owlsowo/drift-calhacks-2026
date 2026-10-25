@@ -1,0 +1,9 @@
+# Continuous paper opening
+
+The team's opening screenshot showed the photographed ball over a large blank sheet. Inspection found that late CSS overrides referenced `crumple-release` and `note-uncrumple`, but neither keyframe definition existed. A controlled Chrome fallback capture reproduced the same composition: zero active ball/sheet animations, ball opacity 1 and full sheet size throughout the sampled animation positions. Earlier completion tests established eventual usability but missed this mid-transition defect.
+
+Both animation definitions now exist. The ball fades over 420ms while the connected WebGL sheet unfolds. The DOM sheet stays hidden during that mesh path. Without WebGL or a timely texture, the same photographed paper spreads from a small, irregular silhouette, relaxes its edges and settles at full size over 1900ms. There is one sheet, no flying tiles or new generated artwork. Words and controls remain unavailable until opening completes; existing reduced-motion handling and failure recovery remain.
+
+Four controlled intermediate-frame checks cover actual desktop Chrome/WebKit mesh and forced-fallback paths. They verify a real ball animation, disappearing ball, progressive fallback geometry, hidden duplicate sheet during the mesh path, disposal and editable final content. Eight existing rendering/image/context-loss/preference fault cases pass. The delayed-texture scheduling check measures about 1.9s opening with a ready mesh and 2.1s with 650ms/2500ms texture delays; late images do not switch renderer halfway through. These are injected local browser diagnostics with synthetic writers, not field FPS, physical-device measurements or attendee studies. The benchmark's source hashes identify the measured working tree.
+
+The approved coast, water motion and real paper photograph are retained. No backend, provider call or stored data is changed by this frontend correction.

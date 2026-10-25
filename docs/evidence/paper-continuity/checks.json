@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T03:41:22.634Z",
+  "mode": "Isolated synthetic local sandbox; actual desktop Chrome/WebKit renderers, 390px viewport. CSS animation clocks sampled at controlled positions; fallback WebGL support is injected off. No provider calls or production data.",
+  "checks": [
+    {
+      "engine": "chrome",
+      "mode": "mesh",
+      "check": "Actual CSS handoff and intermediate sheet shape, then readable/editable note with disposed animation layers"
+    },
+    {
+      "engine": "chrome",
+      "mode": "fallback",
+      "check": "Actual CSS handoff and intermediate sheet shape, then readable/editable note with disposed animation layers"
+    },
+    {
+      "engine": "webkit",
+      "mode": "mesh",
+      "check": "Actual CSS handoff and intermediate sheet shape, then readable/editable note with disposed animation layers"
+    },
+    {
+      "engine": "webkit",
+      "mode": "fallback",
+      "check": "Actual CSS handoff and intermediate sheet shape, then readable/editable note with disposed animation layers"
+    }
+  ],
+  "errors": []
+}

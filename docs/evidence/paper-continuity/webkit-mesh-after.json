@@ -1,0 +1,46 @@
+{
+  "ballAnimations": 1,
+  "sheetAnimations": 0,
+  "phases": [
+    {
+      "at": 0,
+      "ballOpacity": 1,
+      "sheetOpacity": 1,
+      "sheetVisibility": "hidden",
+      "sheetWidth": 350,
+      "sheetHeight": 632.703125,
+      "transform": "none",
+      "clip": "none"
+    },
+    {
+      "at": 200,
+      "ballOpacity": 0.341299,
+      "sheetOpacity": 1,
+      "sheetVisibility": "hidden",
+      "sheetWidth": 350,
+      "sheetHeight": 632.703125,
+      "transform": "none",
+      "clip": "none"
+    },
+    {
+      "at": 600,
+      "ballOpacity": 0,
+      "sheetOpacity": 1,
+      "sheetVisibility": "hidden",
+      "sheetWidth": 350,
+      "sheetHeight": 632.703125,
+      "transform": "none",
+      "clip": "none"
+    },
+    {
+      "at": 1400,
+      "ballOpacity": 0,
+      "sheetOpacity": 1,
+      "sheetVisibility": "hidden",
+      "sheetWidth": 350,
+      "sheetHeight": 632.703125,
+      "transform": "none",
+      "clip": "none"
+    }
+  ]
+}
