@@ -92,6 +92,13 @@ export const AiStatusInfo = __t.object("AiStatusInfo", {
 });
 export type AiStatusInfo = __Infer<typeof AiStatusInfo>;
 
+export const Appreciation = __t.object("Appreciation", {
+  cardId: __t.string(),
+  sent: __t.bool(),
+  received: __t.bool(),
+});
+export type Appreciation = __Infer<typeof Appreciation>;
+
 export const Assignment = __t.object("Assignment", {
   id: __t.string(),
   text: __t.string(),
@@ -197,6 +204,9 @@ export const Maintenance = __t.object("Maintenance", {
   scheduledAt: __t.scheduleAt(),
 });
 export type Maintenance = __Infer<typeof Maintenance>;
+
+export const MyAppreciation = __t.object("MyAppreciation", {});
+export type MyAppreciation = __Infer<typeof MyAppreciation>;
 
 export const MyAssignment = __t.object("MyAssignment", {});
 export type MyAssignment = __Infer<typeof MyAssignment>;

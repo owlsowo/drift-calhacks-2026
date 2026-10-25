@@ -20,6 +20,7 @@ import type {
   ReportedCard,
   Beginning,
   UnopenedReturn,
+  Appreciation,
 } from './module_bindings/types';
 export type Snapshot = {
   connected: boolean;
@@ -32,6 +33,7 @@ export type Snapshot = {
   assignments: Assignment[];
   ownership: OwnedCard[];
   unopenedReturns: UnopenedReturn[];
+  appreciation: Appreciation[];
   outgoing: Outgoing[];
   cards: Postcard[];
   beginnings: Beginning[];
@@ -53,6 +55,7 @@ const blank: Snapshot = {
   assignments: [],
   ownership: [],
   unopenedReturns: [],
+  appreciation: [],
   outgoing: [],
   cards: [],
   beginnings: [],
@@ -160,6 +163,7 @@ function emit(patch: Partial<Snapshot> = {}) {
       assignments: [...connection.db.myAssignment.iter()],
       ownership: [...connection.db.myCards.iter()],
       unopenedReturns: [...connection.db.myUnopenedReturns.iter()],
+      appreciation: [...connection.db.myAppreciation.iter()],
       outgoing: [...connection.db.myOutgoing.iter()],
       cards: [...connection.db.postcard.iter()],
       beginnings: [...connection.db.beginning.iter()],
@@ -224,6 +228,7 @@ function connect() {
         conn.db.myAssignment,
         conn.db.myCards,
         conn.db.myUnopenedReturns,
+        conn.db.myAppreciation,
         conn.db.myOutgoing,
         conn.db.postcard,
         conn.db.beginning,
@@ -256,6 +261,7 @@ function connect() {
           'SELECT * FROM my_assignment',
           'SELECT * FROM my_cards',
           'SELECT * FROM my_unopened_returns',
+          'SELECT * FROM my_appreciation',
           'SELECT * FROM my_outgoing',
           'SELECT * FROM postcard',
           'SELECT * FROM beginning',
@@ -400,6 +406,10 @@ export const game = {
   async withdraw(bottleId: string) {
     if (!connection?.isActive) throw Error('Reconnect before withdrawing your bottle.');
     await connection.reducers.withdrawMyBeginning({ bottleId });
+  },
+  async thank(cardId: string) {
+    if (!connection?.isActive) throw Error('Reconnect to send your thanks.');
+    await connection.reducers.thankCoWriter({ cardId });
   },
   async report(roundId: string, cardId: string, reason: string) {
     await connection!.reducers.reportContent({ roundId, cardId, reason });

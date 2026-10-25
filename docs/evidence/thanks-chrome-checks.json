@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-25T04:52:28.347Z",
+  "engine": "Chrome",
+  "scope": "Real disposable local database and synthetic stories with AI off. Clipboard and lost acknowledgement are injected. Screens and downloads are desktop browser checks, not physical phone OS sharing.",
+  "checks": [
+    "A completed human pair offers a deliberate private thank-you after opening; reading alone sends nothing",
+    "Public story links and copied shelf cookies reveal no private receipts and cannot send a thank-you",
+    "Real thanks arrives live while the other writer keeps their focused draft; subscription confirmation unlocks a lost response and repeat/two-tab sends remain one receipt",
+    "Each co-writer can send independently; both private receipts survive reload and remain absent from the public copy",
+    "Another ending has independent private appreciation; thanks sent while its writer is away appears on return without a false live-arrival toast",
+    "Copy text and the actual image download still export the story, with private receipt UI kept outside story text",
+    "Hiding the pair removes its appreciation and public story live for both writers and public readers"
+  ]
+}

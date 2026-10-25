@@ -16,6 +16,7 @@ import {
   Download,
   Flag,
   HelpCircle,
+  Heart,
   LoaderCircle,
   Mail,
   RotateCcw,
@@ -108,7 +109,15 @@ function Bottle({ small = false }: { small?: boolean }) {
     </svg>
   );
 }
-function Postcard({ card, role = 'public' }: { card: Card; role?: string }) {
+function Postcard({
+  card,
+  role = 'public',
+  children,
+}: {
+  card: Card;
+  role?: string;
+  children?: React.ReactNode;
+}) {
   return (
     <article className="postcard" aria-label="Your completed postcard" data-card-id={card.id}>
       <time className="letter-date" dateTime={new Date(card.createdMs).toISOString()}>
@@ -130,6 +139,7 @@ function Postcard({ card, role = 'public' }: { card: Card; role?: string }) {
         <p>{card.reply}</p>
       </div>
       <p className="contribution-note">{contribution(card, role)}</p>
+      {children}
     </article>
   );
 }
@@ -274,10 +284,33 @@ async function confirmWithdrawal(bottleId: string) {
   }
 }
 
+async function confirmThanks(cardId: string) {
+  let unsubscribe = () => {};
+  const committed = new Promise<void>((resolve, reject) => {
+    const check = () => {
+      const state = game.snapshot();
+      if (state.connected && state.appreciation.some((item) => item.cardId === cardId && item.sent))
+        resolve();
+    };
+    unsubscribe = game.subscribe(check);
+    check();
+    void game.thank(cardId).then(check, reject);
+  });
+  try {
+    await withinDeadline(
+      committed,
+      'Your thanks could not be confirmed. Reconnect and try again; it will only be sent once.',
+    );
+  } finally {
+    unsubscribe();
+  }
+}
+
 function App() {
   const s = useSyncExternalStore(game.subscribe, game.snapshot);
   const [view, setView] = useState<'today' | 'play' | 'collection' | 'card' | 'beginning'>('today');
   const [selected, setSelected] = useState('');
+  const [openedCardId, setOpenedCardId] = useState('');
   const [playingRoundId, setPlayingRoundId] = useState('');
   const [selectedBeginningId, setSelectedBeginningId] = useState('');
   const [withdrawalId, setWithdrawalId] = useState('');
@@ -297,6 +330,7 @@ function App() {
   const [gateReady, setGateReady] = useState(false);
   const [returnedNotice, setReturnedNotice] = useState('');
   const seenReturns = useRef<{ identity: string; ids: Set<string> } | null>(null);
+  const seenThanks = useRef<{ identity: string; ids: Set<string> } | null>(null);
   const [ritual, setRitual] = useState<{
     kind: BottleRitualKind;
     phase: 'waiting' | 'moving';
@@ -378,12 +412,14 @@ function App() {
     .sort((a, b) => b.createdMs - a.createdMs);
   const card = s.cards.find((c) => c.id === selected && !s.reported.some((r) => r.id === c.id));
   const ownership = s.ownership.find((o) => o.id === selected);
+  const appreciation = s.appreciation.find((item) => item.cardId === selected);
   const cardId = card?.id;
   useEffect(() => {
     if (view === 'card' && card) void preparePostcard(card).catch(() => {});
   }, [view, card]);
   const ownsVisibleCard = !!ownership && !ownership.hidden;
   const recordOpen = useCallback(() => {
+    if (cardId) setOpenedCardId(cardId);
     if (cardId && ownsVisibleCard && s.connected) void game.cardAction(cardId, 'open');
   }, [cardId, ownsVisibleCard, s.connected]);
   const currentDraftKey = active
@@ -430,6 +466,26 @@ function App() {
       setReturnedNotice(arriving.id);
     }
   }, [s.connected, s.identity, s.ownership, s.cards]);
+  useEffect(() => {
+    if (!s.connected || !s.identity) return;
+    const received = s.appreciation.filter(
+      (item) =>
+        item.received &&
+        s.cards.some((card) => card.id === item.cardId) &&
+        !s.reported.some((report) => report.id === item.cardId),
+    );
+    if (seenThanks.current?.identity !== s.identity) {
+      seenThanks.current = {
+        identity: s.identity,
+        ids: new Set(received.map((item) => item.cardId)),
+      };
+      return;
+    }
+    const arrived = received.find((item) => !seenThanks.current!.ids.has(item.cardId));
+    for (const item of received) seenThanks.current.ids.add(item.cardId);
+    if (arrived && !(view === 'card' && selected === arrived.cardId))
+      setToast('A co-writer sent a little thanks. Find it in My bottles.');
+  }, [s.connected, s.identity, s.appreciation, s.cards, s.reported, view, selected]);
   const emptyTide = error.startsWith('No bottles are available');
   const remaining = active
     ? Math.max(0, Math.min(600, Math.ceil((active.leaseMs - clock) / 1000)))
@@ -1168,7 +1224,42 @@ function App() {
               {card && (
                 <div className="reveal-art">
                   <PaperNote key={card.id} postcard onOpen={recordOpen}>
-                    <Postcard card={card} role={ownership?.role} />
+                    <Postcard card={card} role={ownership?.role}>
+                      {appreciation && ownership && !ownership.hidden && (
+                        <div
+                          className="co-writer-thanks"
+                          role="group"
+                          aria-label="Private thanks between co-writers"
+                        >
+                          {appreciation.received && (
+                            <p className="thanks-received" role="status">
+                              <Heart size={15} aria-hidden="true" /> Your co-writer sent a little
+                              thanks.
+                            </p>
+                          )}
+                          <button
+                            className="text-button"
+                            disabled={
+                              !!busy ||
+                              !s.connected ||
+                              appreciation.sent ||
+                              openedCardId !== card.id
+                            }
+                            onClick={() =>
+                              void run('Sending thanks…', () => confirmThanks(card.id))
+                            }
+                          >
+                            {appreciation.sent ? <Check size={15} /> : <Heart size={15} />}
+                            {appreciation.sent
+                              ? 'Thanks sent'
+                              : busy === 'Sending thanks…'
+                                ? 'Sending thanks…'
+                                : 'Thank your co-writer'}
+                          </button>
+                          <small>Private, just between the two writers.</small>
+                        </div>
+                      )}
+                    </Postcard>
                   </PaperNote>
                 </div>
               )}
@@ -1216,6 +1307,13 @@ function App() {
                               unopened
                             </strong>
                           )}
+                          {letter.endings.some((pair) =>
+                            s.appreciation.some((item) => item.cardId === pair.id && item.received),
+                          ) && (
+                            <span className="thanks-label">
+                              <Heart size={12} aria-hidden="true" /> Thanks received
+                            </span>
+                          )}
                         </small>
                         <ChevronLeft size={16} className="letter-forward" />
                       </button>
@@ -1238,7 +1336,15 @@ function App() {
                           role={
                             s.ownership.find((item) => item.id === pair.id && !item.hidden)?.role
                           }
-                        />
+                        >
+                          {s.appreciation.some(
+                            (item) => item.cardId === pair.id && item.received,
+                          ) && (
+                            <span className="thanks-label">
+                              <Heart size={12} aria-hidden="true" /> Thanks received
+                            </span>
+                          )}
+                        </Postcard>
                       </button>
                     ))}
                   </div>
@@ -1454,6 +1560,13 @@ function App() {
                             {unopenedIds.has(pair.id) && (
                               <strong className="unopened-label">Unopened</strong>
                             )}
+                            {s.appreciation.some(
+                              (item) => item.cardId === pair.id && item.received,
+                            ) && (
+                              <span className="thanks-label">
+                                <Heart size={12} aria-hidden="true" /> Thanks received
+                              </span>
+                            )}
                             {new Date(pair.createdMs).toLocaleDateString([], {
                               month: 'short',
                               day: 'numeric',
@@ -1583,6 +1696,11 @@ function App() {
           <p>
             AI guidance is optional and stays separate from your words. Starter content is always
             labeled.
+          </p>
+          <p>
+            On a completed human story, either co-writer can send one private thank-you. Only the
+            two original writers can see it; opening a note does not send one. It stays with the
+            story under the same retention and hiding rules.
           </p>
           <p>
             Phone shake is optional and can be turned off on the bottle screen. Motion readings stay
