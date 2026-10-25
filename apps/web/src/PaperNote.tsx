@@ -13,16 +13,34 @@ export function PaperNote({
   onOpen?: () => void;
 }) {
   const note = useRef<HTMLDivElement>(null);
-  const [meshReady, setMeshReady] = useState(false);
+  const [opening, setOpening] = useState<'waiting' | 'mesh' | 'fallback'>('waiting');
+  const decision = useRef(opening);
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   const [phase, setPhase] = useState<'closed' | 'unfolding' | 'open'>(() =>
     closed ? 'closed' : reduced() ? 'open' : 'unfolding',
   );
   useEffect(() => {
     if (phase !== 'unfolding') return;
-    const timer = setTimeout(() => setPhase('open'), NOTE_OPEN_MS);
+    const timer = setTimeout(
+      () => {
+        if (opening === 'waiting') {
+          if (decision.current !== 'waiting') return;
+          decision.current = 'fallback';
+          setOpening('fallback');
+        } else setPhase('open');
+      },
+      opening === 'waiting' ? 200 : opening === 'fallback' ? NOTE_OPEN_MS : NOTE_OPEN_MS + 1000,
+    );
     return () => clearTimeout(timer);
-  }, [phase]);
+  }, [phase, opening]);
+  useEffect(() => {
+    const preference = matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => {
+      if (preference.matches) setPhase((current) => (current === 'unfolding' ? 'open' : current));
+    };
+    preference.addEventListener('change', update);
+    return () => preference.removeEventListener('change', update);
+  }, []);
   useEffect(() => {
     if (phase !== 'open' || !onOpen || typeof IntersectionObserver !== 'function') return;
     let inView = false;
@@ -56,7 +74,7 @@ export function PaperNote({
   return (
     <div
       ref={note}
-      className={`paper-note paper-${phase} ${meshReady ? 'has-paper-mesh' : ''} ${postcard ? 'postcard-paper' : ''}`}
+      className={`paper-note paper-${phase} ${opening === 'mesh' ? 'has-paper-mesh' : ''} ${phase === 'unfolding' && opening === 'waiting' ? 'paper-waiting' : ''} ${postcard ? 'postcard-paper' : ''}`}
       data-paper-phase={phase}
     >
       {phase === 'closed' && (
@@ -69,7 +87,24 @@ export function PaperNote({
       {phase === 'unfolding' && (
         <>
           <img className="unfolding-ball" src="/assets/paper-ball.png" alt="" draggable={false} />
-          <PaperSurface onReady={() => setMeshReady(true)} />
+          {opening !== 'fallback' && (
+            <PaperSurface
+              onReady={() => {
+                if (decision.current !== 'waiting') return false;
+                decision.current = 'mesh';
+                setOpening('mesh');
+                return true;
+              }}
+              onComplete={() => setPhase('open')}
+              onUnavailable={() => {
+                if (decision.current === 'mesh') setPhase('open');
+                else {
+                  decision.current = 'fallback';
+                  setOpening('fallback');
+                }
+              }}
+            />
+          )}
           <span className="sr-only" role="status">
             Unfolding the note.
           </span>

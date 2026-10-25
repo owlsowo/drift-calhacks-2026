@@ -17,6 +17,8 @@ if (
     'webkit',
     'recovery',
     'coldstart',
+    'paper-benchmark',
+    'paper-fallbacks',
   ].includes(mode)
 )
   throw Error('Unknown test mode.');
@@ -80,27 +82,31 @@ try {
     }
   }
   const file =
-    mode === 'coldstart'
-      ? 'coldstart.mjs'
-      : mode === 'recovery'
-        ? 'draft-recovery.mjs'
-        : mode === 'webkit'
-          ? 'webkit-smoke.mjs'
-          : mode === 'empty'
-            ? 'empty-tide.mjs'
-            : mode === 'catch-first'
-              ? 'catch-first.mjs'
-              : mode === 'shore'
-                ? 'shore-interactions.mjs'
-                : mode === 'ui'
-                  ? 'ui-smoke.mjs'
-                  : mode === 'a11y'
-                    ? 'accessibility.mjs'
-                    : mode === 'states'
-                      ? 'content-states.mjs'
-                      : mode === 'demo'
-                        ? 'demo-flow.mjs'
-                        : 'live-invariants.ts';
+    mode === 'paper-fallbacks'
+      ? 'paper-fallbacks.mjs'
+      : mode === 'paper-benchmark'
+        ? 'paper-benchmark.mjs'
+        : mode === 'coldstart'
+          ? 'coldstart.mjs'
+          : mode === 'recovery'
+            ? 'draft-recovery.mjs'
+            : mode === 'webkit'
+              ? 'webkit-smoke.mjs'
+              : mode === 'empty'
+                ? 'empty-tide.mjs'
+                : mode === 'catch-first'
+                  ? 'catch-first.mjs'
+                  : mode === 'shore'
+                    ? 'shore-interactions.mjs'
+                    : mode === 'ui'
+                      ? 'ui-smoke.mjs'
+                      : mode === 'a11y'
+                        ? 'accessibility.mjs'
+                        : mode === 'states'
+                          ? 'content-states.mjs'
+                          : mode === 'demo'
+                            ? 'demo-flow.mjs'
+                            : 'live-invariants.ts';
   const runner = mode === 'live' ? ['--import', 'tsx', `scripts/${file}`] : [`scripts/${file}`];
   const child = spawn(process.execPath, [...runner, ...process.argv.slice(3)], {
     cwd: root,

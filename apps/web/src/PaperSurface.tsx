@@ -40,41 +40,72 @@ void main() {
 }`;
 
 // One connected mesh: creases relax as the edges spread; no separate flying tiles.
-export function PaperSurface({ onReady }: { onReady: () => void }) {
+export function PaperSurface({
+  onReady,
+  onComplete,
+  onUnavailable,
+}: {
+  onReady: () => boolean;
+  onComplete: () => void;
+  onUnavailable: () => void;
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const ready = useRef(onReady);
-  ready.current = onReady;
+  const events = useRef({ onReady, onComplete, onUnavailable });
+  events.current = { onReady, onComplete, onUnavailable };
   useEffect(() => {
     const target = canvas.current!;
-    const start = performance.now();
     const surface = createSurface(target, vertex, fragment, 36);
-    if (!surface) return;
+    if (!surface) {
+      events.current.onUnavailable();
+      return;
+    }
     let frame = 0,
-      disposed = false;
+      disposed = false,
+      finished = false,
+      start = 0;
     const image = new Image();
+    const unavailable = () => {
+      if (disposed || finished) return;
+      finished = true;
+      cancelAnimationFrame(frame);
+      events.current.onUnavailable();
+    };
+    const lost = (event: Event) => {
+      event.preventDefault();
+      unavailable();
+    };
     const draw = (time: number) => {
-      if (disposed) return;
+      if (disposed || finished) return;
       const p = Math.min(1, (time - start) / NOTE_OPEN_MS);
       surface.float('uProgress', p);
       surface.draw();
       if (p < 1) frame = requestAnimationFrame(draw);
+      else {
+        finished = true;
+        events.current.onComplete();
+      }
     };
     image.onload = () => {
-      if (disposed) return;
+      if (disposed || finished) return;
       const { width, height } = target.getBoundingClientRect();
       surface.resize(width, height, Math.min(devicePixelRatio, 1.5));
       const aspect = width / height,
         photoAspect = image.width / image.height;
       surface.pair('uCrop', Math.min(1, aspect / photoAspect), Math.min(1, photoAspect / aspect));
       surface.image(image);
-      draw(performance.now());
-      ready.current();
+      if (!events.current.onReady()) return;
+      start = performance.now();
+      draw(start);
     };
+    image.onerror = unavailable;
+    target.addEventListener('webglcontextlost', lost);
     image.src = '/assets/paper-texture.jpg';
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
       image.onload = null;
+      image.onerror = null;
+      target.removeEventListener('webglcontextlost', lost);
       surface.dispose();
     };
   }, []);

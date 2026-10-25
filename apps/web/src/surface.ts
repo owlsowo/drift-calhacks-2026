@@ -7,7 +7,8 @@ export function createSurface(
 ) {
   const gl = canvas.getContext('webgl', {
     alpha: true,
-    antialias: true,
+    // The sea fills the viewport; only the paper mesh has an exposed silhouette.
+    antialias: grid > 1,
     depth: false,
     powerPreference: 'low-power',
   });
