@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-25T05:36:19.631Z",
+  "engine": "Chrome",
+  "checks": [
+    "The actual 320px rendered QR screenshot independently decodes to exactly the same public bottle URL as Copy link, with no private history/draft/token and no additional author turn",
+    "Close and Escape return keyboard focus to the invitation trigger without navigating or altering the author’s round",
+    "An independent identity opens the decoded invitation for free, gains no withdrawal authority, then completes one real local reply that arrives live for the original author",
+    "A failed lazy encoder leaves a working copy-link route and consumes no turn or provider request",
+    "A real author withdrawal removes open invitation dialogs and their QR from both subscribed identities without leaving a stale code"
+  ],
+  "errors": [],
+  "scope": "Disposable keyless local database and synthetic two-writer story; independent jsQR decoding of an actual rendered QR screenshot. No paid call, external QR service, camera permission, physical-phone scan or OS share claim."
+}

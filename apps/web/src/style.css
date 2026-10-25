@@ -2333,3 +2333,35 @@ a {
   line-height: 1.5;
   margin: 0 0 8px;
 }
+
+.qr-invitation {
+  text-align: center;
+}
+.bottle-qr {
+  display: block;
+  width: min(256px, 100%);
+  height: auto;
+  margin: 22px auto;
+  background: white;
+}
+.qr-invitation p {
+  font-size: 13px;
+  line-height: 1.7;
+}
+.qr-bottle-link {
+  display: block;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  color: inherit;
+}
+.qr-preparing {
+  min-height: 100px;
+  display: grid;
+  place-items: center;
+}
+.sea-world .invitation-actions .qr-open {
+  display: flex;
+  margin: 0 auto 16px;
+  gap: 7px;
+}
