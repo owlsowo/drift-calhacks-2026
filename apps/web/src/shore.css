@@ -29,7 +29,7 @@
 .ocean-photograph {
   position: absolute;
   inset: 0;
-  background: #075489 url('/assets/sea-shore.jpg') center center / cover no-repeat;
+  background: #075489 url('/assets/coast-night-wide.webp') center center / cover no-repeat;
 }
 .sea-surface {
   position: absolute;
@@ -930,7 +930,7 @@
 }
 @media (max-width: 700px) {
   .ocean-photograph {
-    background-image: url('/assets/sea-shore.jpg');
+    background-image: url('/assets/coast-night-mobile.webp');
   }
   .sea-world .site-header {
     inset: max(9px, env(safe-area-inset-top)) 0 auto;

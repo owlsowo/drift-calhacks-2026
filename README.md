@@ -10,7 +10,7 @@
 
 The build uses React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The hosted independent-letter upgrade preserved the original database and records with defaulted appended columns and an owner backfill. See [migration evidence](docs/letter-migration.md). The current three-writer integration passes ten checks in Chrome and ten in WebKit: multiple endings, independent drafts, real ID cookies, reload recovery, private/public contribution captions and actual PNG download. These are isolated synthetic checks with model calls disabled.
 
-The full-screen sea uses the locally bundled MIT-licensed Noniv WebGPU FFT engine. Unsupported devices and reduced motion use the credited sea photograph. The bottle and lighthouse are original SVG, the dock is CSS, and paper uses a real credited photograph; **no AI-generated images ship in the runtime**. See [asset sources](docs/asset-sources.md). The note opens over the same sea. The current pickup ritual supports deliberate pointer shakes alongside tap/keyboard opening, with explicit opt-in phone motion, an off control and reduced-motion support. Browser sensor checks are emulated; physical phones remain unverified.
+The full-screen sea uses the locally bundled MIT-licensed Noniv WebGPU FFT engine. The team-approved AI coast artwork provides the responsive fallback, and its transparent lighthouse/headland sits over the simulated water. The bottle is original SVG, the dock is CSS, and paper uses a real credited photograph. Pause and reduced motion remain supported. See [asset sources](docs/asset-sources.md). The note opens over the same sea. The current pickup ritual supports deliberate pointer shakes alongside tap/keyboard opening, with explicit opt-in phone motion, an off control and reduced-motion support. Browser sensor checks are emulated; physical phones remain unverified.
 
 **Live checkpoint:** Cloudflare HTTPS and Maincloud are deployed. The contribution-caption release is `e0df0d3` ([served-file evidence](docs/evidence/contribution-release.json)); the shake refinement `4acb0a3` is also live ([release proof](docs/evidence/bottle-ritual-release.json)). A real hosted two-browser Claude flow and Turnstile negative checks passed before the independent-letter redesign. A new hosted multi-writer/model flow under the revised mechanics remains pending; local tests do not establish it. Figma Make/Slides and Mana Bottle Kitchen have actual workflow artifacts: [workflow checkpoint](docs/workflow-checkpoint.md). Actual phones, attendee outcomes and final sponsor eligibility remain unverified. The team owns submission writing.
 
@@ -55,6 +55,7 @@ npm run check:scripts
 npm run build
 npm run test:letters
 DRIFT_TEST_ENGINE=webkit npm run test:letters
+npm run test:coast
 npm run test:retention
 DRIFT_TEST_ENGINE=webkit npm run test:retention
 npm run test:ritual
