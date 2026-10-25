@@ -256,6 +256,22 @@ export const Postcard = __t.object("Postcard", {
 });
 export type Postcard = __Infer<typeof Postcard>;
 
+export const PostcardScene = __t.object("PostcardScene", {
+  cardId: __t.string(),
+  packId: __t.string(),
+  sceneJson: __t.string(),
+  createdMs: __t.f64(),
+});
+export type PostcardScene = __Infer<typeof PostcardScene>;
+
+export const PostcardSceneStatus = __t.object("PostcardSceneStatus", {
+  cardId: __t.string(),
+  state: __t.string(),
+  message: __t.string(),
+  updatedMs: __t.f64(),
+});
+export type PostcardSceneStatus = __Infer<typeof PostcardSceneStatus>;
+
 export const Report = __t.object("Report", {
   id: __t.string(),
   owner: __t.identity(),
@@ -321,6 +337,32 @@ export const Round = __t.object("Round", {
   busyUntil: __t.f64(),
 });
 export type Round = __Infer<typeof Round>;
+
+export const SceneJob = __t.object("SceneJob", {
+  cardId: __t.string(),
+  owner: __t.identity(),
+  packId: __t.string(),
+  state: __t.string(),
+  message: __t.string(),
+  costId: __t.string(),
+  createdMs: __t.f64(),
+  finishedMs: __t.f64(),
+  startedMs: __t.f64(),
+});
+export type SceneJob = __Infer<typeof SceneJob>;
+
+export const SceneResult = __t.object("SceneResult", {
+  state: __t.string(),
+  message: __t.string(),
+});
+export type SceneResult = __Infer<typeof SceneResult>;
+
+export const SceneSchedule = __t.object("SceneSchedule", {
+  scheduledId: __t.u64(),
+  scheduledAt: __t.scheduleAt(),
+  cardId: __t.string(),
+});
+export type SceneSchedule = __Infer<typeof SceneSchedule>;
 
 export const SchemaMigration = __t.object("SchemaMigration", {
   id: __t.string(),

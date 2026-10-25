@@ -14,6 +14,7 @@ import * as AdminReportsProcedure from "../admin_reports_procedure";
 import * as AdminStatusProcedure from "../admin_status_procedure";
 import * as AdminUpgradeLettersProcedure from "../admin_upgrade_letters_procedure";
 import * as GetHelloProcedure from "../get_hello_procedure";
+import * as IllustrateCardProcedure from "../illustrate_card_procedure";
 import * as RequestNudgeProcedure from "../request_nudge_procedure";
 import * as ServerTimeProcedure from "../server_time_procedure";
 import * as SubmitReplyProcedure from "../submit_reply_procedure";
@@ -36,6 +37,8 @@ export type AdminUpgradeLettersArgs = __Infer<typeof AdminUpgradeLettersProcedur
 export type AdminUpgradeLettersResult = __Infer<typeof AdminUpgradeLettersProcedure.returnType>;
 export type GetHelloArgs = __Infer<typeof GetHelloProcedure.params>;
 export type GetHelloResult = __Infer<typeof GetHelloProcedure.returnType>;
+export type IllustrateCardArgs = __Infer<typeof IllustrateCardProcedure.params>;
+export type IllustrateCardResult = __Infer<typeof IllustrateCardProcedure.returnType>;
 export type RequestNudgeArgs = __Infer<typeof RequestNudgeProcedure.params>;
 export type RequestNudgeResult = __Infer<typeof RequestNudgeProcedure.returnType>;
 export type ServerTimeArgs = __Infer<typeof ServerTimeProcedure.params>;
