@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T05:26:57.194Z",
+  "sourceCommit": "b4a8307d6a02e36ed6afc3f3f7b768afc936e919",
+  "cloudflareVersion": "3f413c75-d0b4-4c88-8200-8d9c4678431b",
+  "assets": [
+    {
+      "asset": "/assets/index-B4cDuAOP.js",
+      "sha256": "3fc8246e210c2bcde48e0bfadde2838aaf44ee71044571e007cfca476479b956",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-BVyrjOLk.css",
+      "sha256": "4f26eec021585f914d3103cc9a429034a689b83cd011257b577586ceb52adf75",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Matching tested frontend bytes. Hosted additive upgrade and field readback are separate in scene-upgrade-hosted.json. Local synthetic and recorded-scene tests do not establish new live scene generation or physical-phone sharing. Full-quality sea unchanged.",
+  "ci": {
+    "run": 40165468006,
+    "conclusion": "success"
+  }
+}

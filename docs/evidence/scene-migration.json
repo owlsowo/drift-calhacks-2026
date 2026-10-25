@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-10-25T05:16:00.259Z",
+  "checkedAt": "2026-10-25T05:25:23.374Z",
   "legacyCommit": "4c217cc68b517de7d9d866fb1976316aa8e66257",
-  "candidateCommit": "1f0a116b85cc76e0b9b72c08a23ec55f871686d5",
+  "candidateCommit": "b4a8307d6a02e36ed6afc3f3f7b768afc936e919",
   "mode": "Actual isolated local SpacetimeDB publish, SQL invariants, old/new generated SDK subscriptions and scheduler. Synthetic stories, cleared provider keys, no browser challenge or model call.",
   "beforeCounts": {
     "bottle": 1,
@@ -52,7 +52,7 @@
     0,
     0
   ],
-  "planSha256": "5574e12656e75cf7af5274bf52752e519089810b1e4180b00e54beb8425ea6fc",
+  "planSha256": "751bfd60a56c8a4e7998a075cbcee62116407f9e3bfdbb7106800502160656c5",
   "checks": [
     "Actual additive publish preserves every compared old row and field, including a completed pair, private thanks and an active reply; all four new tables start empty",
     "Original generated clients remain subscribed after the upgrade and receive new private thanks, with the held reply ID/version/deadline unchanged",
