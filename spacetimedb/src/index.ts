@@ -1684,6 +1684,27 @@ export const my_cards = db.view({ name: 'my_cards', public: true }, t.array(owne
   }
   return rows;
 });
+// Separate additive view: existing clients keep the original my_cards wire shape.
+// The open bit is recorded only when the author's full postcard is visible.
+const unopenedReturn = t.row('UnopenedReturn', { id: t.string() });
+export const my_unopened_returns = db.view(
+  { name: 'my_unopened_returns', public: true },
+  t.array(unopenedReturn),
+  (ctx) => {
+    const rows = [];
+    for (const a of ctx.db.authorship.iter()) {
+      if (
+        a.setupOwner &&
+        same(a.setupOwner, ctx.sender) &&
+        !a.hidden &&
+        !(a.setupActions & CARD_ACTIONS.open) &&
+        ctx.db.postcard.id.find(a.id)
+      )
+        rows.push({ id: a.id });
+    }
+    return rows;
+  },
+);
 const outgoing = t.row('Outgoing', {
   id: t.string(),
   text: t.string(),

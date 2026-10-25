@@ -216,6 +216,9 @@ export type MyReportedCards = __Infer<typeof MyReportedCards>;
 export const MyRound = __t.object("MyRound", {});
 export type MyRound = __Infer<typeof MyRound>;
 
+export const MyUnopenedReturns = __t.object("MyUnopenedReturns", {});
+export type MyUnopenedReturns = __Infer<typeof MyUnopenedReturns>;
+
 export const Outgoing = __t.object("Outgoing", {
   id: __t.string(),
   text: __t.string(),
@@ -344,4 +347,9 @@ export const Today = __t.object("Today", {
   promptJson: __t.string(),
 });
 export type Today = __Infer<typeof Today>;
+
+export const UnopenedReturn = __t.object("UnopenedReturn", {
+  id: __t.string(),
+});
+export type UnopenedReturn = __Infer<typeof UnopenedReturn>;
 

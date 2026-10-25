@@ -19,6 +19,7 @@ import type {
   HelloAvailability,
   ReportedCard,
   Beginning,
+  UnopenedReturn,
 } from './module_bindings/types';
 export type Snapshot = {
   connected: boolean;
@@ -30,6 +31,7 @@ export type Snapshot = {
   rounds: Round[];
   assignments: Assignment[];
   ownership: OwnedCard[];
+  unopenedReturns: UnopenedReturn[];
   outgoing: Outgoing[];
   cards: Postcard[];
   beginnings: Beginning[];
@@ -50,6 +52,7 @@ const blank: Snapshot = {
   rounds: [],
   assignments: [],
   ownership: [],
+  unopenedReturns: [],
   outgoing: [],
   cards: [],
   beginnings: [],
@@ -156,6 +159,7 @@ function emit(patch: Partial<Snapshot> = {}) {
       rounds: [...connection.db.myRound.iter()],
       assignments: [...connection.db.myAssignment.iter()],
       ownership: [...connection.db.myCards.iter()],
+      unopenedReturns: [...connection.db.myUnopenedReturns.iter()],
       outgoing: [...connection.db.myOutgoing.iter()],
       cards: [...connection.db.postcard.iter()],
       beginnings: [...connection.db.beginning.iter()],
@@ -219,6 +223,7 @@ function connect() {
         conn.db.myRound,
         conn.db.myAssignment,
         conn.db.myCards,
+        conn.db.myUnopenedReturns,
         conn.db.myOutgoing,
         conn.db.postcard,
         conn.db.beginning,
@@ -250,6 +255,7 @@ function connect() {
           'SELECT * FROM my_round',
           'SELECT * FROM my_assignment',
           'SELECT * FROM my_cards',
+          'SELECT * FROM my_unopened_returns',
           'SELECT * FROM my_outgoing',
           'SELECT * FROM postcard',
           'SELECT * FROM beginning',
