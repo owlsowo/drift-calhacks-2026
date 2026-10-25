@@ -265,6 +265,8 @@ function App() {
   const returnedToday = mine.filter(
     (o) => o.role === 'setup' && dayOf(o.card.createdMs) === nowDay,
   ).length;
+  const outgoingReturned =
+    !!active?.setupId && s.outgoing.some((o) => o.id === active.setupId && !!o.cardId);
   const returnedCard = mine.find((o) => o.role === 'setup' && o.card.id === returnedNotice)?.card;
   useEffect(() => {
     if (!s.connected || !s.identity) return;
@@ -280,7 +282,10 @@ function App() {
     }
     const arriving = returned.find((card) => !seenReturns.current!.ids.has(card.id));
     for (const card of returned) seenReturns.current.ids.add(card.id);
-    if (arriving) setReturnedNotice(arriving.id);
+    if (arriving) {
+      setToast('');
+      setReturnedNotice(arriving.id);
+    }
   }, [s.connected, s.identity, s.ownership, s.cards]);
   const emptyTide = error.startsWith('No bottles are available');
   const remaining = active
@@ -342,6 +347,18 @@ function App() {
     await run('Copying…', async () => {
       await copyText(text);
       setToast('Draft copied');
+    });
+  }
+  async function leaveRound() {
+    if (!active) return;
+    await run('Leaving this round…', async () => {
+      await game.abandon(active.id);
+      setView('today');
+      setToast(
+        outgoingReturned
+          ? 'Your postcard is kept in your collection.'
+          : 'Your beginning is still drifting.',
+      );
     });
   }
   async function beginCatch() {
@@ -502,6 +519,9 @@ function App() {
           {view === 'today' && (
             <Shore
               mode="home"
+              hasOutgoing={!!active?.setupId}
+              outgoingReturned={outgoingReturned}
+              onLeave={active?.stage === 'catch' ? leaveRound : undefined}
               day={s.today?.day}
               stamped={stampedToday}
               prompt={prompt}
@@ -610,6 +630,8 @@ function App() {
                     mode="catch"
                     day={active.day}
                     hasOutgoing={!!active.setupId}
+                    outgoingReturned={outgoingReturned}
+                    onLeave={leaveRound}
                     prompt={prompt}
                     disabled={controlsDisabled}
                     busy={busy}

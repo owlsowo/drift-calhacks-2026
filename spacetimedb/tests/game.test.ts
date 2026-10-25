@@ -140,6 +140,26 @@ describe('authoritative game state', () => {
     start(A);
     expect(active(A).stage).toBe('write');
   });
+  it('a writer can close an empty catch while their beginning stays available and returns later', () => {
+    env.DRIFT_DEV_STARTERS = 'false';
+    expect(() => tx(A, (c) => module.start_catching(c, {}))).toThrow(/No bottles/);
+    expect(view(A)).toHaveLength(0);
+    const first = start(A);
+    setup(A);
+    expect(() => catchBottle(A)).toThrow(/No bottles/);
+    tx(A, (c) => module.abandon_round(c, { roundId: first.id }));
+    expect(view(A)).toHaveLength(1);
+    expect(active(A)).toBeUndefined();
+    expect(module.my_outgoing(h.viewContext(A))).toHaveLength(1);
+    tx(B, (c) => module.start_catching(c, {}));
+    expect(claim(B).seeded).toBe(false);
+    expect(reply(B).ok).toBe(true);
+    expect(module.my_cards(h.viewContext(A))).toHaveLength(1);
+    expect(module.my_cards(h.viewContext(B))).toHaveLength(1);
+    expect(module.my_outgoing(h.viewContext(A))[0].cardId).toBeTruthy();
+    start(A);
+    expect(view(A)).toHaveLength(2);
+  });
   it('a catch-first writer can keep the result and skip tossing without losing the postcard', () => {
     tx(A, (c) => module.start_catching(c, {}));
     reply(A);

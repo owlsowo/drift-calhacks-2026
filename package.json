@@ -19,6 +19,7 @@
     "test:empty": "node scripts/test-room.mjs empty",
     "test:webkit": "node scripts/test-room.mjs webkit",
     "test:recovery": "node scripts/test-room.mjs recovery",
+    "test:coldstart": "node scripts/test-room.mjs coldstart",
     "test:server": "vitest run",
     "test:a11y": "node scripts/test-room.mjs a11y",
     "eval:models": "tsx scripts/eval-models.ts",

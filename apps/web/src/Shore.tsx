@@ -94,6 +94,8 @@ export function Shore({
   returnedCount = 0,
   empty = false,
   hasOutgoing = true,
+  outgoingReturned = false,
+  onLeave,
   headingRef,
   day,
   stamped = false,
@@ -110,11 +112,14 @@ export function Shore({
   returnedCount?: number;
   empty?: boolean;
   hasOutgoing?: boolean;
+  outgoingReturned?: boolean;
+  onLeave?: () => Promise<unknown>;
   headingRef: RefObject<HTMLHeadingElement | null>;
   day?: number;
   stamped?: boolean;
 }) {
   const grip = useRef<HTMLButtonElement>(null);
+  const ownBottle = hasOutgoing && (mode === 'catch' || !!onLeave);
   const emptyHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (empty) emptyHeading.current?.focus();
@@ -267,7 +272,9 @@ export function Shore({
         <p>
           {mode === 'catch'
             ? hasOutgoing
-              ? 'Your beginning is on its way. Catch someone else’s.'
+              ? outgoingReturned
+                ? 'Your story found its way back.'
+                : 'Your beginning is on its way. Catch someone else’s.'
               : 'A different little beginning is out there.'
             : 'A little daily nonsense from someone else.'}
         </p>
@@ -283,10 +290,16 @@ export function Shore({
             <h2 ref={emptyHeading} tabIndex={-1}>
               The water is quiet.
             </h2>
-            <p>No bottles just now. Leave six words for the next stranger.</p>
+            <p>
+              {ownBottle
+                ? outgoingReturned
+                  ? 'Your bottle found an ending. No other beginnings just now.'
+                  : 'Your beginning is still drifting. No other bottles just now.'
+                : 'No bottles just now. Leave six words for the next stranger.'}
+            </p>
           </div>
           <div className="quiet-tide-actions">
-            {!(mode === 'catch' && hasOutgoing) && (
+            {!ownBottle && (
               <button disabled={disabled} onClick={() => void onWrite()}>
                 Toss a beginning
               </button>
@@ -294,8 +307,19 @@ export function Shore({
             <button disabled={disabled} onClick={() => void activate()}>
               Try again
             </button>
+            {ownBottle && onLeave && (
+              <button disabled={disabled} onClick={() => void onLeave()}>
+                {outgoingReturned ? 'Keep my returned story' : 'Leave it drifting'}
+              </button>
+            )}
           </div>
-          {mode === 'catch' && hasOutgoing && <small>Your beginning is safe on the tide.</small>}
+          {ownBottle && (
+            <small>
+              {outgoingReturned
+                ? 'Close this round; your postcard stays in your collection.'
+                : 'Close this round; your beginning stays on today’s tide. An ending isn’t guaranteed.'}
+            </small>
+          )}
         </div>
       )}
       {mode === 'home' && !empty && (
@@ -453,9 +477,13 @@ export function Shore({
         </button>
       </div>
       <p className="shore-fine-print">
-        {mode === 'catch'
-          ? 'No bottle yet? Try again, or leave a beginning of your own.'
-          : 'Catch a beginning. Add six words. Leave a bottle for someone else.'}{' '}
+        {ownBottle
+          ? outgoingReturned
+            ? 'Your returned story is ready in your postcards.'
+            : 'Catch another beginning, or leave your bottle drifting.'
+          : mode === 'catch'
+            ? 'No bottle yet? Try again, or leave a beginning of your own.'
+            : 'Catch a beginning. Add six words. Leave a bottle for someone else.'}{' '}
         Buttons and keyboard work too.
       </p>
     </section>
