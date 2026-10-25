@@ -1033,12 +1033,29 @@ export const request_nudge = db.procedure(paidArgs, response, (ctx, args) =>
   safePaidAction(ctx, args, 'nudge'),
 );
 
-function assign(ctx: Tx, r: Round) {
-  if (r.day !== dayOf(now(ctx))) fail('This prompt has closed. Start today’s story.');
+function excludedBeginnings(ctx: Tx, r: Round) {
   const excluded = new Set(JSON.parse(r.excluded) as string[]);
   // Skips and reports persist across the identity's rounds for this day.
   for (const previous of ctx.db.round.owner.filter(ctx.sender))
     if (previous.day === r.day) for (const id of JSON.parse(previous.excluded)) excluded.add(id);
+  return excluded;
+}
+function bindBeginning(ctx: Tx, r: Round, found: Bottle) {
+  saveRound(ctx, {
+    ...r,
+    stage: 'reply',
+    assignmentId: found.id,
+    leaseMs: now(ctx) + LEASE_MS,
+    version: r.version + 1,
+    hint: '',
+    inFlight: '',
+    busyUntil: 0,
+  });
+  countActivity(ctx, { catchAssigned: 1 });
+}
+function assign(ctx: Tx, r: Round) {
+  if (r.day !== dayOf(now(ctx))) fail('This prompt has closed. Start today’s story.');
+  const excluded = excludedBeginnings(ctx, r);
   const candidates = [...ctx.db.bottle.day.filter(r.day)].filter(
     (b) =>
       !b.hidden &&
@@ -1086,20 +1103,34 @@ function assign(ctx: Tx, r: Round) {
     ctx.db.bottle.insert(found);
     publishBeginning(ctx, found);
   }
-  const version = r.version + 1;
-  const deadline = now(ctx) + LEASE_MS;
-  saveRound(ctx, {
-    ...r,
-    stage: 'reply',
-    assignmentId: found.id,
-    leaseMs: deadline,
-    version,
-    hint: '',
-    inFlight: '',
-    busyUntil: 0,
-  });
-  countActivity(ctx, { catchAssigned: 1 });
+  bindBeginning(ctx, r, found);
 }
+export const pick_up_beginning = db.reducer({ beginningId: t.string() }, (ctx, { beginningId }) => {
+  ready(ctx);
+  const b = ctx.db.bottle.id.find(beginningId);
+  if (!b || b.hidden || !ctx.db.beginning.id.find(beginningId))
+    fail('This bottle is no longer available. Pick up another one.');
+  if (b.owner && same(b.owner, ctx.sender))
+    fail('This is your beginning. Invite someone else to finish it.');
+  if (alreadyReplied(ctx, b.id)) fail('You’ve already finished this beginning.');
+  const held = [...ctx.db.round.owner.filter(ctx.sender)].find(
+    (r) => r.stage === 'reply' && r.assignmentId === b.id && r.leaseMs > now(ctx),
+  );
+  if (held) {
+    unlocked(ctx, held);
+    return; // Resume the same private assignment, without extending its deadline.
+  }
+  if (b.day !== dayOf(now(ctx)))
+    fail('This beginning belongs to an earlier tide. Pick up today’s bottle.');
+  const r = startRound(ctx, 'catch');
+  unlocked(ctx, r);
+  if (r.stage === 'reply' && r.leaseMs > now(ctx))
+    fail('Your other bottle is still open. Finish it before opening this invitation.');
+  const excluded = excludedBeginnings(ctx, r);
+  if (excluded.has(b.seeded ? 'seed:' + b.seedIndex : b.id))
+    fail('You’ve already passed this beginning. Pick up another one.');
+  bindBeginning(ctx, r, b);
+});
 export const claim_bottle = db.reducer({ roundId: t.string() }, (ctx, { roundId }) => {
   ready(ctx);
   const r = currentRound(ctx, roundId);

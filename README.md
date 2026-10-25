@@ -4,7 +4,7 @@
 
 [Play the deployed game](https://drift-game.drift-calhacks-2026-owlsowo.workers.dev/) · [Submission video draft and provenance](docs/video-handoff.md) · [Figma / Mana workflow artifacts](docs/workflow-checkpoint.md)
 
-**Release** writes a beginning letter. **Pick up** finds another writer’s beginning and lets you add an ending. These are separate actions with independent drafts. A beginning stays in the daily pool so several people can each complete a different pair from it. **My bottles** stores beginning IDs and completed-pair IDs in first-party cookies; opening a beginning retrieves all its endings. Drafts and the anonymous session token remain in local storage. Public IDs allow reading approved letters, while author-only actions still require the owning session. Sample starters are clearly labeled and AI guidance never writes either creative line.
+**Release** writes a beginning letter. **Pick up** finds another writer’s beginning and lets you add an ending. These are separate actions with independent drafts. A beginning stays in the daily pool so several people can each complete a different pair from it. **My bottles** stores beginning IDs and completed-pair IDs in first-party cookies; opening a beginning retrieves all its endings. Drafts and the anonymous session token remain in local storage. Public IDs allow reading approved letters, while author-only actions still require the owning session. Sample starters are clearly labeled and AI guidance never writes either creative line. Open your released beginning to invite someone to finish it; recipients choose to write, and public link views do not use a daily turn. Invited and random pickup share the same server rules.
 
 ## Current status
 
@@ -55,6 +55,8 @@ npm run check:scripts
 npm run build
 npm run test:letters
 DRIFT_TEST_ENGINE=webkit npm run test:letters
+npm run test:invitations
+DRIFT_TEST_ENGINE=webkit npm run test:invitations
 npm run test:coast
 npm run test:retention
 DRIFT_TEST_ENGINE=webkit npm run test:retention

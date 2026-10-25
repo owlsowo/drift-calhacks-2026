@@ -782,3 +782,23 @@ input:focus-visible {
   color: #4d5966;
   font-size: 11px;
 }
+
+.sea-world .invitation-theme {
+  margin: 0 0 16px;
+  color: #4d5966;
+  font: 400 12px/1.5 var(--letter-ui);
+}
+.sea-world .invitation-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 18px 0 28px;
+  color: #e7edf1;
+}
+.sea-world .invitation-actions p {
+  max-width: 440px;
+  margin: 0;
+  font: 400 13px/1.6 var(--letter-ui);
+  text-shadow: 0 1px 3px #09192e;
+}

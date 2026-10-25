@@ -292,6 +292,19 @@ function App() {
     })
     .sort((a, b) => b.createdMs - a.createdMs);
   const beginning = s.beginnings.find((item) => item.id === selectedBeginningId);
+  const ownsBeginning = !!beginning && s.outgoing.some((item) => item.id === beginning.id);
+  const finishedBeginning =
+    !!beginning && s.rounds.some((round) => round.assignmentId === beginning.id && !!round.cardId);
+  const heldInvitation =
+    !!beginning &&
+    catchRound?.stage === 'reply' &&
+    catchRound.assignmentId === beginning.id &&
+    catchRound.leaseMs > clock;
+  const otherBottleOpen =
+    !!beginning &&
+    catchRound?.stage === 'reply' &&
+    catchRound.assignmentId !== beginning.id &&
+    catchRound.leaseMs > clock;
   const endings = s.cards
     .filter(
       (pair) =>
@@ -432,27 +445,28 @@ function App() {
       await pickUp();
     });
   }
-  async function pickUp(roundId?: string, skip = false) {
+  async function pickUp(roundId?: string, skip = false, invitationId?: string) {
     setRitual({ kind: 'pickup', phase: 'waiting' });
     const id =
       roundId ??
       (await withinDeadline(
-        game.startCatching(),
+        invitationId ? game.startInvited(invitationId) : game.startCatching(),
         'Your bottle is taking a moment. Try picking up again.',
       ));
     const priorVersion = game.snapshot().rounds.find((item) => item.id === id)?.version ?? -1;
     if (skip)
       await withinDeadline(game.skip(id), 'Your bottle is taking a moment. Try picking up again.');
-    if (skip || !assignedBottle(game.snapshot(), id))
+    if (!invitationId && (skip || !assignedBottle(game.snapshot(), id)))
       await withinDeadline(game.claim(id), 'Your bottle is taking a moment. Try picking up again.');
     await waitForGame((state) => {
       if (skip && (state.rounds.find((item) => item.id === id)?.version ?? -1) <= priorVersion)
         return;
-      return assignedBottle(state, id);
+      const received = assignedBottle(state, id);
+      return received && (!invitationId || received.id === invitationId) ? received : undefined;
     }, 'Your bottle is taking a moment. Try picking up again.');
     const opened = await playRitual('pickup');
     if (!opened) {
-      setView('today');
+      setView(invitationId ? 'beginning' : 'today');
       return;
     }
     // The bottle may have been left in the light until its lease expired.
@@ -560,6 +574,12 @@ function App() {
     setSelectedBeginningId(id);
     setView('beginning');
     setError('');
+  }
+  async function copyInvitation(id: string) {
+    await run('Copying invitation…', async () => {
+      await copyText(`${location.origin}${location.pathname}?bottle=${encodeURIComponent(id)}`);
+      setToast('Bottle link copied');
+    });
   }
   function showCard(id: string) {
     setReturnedNotice((current) => (current === id ? '' : current));
@@ -1132,11 +1152,27 @@ function App() {
           {view === 'beginning' && (
             <section className="bottle-page">
               <h1 ref={heading} tabIndex={-1} className={beginning ? 'sr-only' : ''}>
-                {beginning ? 'Your bottle' : s.connected ? 'Bottle unavailable' : 'Opening bottle…'}
+                {beginning
+                  ? ownsBeginning
+                    ? 'Your bottle'
+                    : 'A drifting beginning'
+                  : s.connected
+                    ? 'Bottle unavailable'
+                    : 'Opening bottle…'}
               </h1>
               {beginning ? (
                 <>
                   <PaperNote>
+                    <p className="invitation-theme">
+                      {(JSON.parse(beginning.promptJson) as Prompt).title}
+                    </p>
+                    {beginning.seeded && (
+                      <span className="eyebrow">
+                        {beginning.starterKind === 'team'
+                          ? 'Beginning by the Drift team'
+                          : 'Sample beginning'}
+                      </span>
+                    )}
                     <p className="letter-text">{beginning.text}</p>
                     <details className="bottle-receipt">
                       <summary>Bottle ID</summary>
@@ -1156,20 +1192,93 @@ function App() {
                         </button>
                         <button
                           className="text-button"
-                          onClick={() =>
-                            run('Copying bottle link…', async () => {
-                              await copyText(
-                                `${location.origin}${location.pathname}?bottle=${encodeURIComponent(beginning.id)}`,
-                              );
-                              setToast('Bottle link copied');
-                            })
-                          }
+                          onClick={() => void copyInvitation(beginning.id)}
                         >
                           Copy bottle link
                         </button>
                       </div>
                     </details>
                   </PaperNote>
+                  <div className="invitation-actions">
+                    {ownsBeginning ? (
+                      <>
+                        <p>
+                          {beginning.day === nowDay
+                            ? 'Your six words are drifting. Invite someone to add theirs.'
+                            : 'An earlier tide. Your shared replies stay here to reread.'}
+                        </p>
+                        <button
+                          className="button primary"
+                          disabled={!!busy}
+                          onClick={() => void copyInvitation(beginning.id)}
+                        >
+                          <Share2 size={16} />{' '}
+                          {beginning.day === nowDay
+                            ? 'Invite someone to finish'
+                            : 'Copy bottle link'}
+                        </button>
+                      </>
+                    ) : finishedBeginning ? (
+                      <p>You already added an ending to this beginning.</p>
+                    ) : beginning.day !== nowDay && !heldInvitation ? (
+                      <>
+                        <p>
+                          This beginning is from an earlier tide. You can still read its replies.
+                        </p>
+                        <button
+                          className="button primary"
+                          disabled={
+                            controlsDisabled ||
+                            !!s.service?.paused ||
+                            (!catchRound && dailyRounds >= 3)
+                          }
+                          onClick={beginCatch}
+                        >
+                          Find today’s bottle
+                        </button>
+                      </>
+                    ) : otherBottleOpen ? (
+                      <>
+                        <p>You have another bottle open. Your ending is saved there.</p>
+                        <button
+                          className="button primary"
+                          disabled={controlsDisabled || !!s.service?.paused}
+                          onClick={() =>
+                            void run('Opening your bottle…', () => pickUp(catchRound!.id))
+                          }
+                        >
+                          Resume your open bottle
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <p>
+                          {heldInvitation
+                            ? 'Your ending is waiting in this bottle.'
+                            : 'Someone began it. Your six words could finish it.'}
+                        </p>
+                        <button
+                          className="button primary"
+                          disabled={
+                            controlsDisabled ||
+                            !!s.service?.paused ||
+                            (!catchRound && dailyRounds >= 3)
+                          }
+                          onClick={() =>
+                            void run('Opening this bottle…', () =>
+                              pickUp(undefined, false, beginning.id),
+                            )
+                          }
+                        >
+                          {heldInvitation ? 'Resume your ending' : 'Write an ending'}{' '}
+                          <ArrowRight size={16} />
+                        </button>
+                        {!catchRound && dailyRounds >= 3 && (
+                          <p>Today’s limit is reached. You can still read the replies.</p>
+                        )}
+                      </>
+                    )}
+                  </div>
                   <div className="endings-heading">
                     <h2>
                       {endings.length} {endings.length === 1 ? 'reply' : 'replies'}
@@ -1245,7 +1354,7 @@ function App() {
             </li>
             <li>
               <strong>My bottles.</strong> Read replies to your beginnings and revisit the pairs you
-              finished.
+              finished. Open your beginning to invite someone to finish it.
             </li>
           </ol>
           <p>Up to three bottles a day. One skip per reply.</p>
