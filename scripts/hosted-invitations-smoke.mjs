@@ -3,6 +3,7 @@ import { chromium } from '@playwright/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 const origin = 'https://drift-game.drift-calhacks-2026-owlsowo.workers.dev';
 const mode = process.argv[2];
 if (!['--run-once', '--preflight-only'].includes(mode))
@@ -13,7 +14,9 @@ const tag = crypto.randomUUID().slice(0, 6),
   setup = `Demo-${tag} flight: our captain misplaced gravity.`;
 const firstReply = 'Demo reply: gravity filed for retirement.',
   secondReply = 'Demo reply: captain blames the glitter.';
-const out = new URL('../docs/evidence/', import.meta.url),
+const out = process.env.DRIFT_HOSTED_E2E_OUT
+    ? pathToFileURL(process.env.DRIFT_HOSTED_E2E_OUT.replace(/\/$/, '') + '/')
+    : new URL('../docs/evidence/', import.meta.url),
   checks = [],
   errors = [];
 const report = {
@@ -32,7 +35,9 @@ const pass = (s) => {
   checks.push(s);
   console.log('PASS', s);
 };
-const browser = await chromium.launch({ channel: 'chrome' });
+await fs.mkdir(out, { recursive: true });
+const headed = process.argv.includes('--headed');
+const browser = await chromium.launch({ channel: 'chrome', headless: !headed });
 const pages = [];
 let createdId = '';
 function owner(args) {
@@ -70,6 +75,50 @@ async function run() {
     pages.push(page);
   }
   await Promise.all(pages.map((p) => p.goto(origin, { waitUntil: 'domcontentloaded' })));
+  if (headed) {
+    await Promise.all(
+      pages.map((page, index) =>
+        page
+          .screenshot({ path: new URL(`preflight-window-${index + 1}.png`, out).pathname })
+          .catch(() => {}),
+      ),
+    );
+    await fs.writeFile(
+      new URL('live-progress.json', out),
+      JSON.stringify({
+        phase: 'normal_human_check_preflight',
+        windows: 3,
+        noStoryOrProviderCallYet: true,
+      }),
+    );
+    console.log(
+      'Three Chrome test windows opened for normal verification; no challenge is solved by the agent.',
+    );
+  }
+  const gateMonitor = headed
+    ? setInterval(() => {
+        void Promise.all(
+          pages.map(async (page, index) => ({
+            window: index + 1,
+            shore: await page
+              .locator('.shore-gate')
+              .innerText({ timeout: 500 })
+              .catch(() => 'No gate shown'),
+          })),
+        )
+          .then((windows) =>
+            fs.writeFile(
+              new URL('live-progress.json', out),
+              JSON.stringify({
+                phase: 'normal_human_check_preflight',
+                windows,
+                noStoryOrProviderCallYet: true,
+              }),
+            ),
+          )
+          .catch(() => {});
+      }, 5000)
+    : undefined;
   const gates = await Promise.all(
     pages.map(async (p, index) => {
       try {
@@ -80,7 +129,7 @@ async function run() {
             return b && !b.disabled;
           },
           {},
-          { timeout: 30000 },
+          { timeout: headed ? 600000 : 30000 },
         );
         return true;
       } catch {
@@ -89,17 +138,20 @@ async function run() {
           .innerText()
           .catch(() => 'The normal page did not become ready.');
         report[`preflight${index + 1}`] = status.slice(0, 300);
-        await p.screenshot({
-          path: new URL(
-            `${mode === '--preflight-only' ? 'hosted-invitation-current-preflight' : 'hosted-invitation-preflight'}-${index + 1}.png`,
-            out,
-          ).pathname,
-          fullPage: true,
-        });
+        await p
+          .screenshot({
+            path: new URL(
+              `${mode === '--preflight-only' ? 'hosted-invitation-current-preflight' : 'hosted-invitation-preflight'}-${index + 1}.png`,
+              out,
+            ).pathname,
+            fullPage: true,
+          })
+          .catch(() => {});
         return false;
       }
     }),
   );
+  clearInterval(gateMonitor);
   if (gates.some((g) => !g)) {
     report.status = 'human_check_or_connection_needed';
     throw Error(
@@ -114,6 +166,10 @@ async function run() {
     report.status = 'preflight_passed';
     return;
   }
+  await fs.writeFile(
+    new URL('live-progress.json', out),
+    JSON.stringify({ phase: 'human_checks_passed_running_application' }),
+  );
   report.mode =
     'Real hosted application with synthetic browser identities and tagged demo words. Not attendee evidence.';
   const [A, B, C] = pages;
@@ -187,6 +243,16 @@ async function run() {
   pass(
     'Real pair moderation publishes two distinct postcards and both return live to the original writer',
   );
+  await B.waitForFunction(
+    () => {
+      const buttons = [...document.querySelectorAll('button')];
+      return buttons.some((b) => b.textContent.trim() === 'Save image' && !b.disabled);
+    },
+    {},
+    { timeout: 90000 },
+  );
+  report.illustrationRendered =
+    (await B.locator('.scene-illustration[data-state="ready"]').count()) > 0;
   const [download] = await Promise.all([
     B.waitForEvent('download'),
     button(B, 'Save image').click(),
@@ -197,6 +263,59 @@ async function run() {
   assert.equal(png.readUInt32BE(16), 1080);
   assert.equal(png.readUInt32BE(20), 1650);
   pass('The hosted result downloads as an actual 1080×1650 PNG');
+  const guestContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    reducedMotion: 'reduce',
+  });
+  const guest = await guestContext.newPage();
+  await guest.goto(B.url());
+  await guest.locator('.postcard-paper.paper-open').waitFor({ timeout: 30000 });
+  assert.equal(await guest.locator('.postcard .setup-half p').innerText(), setup);
+  assert.equal(
+    await guest.locator('.postcard .card-half:not(.setup-half) p').innerText(),
+    firstReply,
+  );
+  assert.equal(await button(guest, 'Hide').count(), 0);
+  assert.equal(await guest.locator('.co-writer-thanks').count(), 0);
+  await guestContext.close();
+  pass(
+    'A fresh public reader opens the exact shared pair with its original context and receives no author controls',
+  );
+  const vote = B.locator('.postcard-vote .ending-upvote');
+  await vote.click();
+  await B.waitForFunction(
+    () =>
+      document.querySelector('.postcard-vote .ending-upvote')?.getAttribute('aria-pressed') ===
+      'true',
+  );
+  await A.waitForFunction(
+    (text) =>
+      [...document.querySelectorAll('.ending-entry')].some(
+        (row) =>
+          row.textContent.includes(text) &&
+          row.querySelector('.ending-upvote strong')?.textContent === '1',
+      ),
+    firstReply,
+  );
+  await vote.click();
+  await B.waitForFunction(
+    () =>
+      document.querySelector('.postcard-vote .ending-upvote')?.getAttribute('aria-pressed') ===
+      'false',
+  );
+  await A.waitForFunction(
+    (text) =>
+      [...document.querySelectorAll('.ending-entry')].some(
+        (row) =>
+          row.textContent.includes(text) &&
+          row.querySelector('.ending-upvote strong')?.textContent === '0',
+      ),
+    firstReply,
+  );
+  pass(
+    'One verified hosted vote and undo arrive live for the beginning author, leaving the synthetic pair with zero votes',
+  );
+
   assert.deepEqual(errors, []);
   report.status = 'passed';
   report.syntheticAccounting =
