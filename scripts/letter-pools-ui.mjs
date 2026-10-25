@@ -141,8 +141,108 @@ try {
   await A.getByRole('heading', { name: '0 replies', exact: true }).waitFor();
   await submitReply(B, bReply);
   await A.getByRole('heading', { name: '1 reply', exact: true }).waitFor();
+  await button(A, 'Dismiss returned bottle notice').click();
+  await home(A);
+  await releaseButton(A).click();
+  const authorDraft = 'A beginning still in progress.';
+  await A.getByRole('textbox', { name: 'Your six-word beginning', exact: true }).fill(authorDraft);
   await submitReply(C, cReply);
+  await button(A, 'Open returned postcard').waitFor();
+  assert.equal(
+    await A.getByRole('textbox', { name: 'Your six-word beginning', exact: true }).inputValue(),
+    authorDraft,
+  );
+  assert.equal(
+    await A.getByRole('textbox', { name: 'Your six-word beginning', exact: true }).evaluate(
+      (el) => el === document.activeElement,
+    ),
+    true,
+  );
+  await home(A);
+  const returnGeometry = await A.evaluate(() => {
+    const box = (selector) => {
+      const r = document.querySelector(selector).getBoundingClientRect();
+      return { top: r.top, bottom: r.bottom };
+    };
+    return {
+      header: box('.site-header'),
+      notice: box('.returned-notice'),
+      dock: box('.shore-dock'),
+      viewportHeight: innerHeight,
+      pageHeight: document.documentElement.scrollHeight,
+    };
+  });
+  const returnLabel = process.env.DRIFT_RETURN_BASELINE === 'before' ? 'before' : 'after';
+  await A.screenshot({
+    path: new URL(`return-shore-${engine.toLowerCase()}-${returnLabel}.png`, evidence).pathname,
+    fullPage: true,
+  });
+  await fs.writeFile(
+    new URL(`return-shore-${engine.toLowerCase()}-${returnLabel}.json`, evidence),
+    JSON.stringify(returnGeometry, null, 2) + '\n',
+  );
+  assert.ok(
+    returnGeometry.notice.top >= returnGeometry.header.bottom + 8,
+    JSON.stringify(returnGeometry),
+  );
+  assert.ok(
+    returnGeometry.dock.bottom <= returnGeometry.viewportHeight + 1 &&
+      returnGeometry.pageHeight <= returnGeometry.viewportHeight + 1,
+    JSON.stringify(returnGeometry),
+  );
+  for (const [width, height] of [
+    [1440, 1000],
+    [390, 844],
+    [320, 740],
+    [740, 360],
+  ]) {
+    await A.setViewportSize({ width, height });
+    const boxes = await A.evaluate(() => {
+      const r = (s) => {
+        const b = document.querySelector(s).getBoundingClientRect();
+        return { top: b.top, bottom: b.bottom, left: b.left, right: b.right };
+      };
+      return {
+        notice: r('.returned-notice'),
+        header: r('.site-header'),
+        dock: r('.shore-dock'),
+        height: innerHeight,
+        width: innerWidth,
+        pageHeight: document.documentElement.scrollHeight,
+      };
+    });
+    assert.ok(
+      boxes.notice.top >= boxes.header.bottom + 8 && boxes.notice.bottom <= boxes.dock.top,
+      JSON.stringify(boxes),
+    );
+    assert.ok(boxes.notice.left >= 0 && boxes.notice.right <= width, JSON.stringify(boxes));
+    assert.ok(
+      boxes.dock.bottom <= height + 1 && boxes.pageHeight <= height + 1,
+      JSON.stringify(boxes),
+    );
+    await A.screenshot({
+      path: new URL(`return-shore-${engine.toLowerCase()}-${width}x${height}.png`, evidence)
+        .pathname,
+      fullPage: true,
+    });
+  }
+  await A.setViewportSize({ width: 360, height: 800 });
+  await button(A, 'Open returned postcard').click();
+  await A.locator('.postcard-paper.paper-open').waitFor();
+  assert.equal(await A.locator('.postcard .card-half').nth(1).innerText(), cReply);
+  await home(A);
+  await releaseButton(A).click();
+  assert.equal(
+    await A.getByRole('textbox', { name: 'Your six-word beginning', exact: true }).inputValue(),
+    authorDraft,
+  );
+  await home(A);
+  await shelfButton(A).click();
+  await A.locator('.beginning-preview').filter({ hasText: setupText }).click();
   await A.getByRole('heading', { name: '2 replies', exact: true }).waitFor();
+  pass(
+    'A live return preserves the focused draft, keeps shore controls in view, opens the correct pair and restores writing afterward',
+  );
   assert.equal(await A.locator('.ending-preview').count(), 2);
   await A.getByText(bReply, { exact: true }).waitFor();
   await A.getByText(cReply, { exact: true }).waitFor();

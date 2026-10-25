@@ -597,7 +597,7 @@ function App() {
         Skip to the game
       </a>
       <div
-        className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}${ritual ? ' has-bottle-ritual' : ''}${view === 'today' && needsShoreCheck ? ' has-shore-check' : ''}`}
+        className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}${ritual ? ' has-bottle-ritual' : ''}${view === 'today' && needsShoreCheck ? ' has-shore-check' : ''}${view === 'today' && returnedCard ? ' has-returned-note' : ''}`}
       >
         <Ocean paused={seaPaused} />
         <header className="site-header" inert={!!ritual}>
@@ -659,29 +659,32 @@ function App() {
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
           {returnedCard ? 'Your bottle came back. Someone added six words.' : ''}
         </div>
-        {returnedCard && (
-          <aside className="returned-notice" aria-label="Returned bottle">
-            <div>
-              <Mail size={19} aria-hidden="true" />
-              <span>Your bottle came back. Someone added six words.</span>
-            </div>
-            <button className="text-button" onClick={() => showCard(returnedCard.id)}>
-              Open returned postcard <ArrowRight size={16} aria-hidden="true" />
-            </button>
-            <button
-              className="icon-button"
-              aria-label="Dismiss returned bottle notice"
-              onClick={() => setReturnedNotice('')}
-            >
-              <X size={17} aria-hidden="true" />
-            </button>
-          </aside>
-        )}
         <main id="main" className={`main view-${view}`} inert={!!ritual}>
+          {returnedCard && (
+            <aside
+              className={`returned-notice${view === 'today' ? ' returned-notice--shore' : ''}`}
+              aria-label="Returned bottle"
+            >
+              <div>
+                <Mail size={19} aria-hidden="true" />
+                <span>Your bottle came back. Someone added six words.</span>
+              </div>
+              <button className="text-button" onClick={() => showCard(returnedCard.id)}>
+                Open returned postcard <ArrowRight size={16} aria-hidden="true" />
+              </button>
+              <button
+                className="icon-button"
+                aria-label="Dismiss returned bottle notice"
+                onClick={() => setReturnedNotice('')}
+              >
+                <X size={17} aria-hidden="true" />
+              </button>
+            </aside>
+          )}
           {s.connected &&
             s.service?.botRequired &&
             !gateReady &&
-            (view === 'today' || view === 'play') && (
+            ((view === 'today' && !returnedCard) || view === 'play') && (
               <ShoreGate
                 placement={view === 'today' ? 'shore' : 'inline'}
                 onVerified={() => setGateReady(true)}

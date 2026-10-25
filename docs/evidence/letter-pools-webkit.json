@@ -1,15 +1,16 @@
 {
-  "checkedAt": "2026-10-25T02:05:28.703Z",
+  "checkedAt": "2026-10-25T03:26:25.281Z",
   "engine": "WebKit",
   "mode": "Isolated local sandbox; synthetic writers; AI checks off; no paid model calls",
-  "beginningId": "1477ecaf-84f0-4320-a88f-e2e62e9cda8b-2",
+  "beginningId": "00fffffc-6218-4f1b-a283-f850e4929bf0-2",
   "completedPairIds": [
-    "0fd0cfe9-3a39-4498-8bb6-7a1ffd75cda8-6",
-    "b5f19763-85d2-481d-976d-b65ef408860f-8"
+    "1a3a33f5-cfd9-4133-b35b-8d6187d9e579-6",
+    "d6f4cf61-bb45-415a-8fe9-19f9b618c040-9"
   ],
   "checks": [
     "Release publishes only a beginning, returns to the sea, and saves its ID in first-party cookies",
     "Two independent writers can pick up the same beginning without first releasing their own",
+    "A live return preserves the focused draft, keeps shore controls in view, opens the correct pair and restores writing afterward",
     "Each ending creates its own pair, finishes its pick-up round, and appears live in the original author’s pool",
     "The actual PNG export downloads at 1080×1350 while Copy text keeps only the two creative lines for a peer story",
     "Selected accessibility checks pass on the author pool and both completed-reply views",

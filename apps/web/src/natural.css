@@ -751,17 +751,24 @@ input:focus-visible {
   border-radius: 3px;
 }
 .sea-world .returned-notice {
-  margin: 80px auto 0;
+  margin: 0 auto 20px;
   width: min(960px, calc(100% - 32px));
   padding: 12px 16px;
   border-radius: 3px;
+}
+.sea-world .returned-notice--shore {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
 }
 .sea-world .returned-notice > .icon-button {
   min-width: 44px;
   min-height: 44px;
 }
 
-/* Keep the notice margin inside the scene so it cannot move the absolute header. */
+/* Keep scene margins contained without moving the absolute header. */
 .sea-world {
   display: flow-root;
 }
@@ -880,7 +887,8 @@ input:focus-visible {
   }
 }
 @media (max-height: 480px) {
-  .sea-world.has-shore-check .daily-tide {
+  .sea-world.has-shore-check .daily-tide,
+  .sea-world.has-returned-note .daily-tide {
     visibility: hidden;
   }
   .sea-world .daily-tide > p:not(.tide-status) {
