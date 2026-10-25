@@ -4,15 +4,13 @@
 
 [Play the deployed game](https://drift-game.drift-calhacks-2026-owlsowo.workers.dev/) · [Submission video draft and provenance](docs/video-handoff.md) · [Figma / Mana workflow artifacts](docs/workflow-checkpoint.md)
 
-[Judge handoff and local source snapshot](docs/judge-handoff.md) · [Current track/submission checklist](docs/submission-checklist.md)
-
-Shake to catch another writer’s beginning, add a six-word ending and keep the shared postcard. Then optionally toss your own beginning for the next person. A write-first route is also available. Your completed postcard appears immediately; its original author receives it live. The production design supports human-written team starters when peer inventory is empty. Current fallback lines are clearly labeled development samples; production will not silently use them. AI guidance never writes either creative line.
+**Release** writes a beginning letter. **Pick up** finds another writer’s beginning and lets you add an ending. These are separate actions with independent drafts. A beginning stays in the daily pool so several people can each complete a different pair from it. **My bottles** stores beginning IDs and completed-pair IDs in first-party cookies; opening a beginning retrieves all its endings. Drafts and the anonymous session token remain in local storage. Public IDs allow reading approved letters, while author-only actions still require the owning session. Sample starters are clearly labeled and AI guidance never writes either creative line.
 
 ## Current status
 
-Implemented locally with React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The official module harness passes 56 transaction/privacy/failure/budget/activity tests. Twenty-two rule/model-contract/gesture/draft/CSP/schedule/starter-export/pricing tests pass. Automated accessibility scans pass the tested writing, reply, reveal, hello, collection, shared-card, loading, pause and offline states at mobile and desktop viewports. The two-browser loop, draft recovery, live returns, PNG export, collection and author hiding pass local-browser smoke tests. The actual ten-writer network test also passes after fixing a runtime ID collision with a private transactional allocator. See `docs/evidence/ui-smoke.json`, `content-states.json`, `live-invariants.json` and `frontend-review.json` with screenshots.
+The current local build uses React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The server harness passes 55 transaction/privacy/failure/budget/pool tests, and 24 rule/model/gesture/draft/CSP/starter/cost/cookie tests pass. TypeScript/Vite production build and script typechecks pass. A manual three-writer sandbox flow verified one beginning receiving two different endings, independent Release/Pick up drafts, and saved beginning/pair shelves after reload. The browser’s actual first-party ID cookies were checked. See `docs/letter-pools-review.md`.
 
-The WeChat/QQ bottle-inspired shore supports cursor shaking, opt-in phone motion and keyboard/button alternatives. Water and moonlight ripple below a fixed horizon; the sea can be paused and stops when the page is hidden or reduced motion is requested. Caught notes loosen into one continuous creased sheet, settle flat and reveal the writing. Small native WebGL surfaces reuse the credited photographs; static sea and CSS note fallbacks work without WebGL. All photographic assets are human-made; see `docs/asset-sources.md`. Ten browser interaction checks cover sea pixel movement/pause, shaking, permissions, catch recovery, keyboard focus, reduced motion and graphics fallback using synthetic inputs. Physical-phone sensor behavior still needs verification.
+The quiet full-screen coast now uses the actual MIT-licensed Noniv WebGPU FFT engine, with a fixed blue-hour camera, moonlight and a separate headland overlay that meets the water. The original generated coast remains the unsupported-browser fallback. The three controls sit on a narrow textured wooden trapezoid flush with the bottom edge. Help contains motion controls. Rendering implementation/attribution: `docs/ocean-engine.md`; generated assets/prompts: `docs/coast-art.md`. The focused `npm run test:letters` browser script is available but has not been executed; current browser verification was manual. Older automated UI/accessibility evidence describes earlier mechanics and visual checkpoints.
 
 **Live checkpoint:** Cloudflare HTTPS and Maincloud are deployed. A real hosted two-browser Claude flow and server-side Turnstile negative checks passed; see `docs/live-release.md`. Figma Make informed the empty-sea/returned-story iteration; a shared native Figma Slides deck includes the playable prototype. Mana built Bottle Kitchen; an actual draft export was validated and refused for production installation. See `docs/workflow-checkpoint.md`. **Not yet verified:** actual phones, attendee outcomes, Notability use or final sponsor eligibility. Local development is clearly marked and may explicitly disable model checks. This is never evidence of a live AI integration. No attendee pilot has been conducted.
 
@@ -56,6 +54,7 @@ npm run check:server
 npm run check:scripts
 npm run build
 npm run test:ui
+npm run test:letters
 npm run test:a11y
 npm run test:shore
 npm run test:webkit
@@ -80,14 +79,14 @@ The [note-opening comparison](docs/note-opening.md) covers image delays, a compl
 
 - The server checks exact word count and character limits. Unicode letters/numbers count; emoji-only chunks do not.
 - Private rounds, bottles, requests, reports, ownership and counters cannot be queried by other writers. Caller-specific views expose only permitted progress.
-- Only approved anonymous postcard text is public. Either author can hide it; hiding deletes the public projection.
-- Catching is transactional. Each bottle has a claimant, version and absolute ten-minute lease. A late model callback rechecks those values before publication.
+- Only approved anonymous beginning and postcard text is public. Either author can hide it; hiding deletes the public projection.
+- Catching is transactional. Each response round has its own assignment, version and absolute ten-minute lease. Different writers may respond to the same beginning concurrently. A late model callback rechecks the response round before publication.
 - Paid operations persist a bound request before dispatch, enforce round/global quotas, and finalize separately. Duplicate IDs do not spend again; reusing an ID for changed content fails.
-- Publication of the pair, consumed claim, completion state and ownership finalize atomically.
+- Publication of each pair, response-round completion and both authors’ ownership finalize atomically; the beginning stays open for other writers.
 - Setup moderation runs before delivery; pair moderation runs before postcard publication. Uncertain or malformed responses withhold text and preserve drafts.
 - Only the database owner can pause dispatch/publication or invoke the purge reducer. The application cap starts at 1,000 dispatches, including uncertain calls. Provider budget alerts are a separate control.
 
-An hourly private maintenance schedule enforces seven days for submitted request text and bottles, and thirty days for cards, reports and rounds. It also purges orphaned hidden-card author mappings and expired hello details. Browser drafts expire seven days after the latest edit. The owner can also run `purge_old_data` manually. Hiding cannot retract downloaded images or screenshots.
+An hourly private maintenance schedule enforces seven days for submitted request text, and thirty days for published beginnings, cards, reports and rounds. It also purges orphaned hidden-card author mappings and expired hello details. Browser drafts expire seven days after the latest edit. The owner can also run `purge_old_data` manually. Hiding cannot retract downloaded images or screenshots.
 
 ## Competition evidence
 

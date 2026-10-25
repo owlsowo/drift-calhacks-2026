@@ -12,6 +12,7 @@ import {
 
 export default __t.row({
   id: __t.string().primaryKey(),
+  beginningId: __t.string().name("beginning_id"),
   promptId: __t.string().name("prompt_id"),
   setup: __t.string(),
   reply: __t.string(),

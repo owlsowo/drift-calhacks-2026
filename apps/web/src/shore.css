@@ -1,109 +1,314 @@
-.shore {
-  --shore-ink: #ecedd8;
-  --shore-soft: #c6d7d8;
-  --shore-night: #102c43;
-  --shore-light: #e4dcac;
+/* Drift is a place to visit: the sea, three familiar objects, a note in your hands. */
+.sea-world {
+  --shore-ink: #f5edce;
+  --shore-soft: #d3dfdf;
+  --shore-night: #062d51;
+  --shore-light: #f5e6b2;
+  --ink: #293c43;
+  --muted: #66716b;
+  --paper: #f5edce;
   position: relative;
   isolation: isolate;
-  min-height: 660px;
-  height: min(740px, calc(100svh - 155px));
-  overflow: hidden;
+  width: 100%;
+  max-width: none;
+  min-height: 100svh;
+  margin: 0;
+  padding: 0;
   color: var(--shore-ink);
-  background: var(--shore-night);
+  background: #075489;
+  font-family: Arial, Helvetica, sans-serif;
 }
-.coast-art {
+.ocean-world {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  overflow: hidden;
+  pointer-events: none;
+  background: #075489;
+}
+.ocean-photograph {
+  position: absolute;
+  inset: 0;
+  background: #075489 url('/assets/sea-shore.jpg') center center / cover no-repeat;
+}
+.sea-surface {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: -3;
+  opacity: 0;
 }
-.shore::after {
-  content: '';
+/* The moon and lighthouse belong to the coast image, rather than floating over it. */
+.moon-photograph,
+.shore-lighthouse,
+.shore-moon,
+.mobile-lighthouse {
+  display: none;
+}
+.sea-world .site-header {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(90deg, #0c203940 0%, transparent 65%);
-  z-index: -1;
+  inset: max(12px, env(safe-area-inset-top)) 0 auto;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 52px;
+  max-width: none;
+  margin: 0;
+  padding: 0 clamp(20px, 4vw, 56px);
+  border: 0;
+  color: #f5edce;
+  background: none;
+}
+.sea-world .wordmark {
+  padding: 6px 0;
+  color: inherit;
+  font:
+    400 26px/1 Georgia,
+    'Times New Roman',
+    serif;
+  letter-spacing: -0.04em;
+  min-height: 44px;
+  text-shadow: 0 1px 8px #062d5140;
+}
+.sea-world .wordmark span {
+  margin-left: 4px;
+  color: inherit;
+  font-size: 23px;
+}
+.sea-world .site-header nav {
+  margin-left: auto;
+  height: auto;
+  gap: 22px;
+}
+.sea-world .site-header nav button {
+  height: 44px;
+  color: #e8e7d8;
+  font-size: 12px;
+}
+.sea-world .site-header nav .nav-active::after {
+  display: none;
+}
+.sea-world .icon-button.help {
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  margin-right: -9px;
+  color: #f5edce;
+  border-radius: 50%;
+  opacity: 0.75;
+}
+.sea-world .icon-button.help:hover {
+  background: #ffffff0d;
+  opacity: 1;
+}
+.sea-world .shore-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-right: auto;
+  color: #f5edce;
+  font-size: 12px;
+}
+.sea-world .main {
+  min-height: 100svh;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 110px 32px 58px;
+}
+.sea-world .main.view-today,
+.sea-world.shore-shell .main.view-play {
+  max-width: none;
+  min-height: 100svh;
+  margin: 0;
+  padding: 0;
+}
+.shore {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--shore-ink);
+  background: none;
+}
+.shore-whisper {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: calc(180px + env(safe-area-inset-bottom));
+  margin: 0;
+  text-align: center;
+  font:
+    400 15px/1.6 Georgia,
+    'Times New Roman',
+    serif;
+  color: #e3e8e3;
+  text-shadow: 0 1px 8px #062d5140;
+}
+.shore-whisper p {
+  margin: 0;
+}
+.shore-whisper > span {
+  display: block;
+  margin-top: 6px;
+  color: #ccdce2;
+  font:
+    400 11px/1.6 Arial,
+    Helvetica,
+    sans-serif;
 }
 .shore-heading {
   position: absolute;
-  left: 44px;
-  right: 32px;
-  top: 32px;
+  left: 24px;
+  right: 24px;
+  bottom: calc(178px + env(safe-area-inset-bottom));
+  text-align: center;
 }
-.shore-edition {
-  margin: 0 0 12px;
-  font-size: 12px;
-  color: var(--shore-soft);
-}
-.shore-heading h1 {
-  font-family: 'Fraunces', serif;
-  font-size: clamp(30px, 3.6vw, 48px);
-  letter-spacing: -0.035em;
-  font-weight: 400;
-  line-height: 1.12;
-  max-width: 650px;
-  margin: 0 0 12px;
-  color: var(--shore-ink);
-}
-.shore-heading > p:last-child {
-  color: var(--shore-soft);
+.shore-heading > p {
   margin: 0;
-  font-size: 14px;
+  font:
+    400 15px/1.6 Georgia,
+    'Times New Roman',
+    serif;
+  color: #e3e8e3;
 }
 .shore-prompt {
+  display: none;
+}
+.shore-dock {
   position: absolute;
-  left: 44px;
-  top: 194px;
-  width: 280px;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  width: min(600px, calc(100% - 32px));
+  gap: 18px;
+  padding: 0 14px 15px;
 }
-.shore-prompt > span {
-  font-size: 12px;
-  color: var(--shore-soft);
+.shore-dock::before {
+  content: '';
+  position: absolute;
+  inset: 53px -14px 0;
+  z-index: -1;
+  border-top: 1px solid #c7cdc388;
+  background: linear-gradient(180deg, #74868e, #566d7b);
+  clip-path: polygon(4% 0, 96% 0, 100% 100%, 0 100%);
+  box-shadow: 0 10px 25px #062d5126;
 }
-.shore-prompt > p {
+.dock-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+  min-height: 106px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 2px;
+  color: #f7f4de;
+  background: none;
   font:
-    400 25px/1.28 'Fraunces',
-    serif;
-  margin: 12px 0;
-  text-wrap: balance;
-  color: var(--shore-ink);
+    400 13px/1.35 Arial,
+    Helvetica,
+    sans-serif;
+  text-shadow: 0 1px 3px #173a58aa;
 }
-.shore-prompt small {
+.dock-action:disabled {
+  opacity: 0.4;
+}
+.dock-action:focus-visible {
+  outline: 2px solid #f5e6b2;
+  outline-offset: 6px;
+}
+.dock-object {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 76px;
+  filter: drop-shadow(0 5px 3px #062d5133);
+  transition: transform 200ms ease;
+}
+.dock-object > svg {
+  width: 58px;
+  height: 68px;
+}
+.dock-object .small-glass {
+  width: 41px;
+  height: 72px;
+}
+.dock-object .floating-bottle {
+  animation: none;
+}
+.dock-object b {
+  position: absolute;
+  right: -1px;
+  top: 3px;
+  display: grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 50%;
+  color: #294456;
+  background: #f5e6b2;
+  font:
+    400 10px/1 Arial,
+    Helvetica,
+    sans-serif;
+  text-shadow: none;
+}
+.dock-returned .dock-object {
+  filter: drop-shadow(0 0 9px #f5e6b26b);
+}
+.shore-fine-print {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: calc(152px + env(safe-area-inset-bottom));
+  margin: 0;
+  text-align: center;
+  color: #d7e3e7;
   font-size: 12px;
-  line-height: 1.7;
-  color: var(--shore-soft);
-  display: block;
-  max-width: 265px;
+  line-height: 1.5;
+  text-shadow: 0 1px 5px #062d514d;
 }
 .bottle-grip {
   position: absolute;
-  top: 54%;
-  left: 56%;
-  width: 150px;
-  height: 244px;
+  z-index: 2;
+  top: 59%;
+  left: 50%;
+  width: 95px;
+  height: 153px;
   padding: 0;
-  background: none;
   border: 0;
-  border-radius: 34px;
-  touch-action: none;
+  border-radius: 30px;
+  background: none;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: none;
   cursor: grab;
   transform: translate(-50%, -50%) translate3d(var(--drag-x, 0px), var(--drag-y, 0px), 0)
     rotate(var(--drag-angle, -17deg));
-  transition: transform 550ms cubic-bezier(0.2, 0.9, 0.25, 1.35);
-  filter: drop-shadow(0 15px 15px #071c3766);
-  z-index: 2;
-}
-.bottle-grip:disabled {
-  opacity: 0.65;
-  cursor: wait;
+  transition: transform 400ms ease;
+  filter: drop-shadow(0 8px 10px #062d5140);
 }
 .bottle-grip:focus-visible {
-  outline: 2px solid var(--shore-light);
+  outline: 2px solid #f5e6b2;
   outline-offset: 8px;
+}
+.bottle-grip:disabled {
+  opacity: 0.6;
 }
 .is-grabbed .bottle-grip {
   transition: none;
@@ -116,506 +321,140 @@
 }
 .glass-bottle .floating-bottle {
   transform-origin: 90px 190px;
-  animation: shore-bob 5s ease-in-out infinite;
+  animation: shore-bob 6s ease-in-out infinite;
 }
 .is-grabbed .floating-bottle,
 .is-searching .floating-bottle {
   animation-play-state: paused;
 }
-.bottle-spotlight {
-  position: absolute;
-  top: 44%;
-  left: 56%;
-  width: 340px;
-  height: 260px;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse, #9ddbc72b 0%, #90bcb80e 40%, transparent 70%);
-  pointer-events: none;
-}
 .bottle-ripple {
   position: absolute;
-  left: 56%;
-  top: calc(54% + 105px);
-  width: 140px;
-  height: 18px;
+  left: 50%;
+  top: calc(59% + 62px);
+  width: 92px;
+  height: 10px;
   transform: translateX(-50%);
-  border: 1px solid #afdcd344;
+  border: 1px solid #c9e1d333;
   border-radius: 50%;
   box-shadow:
-    0 0 0 9px #9ed4d009,
-    0 0 0 19px #9ed4d008;
+    0 0 0 9px #b9e2d408,
+    0 0 0 19px #b9e2d405;
   pointer-events: none;
+}
+.bottle-spotlight {
+  display: none;
 }
 .shake-instruction {
   position: absolute;
-  top: calc(54% + 144px);
-  left: 56%;
-  transform: translateX(-50%);
-  min-width: 270px;
+  top: calc(59% + 105px);
+  left: 24px;
+  right: 24px;
   display: flex;
-  gap: 8px;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  color: var(--shore-ink);
-  font-size: 13px;
-  line-height: 1.4;
+  gap: 7px;
+  color: #d7e3e7;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
 }
 .shake-meter {
-  flex: 0 0 100%;
   display: flex;
-  gap: 5px;
-  justify-content: center;
-  height: 7px;
-  margin-top: 5px;
+  gap: 4px;
 }
 .shake-meter i {
-  width: 18px;
-  height: 3px;
-  background: #c4d8cb44;
-  border-radius: 2px;
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d7e3e740;
 }
 .shake-meter i.full {
-  background: var(--shore-light);
+  background: #f5e6b2;
 }
 .phone-shake {
   position: absolute;
-  left: 32px;
-  right: 32px;
-  bottom: 170px;
+  left: 20px;
+  right: 20px;
+  bottom: calc(158px + env(safe-area-inset-bottom));
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
 }
 .phone-shake button {
-  color: var(--shore-ink);
-  min-height: 44px;
-  background: #173e51;
-  border: 1px solid #a4b6aa;
-  border-radius: 3px;
-  padding: 8px 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  min-height: 44px;
+  padding: 4px 10px;
+  color: #d7e3e7;
+  font-size: 11px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .phone-shake span {
-  font-size: 12px;
-  max-width: 240px;
-  color: var(--shore-soft);
-}
-.shore-dock {
-  position: absolute;
-  left: 50%;
-  bottom: 50px;
-  transform: translateX(-50%);
-  width: min(540px, calc(100% - 40px));
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  padding: 0 20px 12px;
-}
-.shore-dock::before {
-  content: '';
-  z-index: -1;
-  position: absolute;
-  top: 39px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(#879a98, #5c7375);
-  border-top: 2px solid #b4c0b1;
-  box-shadow:
-    0 5px 0 #34505a,
-    0 14px 20px #09273540;
-  transform: perspective(450px) rotateX(12deg);
-  transform-origin: bottom;
-}
-.dock-action {
-  border: none;
-  padding: 0 4px;
-  background: none;
-  color: #f2f0dd;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  min-height: 106px;
-  font-size: 12px;
-  line-height: 1.3;
-  text-shadow: 0 1px 3px #14323e;
-  border-radius: 2px;
-}
-.dock-action:disabled {
-  opacity: 0.5;
-}
-.dock-action:focus-visible {
-  outline-color: var(--shore-light);
-  outline-offset: 2px;
-}
-.dock-object {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 54px;
-  height: 62px;
-  filter: drop-shadow(0 4px 3px #0e304650);
-  transition: transform 180ms ease;
-}
-.dock-object > svg {
-  width: 42px;
-  height: 52px;
-  stroke-width: 1.4;
-}
-.dock-object .small-glass {
-  width: 39px;
-  height: 65px;
-}
-.dock-object .floating-bottle {
-  animation: none;
-}
-.dock-action:hover .dock-object {
-  transform: translateY(-4px);
-}
-.dock-primary .dock-object::before {
-  content: '';
-  position: absolute;
-  width: 68px;
-  height: 12px;
-  bottom: 0;
-  border-radius: 50%;
-  background: #e3e9b133;
-  box-shadow: 0 0 18px #e5efb44d;
-  z-index: -1;
-}
-.dock-object b {
-  position: absolute;
-  right: -4px;
-  top: 2px;
-  font:
-    600 11px/20px 'DM Sans',
-    sans-serif;
-  text-shadow: none;
-  width: 20px;
-  background: #e9deb8;
-  color: #1a3c48;
-  border-radius: 50%;
-}
-.shore-fine-print {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 10px;
-  margin: 0;
-  text-align: center;
-  color: #203f4a;
+  max-width: 250px;
   font-size: 11px;
-  line-height: 1.5;
+}
+.shore-home .phone-shake {
+  display: none;
 }
 .shore-play {
   display: block;
-  padding: 0;
+  max-width: none;
   margin: 0;
 }
 .shore-play > .play-margin {
   display: none;
 }
 .shore-play > .writing-desk {
-  border: 0;
-  background: none;
-  padding: 0;
   min-height: 0;
-  box-shadow: none;
-}
-.shore-shell .main {
-  margin-top: 0;
-}
-.shore-shell .site-header {
-  padding-bottom: 20px;
-}
-.shore-moon {
-  position: absolute;
-  top: 16%;
-  left: 72%;
-  width: 23px;
-  height: 23px;
-  border-radius: 50%;
-  background: #ede4b8;
-  box-shadow: 0 0 28px 12px #f2dfa80c;
-  z-index: -2;
-}
-.mobile-lighthouse {
-  display: none;
-}
-@keyframes shore-bob {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-2deg);
-  }
-  50% {
-    transform: translateY(-8px) rotate(2deg);
-  }
-}
-@media (max-width: 700px) {
-  .shore {
-    min-height: 670px;
-    height: calc(100svh - 134px);
-  }
-  .shore-heading {
-    left: 23px;
-    right: 20px;
-    top: 24px;
-  }
-  .shore-edition {
-    font-size: 11px;
-    margin-bottom: 10px;
-  }
-  .shore-heading h1 {
-    font-size: 30px;
-    max-width: 310px;
-  }
-  .shore-heading > p:last-child {
-    font-size: 12px;
-    max-width: 280px;
-    line-height: 1.6;
-  }
-  .shore-prompt {
-    top: 160px;
-    left: 23px;
-    width: 240px;
-  }
-  .shore-prompt > span {
-    font-size: 11px;
-  }
-  .shore-prompt > p {
-    font-size: 20px;
-    margin: 7px 0;
-  }
-  .shore-prompt small {
-    font-size: 11px;
-    line-height: 1.5;
-    max-width: 230px;
-  }
-  .coast-art {
-    width: 100%;
-  }
-  .distant-lighthouse {
-    display: none;
-  }
-  .mobile-lighthouse {
-    display: block;
-    position: absolute;
-    right: 3%;
-    bottom: 61%;
-    width: 50px;
-    height: 75px;
-    z-index: -2;
-  }
-  .shore-moon {
-    top: 32%;
-    left: 22%;
-    width: 15px;
-    height: 15px;
-  }
-  .bottle-grip {
-    left: 55%;
-    top: 57%;
-    width: 113px;
-    height: 182px;
-  }
-  .bottle-ripple {
-    left: 55%;
-    top: calc(57% + 77px);
-    width: 110px;
-    height: 13px;
-  }
-  .bottle-spotlight {
-    left: 55%;
-    top: 56%;
-    width: 250px;
-    height: 230px;
-  }
-  .shake-instruction {
-    left: 50%;
-    top: calc(57% + 109px);
-    font-size: 12px;
-  }
-  .shore-dock {
-    bottom: 41px;
-    width: calc(100% - 28px);
-    padding: 0 6px 10px;
-    gap: 0;
-  }
-  .dock-action {
-    font-size: 10px;
-    min-height: 98px;
-    padding: 0 2px;
-  }
-  .shore-fine-print {
-    font-size: 9px;
-    left: 20px;
-    right: 20px;
-    bottom: 7px;
-  }
-  .shore-home .phone-shake {
-    left: 14px;
-    right: 14px;
-    bottom: 150px;
-  }
-  .phone-shake {
-    bottom: 150px;
-    flex-direction: column;
-    gap: 0;
-  }
-  .phone-shake button {
-    font-size: 11px;
-    min-height: 38px;
-  }
-  .phone-shake span {
-    font-size: 10px;
-    text-align: center;
-  }
-  .phone-shake + .shore-dock {
-    bottom: 35px;
-  }
-  .shore-catch .bottle-grip {
-    top: 49%;
-    width: 136px;
-    height: 220px;
-  }
-  .shore-catch .bottle-ripple {
-    top: calc(49% + 94px);
-  }
-  .shore-catch .shake-instruction {
-    top: calc(49% + 132px);
-  }
-  .shore-shell .site-header {
-    padding-bottom: 17px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .glass-bottle .floating-bottle {
-    animation: none;
-  }
-  .bottle-grip,
-  .dock-object {
-    transition: none;
-  }
-}
-
-/* The scenery is a sourced photograph. It stays behind every opened note. */
-.sea-world {
-  position: relative;
-  isolation: isolate;
-  max-width: none;
-  min-height: 100svh;
-  padding: 0;
-  color: #f0f0df;
-  background-color: #153744;
-}
-.ocean-world {
-  position: fixed;
-  inset: 0;
-  z-index: -3;
-  pointer-events: none;
-  overflow: hidden;
-  background: #183845;
-}
-.ocean-photograph {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(#10365544, #17466133),
-    url('/assets/sea-shore.jpg') center center / cover;
-}
-.sea-surface {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-}
-.sea-motion-button {
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  min-height: 44px;
-  margin-left: 12px;
-  white-space: nowrap;
-}
-.shore-gate {
-  position: relative;
-  z-index: 4;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px 18px;
-  background: #ede5d2;
-  color: #183e40;
-  font-size: 12px;
-}
-.shore-gate p {
-  margin: 0;
-}
-.shore-gate button {
-  min-height: 44px;
-  text-decoration: underline;
-}
-.dock-returned .dock-object {
-  filter: drop-shadow(0 0 9px #f6dc8e90);
 }
 .quiet-tide-note {
   position: absolute;
-  top: 26%;
+  top: 49%;
   left: 50%;
-  transform: translateX(-50%) rotate(-1deg);
-  width: min(350px, calc(100% - 48px));
-  padding: 25px 24px 18px;
-  box-sizing: border-box;
-  color: #203d40;
-  background: #f2e8ce url('/assets/paper-texture.jpg') center / cover;
-  box-shadow: 0 12px 30px #041f3240;
   z-index: 3;
+  width: min(355px, calc(100% - 48px));
+  padding: 28px;
+  transform: translate(-50%, -50%) rotate(-1deg);
+  color: #293c43;
+  background: #f5edce url('/assets/paper-texture.jpg') center / cover;
+  box-shadow: 0 12px 30px #062d5133;
 }
 .quiet-tide-note h2 {
-  font:
-    400 27px/1.2 'Fraunces',
-    serif;
   margin: 0 0 12px;
-  color: #203d40;
+  color: #293c43;
+  font:
+    400 27px/1.2 Georgia,
+    'Times New Roman',
+    serif;
+  letter-spacing: -0.03em;
 }
 .quiet-tide-note p {
-  font-size: 14px;
+  margin: 0 0 16px;
+  font-size: 13px;
   line-height: 1.6;
-  margin: 0 0 15px;
 }
 .quiet-tide-note small {
   display: block;
-  margin-top: 8px;
-  font-size: 12px;
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.5;
 }
 .quiet-tide-actions {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 12px;
 }
 .quiet-tide-actions button {
   min-height: 44px;
-  padding: 8px 10px;
-  border: 1px solid #49605b;
-  border-radius: 3px;
-  background: transparent;
-  color: #203d40;
-  font-size: 13px;
-}
-.quiet-tide-actions button:first-child {
-  background: #203d40;
-  color: #fff5dd;
+  padding: 6px 0;
+  color: #293c43;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .shore-empty .bottle-grip,
 .shore-empty .bottle-ripple,
@@ -623,13 +462,347 @@
 .shore-empty .shake-instruction {
   visibility: hidden;
 }
+
+/* A note opens over the same water, without a second application interface. */
+.sea-world .play-layout:not(.shore-play) {
+  display: block;
+  width: min(610px, 100%);
+  margin: 0 auto;
+}
+.sea-world .play-margin {
+  display: none;
+}
+.sea-world .writing-desk {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+.paper-note {
+  position: relative;
+  min-width: 0;
+  perspective: 1100px;
+}
+.paper-content {
+  position: relative;
+  z-index: 1;
+  padding: clamp(26px, 4vw, 48px);
+  color: #293c43;
+  background:
+    linear-gradient(#f5edcee8, #f5edcee8),
+    url('/assets/paper-texture.jpg') center / cover;
+  border-radius: 1px 3px 2px 4px;
+  box-shadow: 0 14px 45px #062d5133;
+}
+.sea-world .writing-desk h1 {
+  margin-bottom: 24px;
+  color: #293c43;
+  font:
+    400 clamp(27px, 3.5vw, 36px)/1.3 Georgia,
+    'Times New Roman',
+    serif;
+  letter-spacing: -0.035em;
+}
+.sea-world .eyebrow {
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+.sea-world .desk-heading {
+  align-items: center;
+  margin-bottom: 26px;
+}
+.sea-world .desk-heading .eyebrow {
+  color: #69736c;
+}
+.sea-world .draft-saved {
+  color: #69736c;
+  font-size: 10px;
+}
+.sea-world .story-input {
+  min-height: 125px;
+  color: #293c43;
+  font:
+    400 28px/1.6 Georgia,
+    'Times New Roman',
+    serif;
+  letter-spacing: -0.02em;
+  border-color: #87917a66;
+}
+.sea-world .story-input::placeholder {
+  color: #8e947e;
+}
+.sea-world .button {
+  min-height: 46px;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  box-shadow: none;
+}
+.sea-world .button.primary {
+  border-color: #314f54;
+  color: #f5edce;
+  background: #314f54;
+}
+.sea-world .button.secondary {
+  border-color: #a7af9b;
+  color: #293c43;
+  background: #f5edce;
+}
+.sea-world .paper-content .text-button {
+  color: #435b56;
+}
+.sea-world .caught-note {
+  border-left-color: #819387;
+  background: #e4dfc65c;
+}
+.sea-world .caught-note p {
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.sea-world .word-feedback,
+.sea-world .privacy-note,
+.sea-world .word-rules,
+.sea-world .minor-actions,
+.sea-world .nudge-button {
+  font-size: 11px;
+}
+.sea-world .nudge {
+  border-radius: 0;
+  background: #e4dfc673;
+}
+.paper-closed {
+  min-height: 470px;
+  display: grid;
+  place-items: center;
+}
+.paper-closed .paper-content {
+  display: none;
+}
+.open-bottle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 30px;
+  border: 0;
+  color: #f5edce;
+  background: none;
+  font:
+    400 25px/1.3 Georgia,
+    'Times New Roman',
+    serif;
+}
+.open-bottle img {
+  width: 130px;
+  height: auto;
+  transform: rotate(-9deg);
+  filter: drop-shadow(5px 10px 9px #062d5133);
+}
+.open-bottle > .glass-bottle {
+  width: 74px;
+  height: 120px;
+  margin-bottom: 8px;
+  transform: rotate(-9deg);
+  filter: drop-shadow(5px 10px 9px #062d5133);
+}
+.open-bottle small {
+  color: #d7e3e7;
+  font:
+    12px/1.5 Arial,
+    Helvetica,
+    sans-serif;
+}
+.paper-unfolding {
+  min-height: 470px;
+}
+.paper-unfolding .paper-content {
+  animation: note-unfold 1900ms ease both;
+}
+.paper-unfolding .paper-content > * {
+  opacity: 0;
+}
+.paper-waiting .paper-content,
+.paper-waiting .unfolding-ball {
+  animation-play-state: paused;
+}
+.unfolding-ball {
+  position: absolute;
+  z-index: 4;
+  top: 40%;
+  left: 50%;
+  width: 130px;
+  height: auto;
+  transform: translate(-50%, -50%) rotate(-9deg);
+  animation: note-release 400ms ease both;
+  pointer-events: none;
+}
+.paper-surface {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 16px #062d5126);
+}
+.paper-unfolding.has-paper-mesh .paper-content {
+  visibility: hidden;
+  animation: none;
+}
+.paper-open .paper-content > * {
+  animation: note-ink 180ms ease-out both;
+}
+.postcard-paper .paper-content {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+.postcard-paper.paper-unfolding {
+  min-height: 0;
+}
+.sea-world .reveal-layout {
+  gap: 30px;
+  align-items: center;
+}
+.sea-world .reveal-layout.has-postcard {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: min(510px, 100%);
+  margin: 0 auto;
+}
+.has-postcard .reveal-copy {
+  display: contents;
+}
+.has-postcard .reveal-copy > .eyebrow,
+.has-postcard .reveal-copy > p,
+.has-postcard .reveal-copy > .return-note,
+.has-postcard .reveal-copy > .back-link {
+  display: none;
+}
+.sea-world .has-postcard .reveal-copy > h1 {
+  order: 0;
+  margin: 0 0 5px;
+  text-align: center;
+  font-size: 27px;
+  line-height: 1.35;
+}
+.has-postcard .reveal-art {
+  order: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  animation: none;
+}
+.has-postcard .reveal-copy > .share-actions {
+  order: 2;
+  justify-content: center;
+  margin: 6px 0 0;
+}
+.has-postcard .reveal-copy > .card-management {
+  order: 3;
+  justify-content: center;
+  margin: 0;
+}
+.has-postcard .reveal-copy > .hello-panel {
+  order: 4;
+  width: 100%;
+}
+.has-postcard .reveal-copy > .pass-it-on {
+  order: 5;
+  align-items: center;
+  text-align: center;
+  margin: 10px 0 0;
+  max-width: 300px;
+  gap: 9px;
+}
+.has-postcard .pass-it-on p {
+  margin: 0;
+}
+.has-postcard .stamp-receipt {
+  display: none;
+}
+.has-postcard .human-seal {
+  margin-top: 14px;
+  font-size: 10px;
+}
+.has-postcard .card-management button {
+  min-height: 44px;
+}
+
+.sea-world .reveal-copy > h1,
+.sea-world .collection h1 {
+  color: #f5edce;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+}
+.sea-world .reveal-copy h1 em {
+  color: #f5e6b2;
+  font-family: inherit;
+}
+.sea-world .reveal-copy > p,
+.sea-world .reveal-copy > .eyebrow,
+.sea-world .collection-heading .eyebrow,
+.sea-world .collection-total,
+.sea-world .collection-empty p,
+.sea-world .collection-card > span,
+.sea-world .waiting-section > p,
+.sea-world .human-seal,
+.sea-world .stamp-receipt,
+.sea-world .return-note,
+.sea-world .card-management button,
+.sea-world .reveal-copy > .text-button {
+  color: #dce6df;
+}
+.sea-world .reveal-copy .share-actions .text-button {
+  color: #dce6df;
+}
+.sea-world .collection-empty h2,
+.sea-world .waiting-section h2 {
+  color: #f5edce;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.sea-world .reveal-art .postcard,
+.sea-world .collection-card .postcard {
+  color: #293c43;
+  background:
+    linear-gradient(#f5edcee8, #f5edcee8),
+    url('/assets/paper-texture.jpg') center / cover;
+  box-shadow: 0 10px 30px #062d5126;
+}
+.sea-world .postcard .card-half {
+  background: transparent;
+}
+.sea-world .postcard .eyebrow,
+.sea-world .postcard .postcard-bottom {
+  color: #627166;
+}
+.sea-world .postcard h3,
+.sea-world .postcard p {
+  color: #293c43;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.sea-world .waiting-line {
+  color: #293c43;
+  background: #f5edce;
+}
+.sea-world .hello-panel {
+  color: #293c43;
+  background: #f5edce;
+  border-radius: 2px;
+}
+.sea-world .hello-panel .text-button {
+  color: #435b56;
+}
 .pass-it-on {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 15px;
+  gap: 14px;
   margin: 24px 0;
-  color: #f0f0df;
+  color: #f5edce;
 }
 .pass-it-on p {
   font-size: 13px;
@@ -637,260 +810,578 @@
 }
 .pass-it-on .text-button {
   min-height: 44px;
+  color: #dce6df;
 }
-.sea-world:not(.shore-shell) .ocean-photograph::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: #082533a6;
-}
-.sea-world:not(.shore-shell) .moon-photograph {
-  left: 6%;
-}
-.sea-world .steps .current {
-  color: #fff3d8;
-}
-.sea-world .steps .complete > span {
-  color: #183e40;
-}
-.moon-photograph {
-  position: absolute;
-  width: 29px;
-  height: 29px;
-  object-fit: cover;
-  border-radius: 50%;
-  left: 26%;
-  top: 17%;
-  mix-blend-mode: screen;
-  filter: brightness(1.2);
-}
-.shore-lighthouse {
-  position: absolute;
-  right: 15%;
-  top: calc(32% - 47px);
-  width: 40px;
-  height: 48px;
-  opacity: 0.9;
-}
-.sea-world .site-header {
-  max-width: none;
-  padding: 0 28px;
-  margin: auto;
-  height: 70px;
-  border: 0;
-  gap: 26px;
-  background: linear-gradient(#313b43, #222e38);
-  color: #f5f2e2;
-}
-.sea-world .wordmark {
-  background: none;
-  font-size: 35px;
-  color: #f5f2e2;
-}
-.sea-world .wordmark span {
-  color: #bacac1;
-}
-.sea-world .site-header nav button {
-  color: #e3e6dc;
-}
-.sea-world .site-header nav button.nav-active {
-  border-color: #e8d8ab;
-  color: #fff7dc;
-}
-.sea-world .nav-count {
-  color: #254247;
-  background: #d7dec9;
-}
-.sea-world .main {
-  max-width: 1200px;
-  margin: auto;
-  padding: 35px 26px 45px;
-}
-.sea-world .main.view-today {
-  max-width: none;
-  padding: 0;
-}
-.sea-world.shore-shell .main.view-play {
-  max-width: none;
-  padding: 0;
-}
-.sea-world .shore {
-  background: none;
-  min-height: 650px;
-  height: min(790px, calc(100svh - 120px));
-}
-.sea-world .shore::after {
-  background: linear-gradient(90deg, #0a25344d, transparent 70%);
-}
-.sea-world .shore-heading {
-  top: 34px;
-  left: 0;
-  right: 0;
-  text-align: center;
-}
-.sea-world .shore-heading > p:last-child {
-  font-size: 13px;
-  margin: auto;
-  max-width: 400px;
-  color: #f0f0df;
-}
-.sea-world .shore-prompt {
-  top: 90px;
-  width: 245px;
-  left: 40px;
-}
-.sea-world .shore-prompt p {
-  font-size: 23px;
-}
-.sea-world .shore-prompt small {
-  color: #ecedde;
-}
-.sea-world .shore-fine-print {
-  color: #f2f1e1;
-  text-shadow: 0 1px 3px #10222c;
-}
-.sea-world .shore-dock::before {
-  background: linear-gradient(#53676d, #334f5b);
-  border-color: #95a5a0;
-}
-.sea-world .dock-action {
+
+/* Necessary service messages remain readable, without framing the shore. */
+.sea-world .connection-banner,
+.sea-world .shore-gate {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 0;
+  padding: 10px 20px;
+  color: #293c43;
+  background: #f5edce;
   font-size: 12px;
-}
-.sea-world .bottle-grip {
-  top: 52%;
-  left: 52%;
-}
-.sea-world .bottle-ripple {
-  top: calc(52% + 105px);
-  left: 52%;
-}
-.sea-world .bottle-spotlight {
-  top: 51%;
-  left: 52%;
-}
-.sea-world .shake-instruction {
-  top: calc(52% + 145px);
-  left: 52%;
-}
-.sea-world .play-margin > .eyebrow,
-.sea-world .play-margin > p,
-.sea-world .margin-note,
-.sea-world .steps,
-.sea-world .reveal-copy > p,
-.sea-world .pass-it-on p,
-.sea-world .reveal-copy > .eyebrow,
-.sea-world .collection-heading .eyebrow,
-.sea-world .collection-total,
-.sea-world .waiting-section > p {
-  color: #e2e6d6;
-}
-.sea-world .play-margin h2,
-.sea-world .reveal-copy h1,
-.sea-world .collection h1,
-.sea-world .collection-empty h2,
-.sea-world .waiting-section h2 {
-  color: #fff7e5;
-}
-.sea-world .collection-empty p,
-.sea-world .collection-card > span {
-  color: #e5e8d8;
-}
-.sea-world .reveal-copy h1 em {
-  color: #e1d0a5;
-}
-.sea-world .reveal-copy .text-button,
-.sea-world .card-management button,
-.sea-world .return-note,
-.sea-world .human-seal,
-.sea-world .stamp-receipt,
-.sea-world .site-footer {
-  color: #e5e9d8;
-}
-.sea-world .share-actions .secondary {
-  background: #f0ead7;
-}
-.sea-world .share-actions .primary {
-  background: #f0ead7;
-  color: #173d43;
-  border-color: #f0ead7;
-  box-shadow: 0 3px 0 #172d36;
-}
-.sea-world .writing-desk {
-  padding: 0;
-  background: none;
-  border: 0;
-  box-shadow: none;
-}
-.sea-world .postcard {
-  color: #183e40;
-}
-.sea-world .postcard .eyebrow,
-.sea-world .postcard .postcard-bottom {
-  color: #405c52;
+  line-height: 1.5;
 }
 .sea-world .connection-banner {
-  color: #183e40;
-}
-.sea-world.shore-shell .error-note {
   position: fixed;
-  z-index: 30;
+  top: 84px;
   left: 50%;
-  bottom: 20px;
+  width: min(440px, calc(100% - 36px));
   transform: translateX(-50%);
-  width: min(600px, calc(100% - 32px));
+  box-shadow: 0 6px 24px #062d5133;
+}
+.sea-world .connection-banner button,
+.shore-gate button {
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.shore-gate p {
   margin: 0;
-  box-shadow: 0 8px 30px #06192766;
 }
-.sea-world .reveal-art .postcard {
-  background:
-    linear-gradient(#f3ecd5da, #f3ecd5da),
-    url('/assets/paper-texture.jpg') center/cover;
-}
-.sea-world .reveal-art .postcard .card-half {
+.sea-world .sandbox-banner {
+  position: absolute;
+  top: 72px;
+  left: 0;
+  right: 0;
+  z-index: 16;
+  padding: 4px 16px;
+  border: 0;
+  color: #d7e3e7;
   background: none;
+  font-size: 9px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  opacity: 0.7;
 }
-.sea-world .collection-card .postcard {
-  background-color: #f6efdc;
+.sea-world .error-note {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  z-index: 30;
+  width: min(560px, calc(100% - 32px));
+  margin: 0;
+  transform: translateX(-50%);
+  color: #293c43;
+  background: #f5edce;
+  border-radius: 2px;
+  box-shadow: 0 8px 25px #062d5140;
 }
 .sea-world .site-footer {
-  max-width: 1200px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 18px 26px;
-  border-color: #d2dcca33;
-  background: #24363de8;
-  font-size: 11px;
+  padding: 15px 32px 24px;
+  border: 0;
+  color: #d7e3e7;
+  background: none;
+  font-size: 10px;
+}
+.sea-world.shore-shell .site-footer {
+  display: none;
 }
 .sea-world .site-footer a {
   margin-left: 12px;
 }
-.sea-world .hello-panel {
-  color: #25453b;
+.sea-motion-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  margin-left: 12px;
 }
-.sea-world .hello-panel .text-button {
-  color: #25453b;
+.shore-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #89968340;
+  color: #61716a;
+  font-size: 11px;
+  line-height: 1.5;
 }
-.sea-world .waiting-line {
-  background: #f1ecd9;
-  color: #183e40;
-  padding: 18px;
+.shore-settings a,
+.shore-settings > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 4px 0;
+  font-size: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.shore-settings .sea-motion-button {
+  margin-left: 0;
+}
+@media (hover: hover) {
+  .dock-action:not(:disabled):hover .dock-object {
+    transform: translateY(-4px);
+  }
+}
+@media (max-width: 700px) {
+  .ocean-photograph {
+    background-image: url('/assets/sea-shore.jpg');
+  }
+  .sea-world .site-header {
+    inset: max(9px, env(safe-area-inset-top)) 0 auto;
+    height: 44px;
+    padding: 0 22px;
+    gap: 14px;
+  }
+  .sea-world .wordmark {
+    font-size: 24px;
+  }
+  .sea-world .wordmark span {
+    font-size: 21px;
+  }
+  .sea-world .main {
+    padding: 88px 20px 32px;
+  }
+  .sea-world .sandbox-banner {
+    top: 59px;
+    padding: 3px 18px;
+    font-size: 8px;
+  }
+  .shore-whisper,
+  .shore-heading {
+    bottom: calc(168px + env(safe-area-inset-bottom));
+  }
+  .shore-whisper,
+  .shore-heading > p {
+    font-size: 14px;
+  }
+  .shore-dock {
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    width: calc(100% - 30px);
+    gap: 8px;
+    padding: 0 8px 12px;
+  }
+  .shore-dock::before {
+    inset: 47px -7px 0;
+  }
+  .dock-action {
+    min-height: 100px;
+    gap: 7px;
+    padding: 0 2px;
+    font-size: 12px;
+  }
+  .dock-object {
+    width: 58px;
+    height: 68px;
+  }
+  .dock-object > svg {
+    width: 52px;
+    height: 62px;
+  }
+  .dock-object .small-glass {
+    width: 35px;
+    height: 66px;
+  }
+  .shore-fine-print {
+    bottom: calc(145px + env(safe-area-inset-bottom));
+    font-size: 11px;
+  }
+  .bottle-grip {
+    top: 57%;
+    width: 82px;
+    height: 132px;
+  }
+  .bottle-ripple {
+    top: calc(57% + 53px);
+    width: 80px;
+  }
+  .shake-instruction {
+    top: calc(57% + 87px);
+    font-size: 11px;
+  }
+  .phone-shake {
+    bottom: calc(149px + env(safe-area-inset-bottom));
+    flex-direction: column;
+    gap: 0;
+  }
+  .phone-shake span {
+    text-align: center;
+    font-size: 10px;
+  }
+  .quiet-tide-note {
+    top: 48%;
+    padding: 25px 24px;
+  }
+  .paper-content {
+    padding: 26px 23px;
+  }
+  .sea-world .writing-desk h1 {
+    font-size: 27px;
+  }
+  .sea-world .story-input {
+    min-height: 115px;
+    font-size: 25px;
+  }
+  .sea-world .desk-heading {
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .sea-world .draft-saved {
+    max-width: 105px;
+    white-space: normal;
+    line-height: 1.4;
+  }
+  .paper-closed,
+  .paper-unfolding {
+    min-height: 420px;
+  }
+  .sea-world .reveal-layout {
+    gap: 32px;
+  }
+  .sea-world .reveal-copy > h1 {
+    font-size: 36px;
+  }
+  .sea-world .site-footer {
+    padding: 12px 20px 22px;
+  }
+  .sea-world .site-footer > span:last-child {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
+@media (max-height: 760px) {
+  .phone-shake {
+    display: none;
+  }
+}
+@media (max-height: 620px) {
+  .shore-whisper,
+  .shore-heading {
+    bottom: calc(145px + env(safe-area-inset-bottom));
+  }
+  .bottle-grip {
+    top: 48%;
+    width: 65px;
+    height: 105px;
+  }
+  .bottle-ripple {
+    top: calc(48% + 43px);
+    width: 65px;
+  }
+  .shake-instruction {
+    top: calc(48% + 65px);
+  }
+  .quiet-tide-note {
+    top: 43%;
+    padding: 18px 22px;
+  }
+}
+@keyframes shore-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(2deg);
+  }
+}
+@keyframes note-release {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-9deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-5deg) scale(1.05);
+  }
+}
+@keyframes note-unfold {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.95);
+  }
+  30%,
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes note-ink {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .glass-bottle .floating-bottle,
+  .paper-unfolding .paper-content,
+  .paper-open .paper-content > * {
+    animation: none;
+  }
+  .bottle-grip,
+  .dock-object {
+    transition: none;
+  }
+  .unfolding-ball,
+  .paper-surface {
+    display: none;
+  }
+  .paper-unfolding .paper-content > * {
+    opacity: 1;
+  }
 }
 
-.paper-note {
-  position: relative;
-  perspective: 1100px;
-  min-width: 0;
+/* A separate piece of coast keeps its place as the live water moves. */
+.coast-headland {
+  position: absolute;
+  right: -1%;
+  bottom: 60%;
+  width: clamp(270px, 38vw, 670px);
+  aspect-ratio: 7.49;
+  overflow: hidden;
+  pointer-events: none;
+  filter: brightness(0.9) saturate(0.8);
 }
-.paper-content {
-  position: relative;
-  z-index: 1;
-  padding: 42px;
-  color: #183e40;
+.coast-headland img {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  left: 0;
+  top: -85.17%;
+}
+@media (max-width: 700px) {
+  .coast-headland {
+    width: max(260px, 66vw);
+    right: -4%;
+  }
+}
+
+/* The controls rest on a real wooden writing surface entering the foreground. */
+.shore-dock {
+  bottom: 0;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+.shore-dock::before {
+  inset: 49px auto -18px;
+  left: 50%;
+  width: calc(100% + 28px);
+  transform: translateX(-50%);
+  clip-path: polygon(4% 0, 96% 0, 100% 100%, 0 100%);
+  border-top: 2px solid #a9a18b;
   background:
-    linear-gradient(#f5eedbdb, #f5eedbdb),
-    url('/assets/paper-texture.jpg') center/cover;
-  box-shadow: 0 14px 45px #06192755;
-  border-radius: 1px 4px 2px 5px;
+    linear-gradient(180deg, #30425c26 0%, #081b332b 100%),
+    repeating-linear-gradient(2deg, #544136 0px, #5d493c 3px, #44372f 5px, #5a4437 8px);
+  box-shadow:
+    0 -5px 22px #07162b55,
+    inset 0 2px 2px #c1bca340;
 }
+.dock-object::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 5%;
+  right: 5%;
+  bottom: -4px;
+  height: 9px;
+  border-radius: 50%;
+  background: #0b172667;
+  filter: blur(4px);
+}
+.dock-action {
+  text-shadow: 0 1px 4px #071424;
+}
+.bottle-shelf {
+  max-width: 820px;
+  margin: auto;
+}
+.sea-world .bottle-shelf h1 {
+  margin-bottom: 10px;
+  font-size: 35px;
+}
+.shelf-note {
+  color: #e4e8e5;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.shelf-section {
+  margin: 38px 0;
+}
+.shelf-section h2,
+.endings-heading h2 {
+  color: #f5edce;
+  font:
+    400 23px/1.3 Georgia,
+    serif;
+  letter-spacing: -0.02em;
+  margin-bottom: 18px;
+}
+.beginning-list,
+.ending-list {
+  display: grid;
+  gap: 13px;
+}
+.beginning-preview,
+.ending-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 22px 24px;
+  border-radius: 1px 3px 2px 1px;
+  color: #293c43;
+  background:
+    linear-gradient(#f5edceed, #f5edceed),
+    url('/assets/paper-texture.jpg') center / cover;
+  box-shadow: 0 5px 17px #071a3230;
+  text-align: left;
+}
+.beginning-preview > span,
+.ending-preview > span {
+  flex: 1;
+  font:
+    400 23px/1.45 Georgia,
+    serif;
+  overflow-wrap: anywhere;
+}
+.beginning-preview small,
+.ending-preview small {
+  white-space: nowrap;
+  font-size: 11px;
+  color: #5a6b62;
+}
+.letter-forward {
+  transform: rotate(180deg);
+}
+.bottle-lookup {
+  margin-top: 32px;
+  color: #e4e8e5;
+  font-size: 12px;
+}
+.bottle-lookup summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.bottle-lookup form {
+  display: flex;
+  gap: 10px;
+  padding-top: 12px;
+}
+.bottle-lookup input {
+  min-width: 0;
+  flex: 1;
+  padding: 10px 12px;
+  color: #293c43;
+  background: #f5edce;
+  border: 1px solid #87917a;
+  border-radius: 2px;
+  font: inherit;
+}
+.bottle-page {
+  width: min(610px, 100%);
+  margin: auto;
+}
+.bottle-page > h1 {
+  color: #f5edce;
+  font:
+    400 29px/1.35 Georgia,
+    serif;
+  text-align: center;
+  margin-bottom: 26px;
+}
+.letter-text {
+  margin: 22px 0 24px;
+  font:
+    400 32px/1.4 Georgia,
+    serif;
+  overflow-wrap: anywhere;
+}
+.letter-address {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+.letter-address .text-button {
+  margin: 0;
+  min-height: 44px;
+  font-size: 11px;
+}
+.endings-heading {
+  margin-top: 32px;
+}
+.endings-heading h2 {
+  margin-bottom: 8px;
+}
+.endings-heading p {
+  color: #d3dfdf;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.ending-preview {
+  padding: 20px 24px;
+}
+.shelf-back {
+  margin-top: 25px;
+  color: #f5edce;
+}
+@media (max-width: 700px) {
+  .shore-dock {
+    bottom: 0;
+    padding-bottom: max(25px, env(safe-area-inset-bottom));
+  }
+  .shore-dock::before {
+    inset: 45px auto -18px;
+    left: 50%;
+    width: calc(100% + 14px);
+  }
+  .beginning-preview,
+  .ending-preview {
+    padding: 18px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .beginning-preview > span,
+  .ending-preview > span {
+    font-size: 21px;
+    min-width: 150px;
+  }
+  .beginning-preview small {
+    margin-left: 31px;
+  }
+  .letter-text {
+    font-size: 28px;
+  }
+  .bottle-lookup form {
+    flex-wrap: wrap;
+  }
+}
+.bottle-receipt {
+  margin: 0 0 12px;
+  color: #647167;
+  font-size: 11px;
+}
+.bottle-receipt summary {
+  min-height: 32px;
+  cursor: pointer;
+}
+.bottle-receipt code {
+  display: block;
+  padding: 6px 0 10px;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* Retain the bounded, connected note opening from main. */
 .paper-closed {
   min-height: 540px;
   display: grid;
@@ -975,227 +1466,5 @@
   }
   to {
     transform: translateY(0);
-  }
-}
-.postcard-paper .paper-content {
-  padding: 0;
-  box-shadow: none;
-  background: none;
-}
-.postcard-paper.paper-unfolding {
-  min-height: 0;
-}
-@keyframes crumple-release {
-  0%,
-  25% {
-    opacity: 1;
-    transform: translate(-50%, -50%) rotate(-12deg) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) rotate(-7deg) scale(1.08);
-  }
-}
-@keyframes note-uncrumple {
-  0%,
-  15% {
-    clip-path: polygon(35% 30%, 62% 25%, 72% 49%, 58% 68%, 29% 60%, 24% 41%);
-    transform: scale(0.22) rotate(-11deg);
-    filter: brightness(0.7);
-  }
-  55% {
-    clip-path: polygon(9% 6%, 87% 0, 100% 78%, 80% 96%, 2% 88%, 0 28%);
-    transform: scale(0.8) rotate(3deg);
-    filter: brightness(0.9);
-  }
-  100% {
-    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-    transform: scale(1) rotate(0);
-    filter: brightness(1);
-  }
-}
-@media (max-width: 700px) {
-  .sea-world .site-header {
-    height: 68px;
-    padding: 0 18px;
-    gap: 15px;
-  }
-  .sea-world .wordmark {
-    font-size: 31px;
-  }
-  .sea-world .main {
-    padding: 25px 19px 32px;
-  }
-  .sea-world .shore {
-    min-height: 650px;
-    height: calc(100svh - 112px);
-  }
-  .sea-world .shore-heading {
-    top: 25px;
-    left: 20px;
-    right: 20px;
-  }
-  .sea-world .shore-heading > p:last-child {
-    font-size: 12px;
-    max-width: none;
-  }
-  .sea-world .shore-prompt {
-    top: 74px;
-    left: 23px;
-    width: 230px;
-  }
-  .sea-world .shore-prompt > p {
-    font-size: 21px;
-  }
-  .sea-world .shore-prompt small {
-    font-size: 11px;
-  }
-  .sea-world .dock-action {
-    font-size: 10px;
-  }
-  .sea-world .bottle-grip {
-    top: 49%;
-    left: 50%;
-    width: 125px;
-    height: 203px;
-  }
-  .sea-world .bottle-ripple {
-    top: calc(49% + 90px);
-    left: 50%;
-  }
-  .sea-world .bottle-spotlight {
-    top: 49%;
-    left: 50%;
-  }
-  .sea-world .shake-instruction {
-    top: calc(49% + 122px);
-    left: 50%;
-  }
-  .sea-world .phone-shake {
-    bottom: 143px;
-  }
-  .moon-photograph {
-    left: 24%;
-    top: 18%;
-    width: 20px;
-    height: 20px;
-  }
-  .shore-lighthouse {
-    right: 4%;
-    width: 35px;
-    height: 42px;
-    top: calc(32% - 41px);
-  }
-  .paper-content {
-    padding: 25px 21px;
-  }
-  .paper-closed,
-  .paper-unfolding {
-    min-height: 510px;
-  }
-  .sea-world .site-footer {
-    padding: 18px 19px;
-  }
-  .sea-world .site-footer > span:last-child {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .sea-world .reveal-copy > h1 {
-    font-size: 35px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .unfolding-ball,
-  .paper-surface {
-    display: none;
-  }
-  .paper-unfolding .paper-content,
-  .paper-open .paper-content > * {
-    animation: none;
-  }
-  .paper-unfolding .paper-content > * {
-    opacity: 1;
-  }
-  .open-bottle img {
-    transition: none;
-  }
-}
-
-/* Numbered daily identity and one clear catch action; the reward stays a shared note. */
-.tide-edition {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 9px;
-  color: #ece7ce;
-  font:
-    500 10px/1.4 'DM Sans',
-    sans-serif;
-  letter-spacing: 0.13em;
-  font-variant-numeric: tabular-nums;
-}
-.tide-edition b {
-  font-weight: 600;
-  margin-left: 5px;
-}
-.tide-edition time {
-  color: #c6d5d0;
-  letter-spacing: 0.04em;
-}
-.sea-world .shore-prompt {
-  top: 112px;
-}
-.shore-stamp {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 8px;
-  color: #e9d5a8;
-  font-size: 11px;
-}
-.shore-stamp > span {
-  font-size: 15px;
-}
-.shore-dock .dock-primary > span:last-child {
-  padding: 7px 10px;
-  border-radius: 4px;
-  border: 1px solid #f0e6bf;
-  background: #eee6cd;
-  color: #1c4145;
-  text-shadow: none;
-  box-shadow: 0 3px 0 #1c3546;
-  font-weight: 600;
-  transition:
-    background-color 150ms ease-out,
-    transform 150ms ease-out,
-    box-shadow 150ms ease-out;
-}
-.shore-dock .dock-primary:hover > span:last-child {
-  background: #fff5d8;
-}
-.shore-dock .dock-primary:active > span:last-child {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 #1c3546;
-}
-@media (max-width: 700px) {
-  .tide-edition {
-    gap: 9px;
-    font-size: 9px;
-    margin-bottom: 8px;
-  }
-  .sea-world .shore-prompt {
-    top: 99px;
-  }
-  .shore-dock .dock-primary > span:last-child {
-    padding: 7px 6px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .shore-dock .dock-primary > span:last-child {
-    transition: none;
-  }
-  .shore-dock .dock-primary:active > span:last-child {
-    transform: none;
   }
 }

@@ -56,21 +56,21 @@ try {
   ]) {
     await button(p, 'Write my six words').click();
     await p.getByRole('textbox').fill(text);
-    await button(p, 'Toss my bottle').click();
+    await button(p, 'Release').click();
     await button(p, 'Catch a bottle').waitFor();
   }
   pass('Fresh synthetic inputs pass real hosted Claude setup moderation');
   await button(A, 'Catch a bottle').click();
   await A.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await A.getByText('Their penguin stole my student discount.', { exact: true }).waitFor();
-  await A.getByRole('button', { name: 'A little nudge', exact: false }).click();
+  await A.getByRole('button', { name: 'Hint', exact: false }).click();
   await A.locator('.nudge p').waitFor();
   const hint = await A.locator('.nudge p').innerText();
   assert.ok(hint.length > 0 && hint.length <= 220);
   pass('A real Sonnet nudge appears inside the hosted writing flow');
   await A.getByRole('textbox').fill('Our lawyers demand your student ID.');
-  await button(A, 'Seal our postcard').click();
-  await A.getByRole('heading', { name: 'Well, look what we made.' }).waitFor();
+  await button(A, 'Send reply').click();
+  await A.getByRole('heading', { name: 'Saved reply' }).waitFor();
   await button(B, 'My postcards 1').waitFor();
   await A.screenshot({ path: out + 'hosted-reveal-360.png', fullPage: true });
   pass(
@@ -81,7 +81,7 @@ try {
   await (await download).saveAs(out + 'hosted-postcard.png');
   pass('Hosted postcard exports as a real downloadable PNG');
   const cardId = await A.locator('.postcard').getAttribute('data-card-id');
-  await button(A, 'Hide this postcard').click();
+  await button(A, 'Hide').click();
   await button(A, 'Hide postcard').click();
   pass('Synthetic hosted postcard is hidden after verification');
   assert.deepEqual(errors, []);

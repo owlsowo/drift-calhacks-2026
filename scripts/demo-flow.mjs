@@ -138,7 +138,7 @@ try {
   await B.page.getByRole('textbox').waitFor();
   await discover(B.page, 'write / real textarea');
   await type(B.page, 'I challenged their shark to poker.');
-  await click(B.page, button(B.page, 'Toss my bottle'), 'B tosses a setup');
+  await click(B.page, button(B.page, 'Release'), 'B tosses a setup');
   await button(B.page, 'Catch a bottle').waitFor();
   const A = await context();
   await ready(A.page, 'Step 1 · Pick up a stranger’s bottle');
@@ -158,8 +158,8 @@ try {
   await wait(1200);
   const returnStart = Math.max(0, (Date.now() - B.started) / 1000 - 2);
   await caption(B.page, 'Meanwhile · Writer B receives the return live');
-  await click(A.page, button(A.page, 'Seal our postcard'), 'A seals the canonical postcard');
-  await A.page.getByRole('heading', { name: 'Well, look what we made.' }).waitFor();
+  await click(A.page, button(A.page, 'Send reply'), 'A seals the canonical postcard');
+  await A.page.getByRole('heading', { name: 'Saved reply' }).waitFor();
   await button(B.page, 'My postcards 1').waitFor();
   await caption(A.page, 'Step 4 · Keep the postcard you made together');
   await discover(A.page, 'reveal / actual public postcard');
@@ -174,7 +174,7 @@ try {
   await type(A.page, 'I taught the octopus insider trading.');
   await click(
     A.page,
-    button(A.page, 'Toss my bottle'),
+    button(A.page, 'Release'),
     'A tosses their own beginning after keeping the postcard',
   );
   await wait(1800);
