@@ -219,6 +219,29 @@ describe('authoritative game state', () => {
     expect(setup(A).ok).toBe(false);
     expect([...h.db.request.iter()]).toHaveLength(0);
   });
+  it('accepts either configured shore hostname while denying an unrelated identity host', () => {
+    env.DRIFT_TURNSTILE_SECRET = 'synthetic-server-secret';
+    env.DRIFT_TURNSTILE_HOSTNAME = 'original.test, driftbottle.ink';
+    const verifyAt = (identity: typeof A, hostname: string) =>
+      module.verify_shore(
+        modelCtx(identity, () => ({
+          code: 200,
+          headers: { entries: [] },
+          version: { tag: 'Http11' as const },
+          body: JSON.stringify({ success: true, action: 'drift', hostname }),
+        })),
+        { token: 'synthetic-verification-response' },
+      );
+    expect(verifyAt(A, 'original.test').ok).toBe(true);
+    expect(verifyAt(B, 'driftbottle.ink').ok).toBe(true);
+    expect(verifyAt(C, 'driftbottle.ink.attacker.example').ok).toBe(false);
+    expect(() => start(A)).not.toThrow();
+    expect(() => start(B)).not.toThrow();
+    expect(() => start(C)).toThrow(/shore check/);
+    env.DRIFT_TURNSTILE_HOSTNAME = 'driftbottle.ink,*.test';
+    expect(verifyAt(C, 'driftbottle.ink').ok).toBe(false);
+    expect(() => start(C)).toThrow(/shore check/);
+  });
   it('installs one hourly schedule and purges hidden-card identity mappings', () => {
     start(A);
     setup(A);

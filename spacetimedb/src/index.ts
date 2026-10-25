@@ -5,6 +5,7 @@ import {
   parseSceneModelResponse,
 } from '../../packages/scene-contracts/index';
 import { teamStartersFor } from '../../packages/starter-content/index';
+import { matchesShoreHostname } from '../../packages/shore-verification/index';
 import {
   ACTIVITY_METRICS,
   CARD_ACTIONS,
@@ -787,8 +788,7 @@ export const verify_shore = db.procedure({ token: t.string() }, response, (ctx, 
     if (
       data.success !== true ||
       data.action !== 'drift' ||
-      !ctx.env.DRIFT_TURNSTILE_HOSTNAME ||
-      data.hostname !== ctx.env.DRIFT_TURNSTILE_HOSTNAME
+      !matchesShoreHostname(ctx.env.DRIFT_TURNSTILE_HOSTNAME, data.hostname)
     )
       return result(false, 'Couldn’t verify this shore check. Try again.');
     return ctx.withTx((tx) => {
