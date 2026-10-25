@@ -1,0 +1,11 @@
+# Approved coast and lighthouse
+
+On October 24 the owner directly approved the existing PR's AI landscape and lighthouse in Codex and asked us to follow the team's project instructions in Discord. This supersedes the earlier no-generated-images preference for these coast assets. The existing wide scene, its portrait companion and transparent lighthouse/headland are restored byte-for-byte from PR commit `2b9626b`; no new images were generated or edited for this update.
+
+The existing WebGPU simulation keeps its moving water, pause, hidden-tab and reduced-motion behavior. Its live headland uses the approved transparent asset with the original alpha crop, aligned to the renderer's 40% horizon and immersed five pixels into the water. Unsupported or failed WebGPU initialization shows the approved wide/portrait landscape with its baked-in lighthouse, so there is no duplicate overlay. The paper remains the real credited photograph, and the wood remains CSS. Generated paper/wood proposals from the PR are not restored.
+
+`npm run test:coast` passes five targeted checks: actual Chrome WebGPU rendering/headland alignment; changing water pixels and stable pause/resume; hidden-tab pause and portrait alignment; forced unsupported-GPU wide/portrait assets with a single lighthouse; and WebKit portrait fallback plus selected accessibility/credits checks. Screenshots were visually reviewed. Eight note-rendering fallback cases and six bottle-ritual checks per Chrome/WebKit also pass after the artwork change (25 targeted checks total), alongside build and script typechecks. There are no provider calls or submitted stories in this check. The phone viewport and unsupported/hidden conditions are emulated, not physical-phone evidence.
+
+Image credits, source documentation and README now accurately disclose the approved generated coast. Historical merge notes retain the original decision with a link to this later approval. The rendered simulation's sky/water remains code; responsive background artwork is the fallback, and the cutout remains above the simulated water.
+
+See `approved-coast.json` and `approved-coast-*.png` for local evidence, and the separate release report for deployed files/version. Product and deployment evidence remain separate from attendee outcomes or award eligibility.

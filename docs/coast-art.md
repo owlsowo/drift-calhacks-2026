@@ -1,6 +1,6 @@
-# Historical branch artwork — excluded from the integrated runtime
+# Approved coast artwork
 
-The generated images documented below were proposed in PR #1, then removed before integration because the owner had explicitly requested no AI-generated images. These prompts document the discarded iteration, not the current site's assets. Runtime replacements use the existing licensed photographs, original SVG lighthouse and CSS desk grain; see asset-sources.md.
+The owner directly approved the existing PR lighthouse and landscape in Codex on October 24, superseding the earlier exclusion of these coast assets. The landscape, its portrait companion and transparent headland are restored byte-for-byte from PR commit `2b9626b`; no new images were generated for this update. Paper and wood proposals below remain historical and are not restored to the runtime. See `approved-coast.md` and `asset-sources.md`.
 
 # Coast background artwork
 
@@ -45,7 +45,7 @@ and transparent headland 77,426 bytes. These are format conversions of the inspe
 
 `Ocean.tsx` now uses the actual MIT-licensed [Noniv/web-ocean](https://github.com/Noniv/web-ocean) WebGPU FFT engine. Drift adapts it to a fixed blue-hour camera, a small moon, quieter waves, and the generated headland. The separate transparent headland shares the renderer's exact 40% horizon and overlaps the waterline by 5 px to close the old gap. Pause, reduced motion, hidden tabs, disposal, and the static landscape/portrait fallback are handled by the React integration. The previous original WebGL shader is no longer imported. See [ocean-engine.md](ocean-engine.md) for source attribution, retained simulation details, art-direction changes, and verification.
 
-## Letter paper surface
+## Historical paper proposal — not used in the runtime
 
 `apps/web/public/assets/letter-paper.webp` is a full-bleed photographic paper texture for the writing and reading surfaces, generated on 2026-10-24 with the built-in `image_gen` tool. The generated 1122 × 1402 PNG was inspected, archived locally as ignored `.spacetime/art-sources/letter-paper.png`, resized to 1024 × 1280, and converted to quality-72 WebP (125,092 bytes). It has no lettering, visible sheet edges, stamps, or baked-in interface elements. Actual content and shadows remain in the interface.
 

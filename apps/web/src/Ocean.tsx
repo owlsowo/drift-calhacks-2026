@@ -28,7 +28,7 @@ export function Ocean({ paused = false }: { paused?: boolean }) {
     const update = () => controller.current?.setPaused(pausedRef.current || media.matches);
     const fallback = () => {
       if (abort.signal.aborted) return;
-      target.dataset.renderer = 'photograph';
+      target.dataset.renderer = 'coast-art';
       setReady(false);
     };
     media.addEventListener('change', update);
@@ -75,20 +75,9 @@ export function Ocean({ paused = false }: { paused?: boolean }) {
         <canvas ref={canvas} className="sea-surface fft-surface" aria-hidden="true" />
       </div>
       {ready && (
-        <svg
-          className="coast-headland fft-headland"
-          viewBox="0 0 100 120"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path d="m0 114 19-9 14 2 16-6 21 7 12-2 18 8v6H0Z" fill="#142532" />
-          <path d="m39 106 4-76h15l5 76Z" fill="#c5c9ba" />
-          <path d="M42 48h17l1 16H41Zm-2 33h21l1 15H39Z" fill="#9f6d5d" />
-          <path d="M40 26h21v7H40Z" fill="#162c3d" />
-          <path d="M43 12h15v14H43Z" fill="#eadba9" />
-          <path d="m39 12 11-9 12 9Z" fill="#142d3b" />
-          <circle cx="50" cy="20" r="4" fill="#fff1be" />
-        </svg>
+        <div className="coast-headland fft-headland">
+          <img src="/assets/coast-headland.webp" alt="" draggable={false} />
+        </div>
       )}
     </div>
   );

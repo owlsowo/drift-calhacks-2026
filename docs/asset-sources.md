@@ -1,6 +1,6 @@
 # Drift image sources
 
-The interface uses human-made photographs and original web geometry. No AI-generated images are bundled.
+The interface uses team-approved AI coast/lighthouse artwork, real paper photographs and original web geometry. On October 24 the owner directly approved restoring the existing PR landscape, portrait companion and lighthouse/headland; that supersedes the earlier no-generated-images preference for these coast assets. No new image generation was needed. Paper and dock retain their photographed/CSS surfaces.
 
 | Asset                             | Creator and source                                                                                                                                                                            | License                                                         | Changes                                                                                    |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -14,4 +14,4 @@ Interface references: [the owner's supplied WeChat video](https://www.bilibili.c
 
 ## Quiet-coast integration
 
-The interface also uses the locally bundled MIT-licensed Noniv WebGPU ocean renderer and Kalam Regular under the SIL Open Font License. The water is a code-rendered simulation; unsupported devices use the existing credited sea photograph. The lighthouse is the original SVG, letter/export surfaces use the existing photographed paper, and the desk grain is CSS. AI-generated coast/wood/paper images proposed in PR #1 were removed from the runtime to preserve the owner's no-generated-images requirement. Historical branch screenshots and design notes may depict that discarded asset iteration.
+The interface also uses the locally bundled MIT-licensed Noniv WebGPU ocean renderer and Kalam Regular under the SIL Open Font License. The water is a code-rendered simulation; unsupported devices use the approved coast art. Letter/export surfaces use the existing photographed paper, and the desk grain is CSS. The earlier PR integration removed generated art under the then-current preference; the owner later approved the landscape and lighthouse in Codex, so those three coast files are restored byte-for-byte from PR commit `2b9626b`. The generated wood and paper proposals remain excluded. See `coast-art.md` for original provenance and `approved-coast.md` for verification.

@@ -4,7 +4,7 @@ PR #1 by riptideiv introduces independent Release and Pick up actions, several e
 
 Current main's private activity/cost controls, new-return notice, earlier-draft recovery and bounded connected note opening are retained. Completion timing now uses the individual round deadline instead of the removed exclusive bottle lock. An old reassignment test now verifies the intended independent-pool behavior: expired context stays private, a different writer can catch the beginning, and the expired ending still cannot publish. The server view API does not expose a clock.
 
-The five generated runtime images proposed by the PR were removed to honor the owner's explicit no-AI-images instruction. The existing credited sea/paper photographs, original SVG lighthouse and CSS desk grain replace them. The WebGPU simulation, bottle ritual and new typography remain. Historical branch documentation/screenshots are not evidence that generated assets ship in the integrated runtime.
+The five generated runtime images proposed by the PR were removed to honor the owner's explicit no-AI-images instruction. The existing credited sea/paper photographs, original SVG lighthouse and CSS desk grain replace them. The WebGPU simulation, bottle ritual and new typography remain. This describes the original merge checkpoint. The owner subsequently approved restoring the landscape, portrait companion and lighthouse/headland in Codex; see `approved-coast.md`. Generated wood/paper proposals remain excluded.
 
 The browser review exposed and fixed low-contrast navigation, a returned-notice/header overlap, the dismiss control's reachable size, and a WebKit draft-switch race. Draft restoration happens before paint. The photographed paper is tinted for readable writing and exports.
 
