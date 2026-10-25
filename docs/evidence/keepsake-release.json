@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T04:36:54.957Z",
+  "sourceCommit": "b8e6c9a991b6006d29f5e7e5c5180a28e17b2470",
+  "cloudflareVersion": "9201f56b-406f-4f60-93a1-67b07614ab2f",
+  "ci": {
+    "run": 40162093334,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-ChVsY9bQ.js",
+      "sha256": "7fe8ee7378fce15aa2c2b5a927bfb5356024cea441dc3ed690ac37e8c7263846",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-s38fGgsU.css",
+      "sha256": "d594df19a8663ff3b90673f4b8c67690f2c578987f1934b5ea1d941c92256c50",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend keepsake preparation, readable asset fallback, memory-only prepared images and native share activation. Twelve synthetic browser cases pass across Chrome/WebKit, plus eleven Chrome letter checks with an actual PNG download. OS share adapters are injected; physical-phone native sharing and general rendering-performance improvements are not established by these checks. No backend change."
+}
