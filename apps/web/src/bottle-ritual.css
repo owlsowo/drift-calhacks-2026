@@ -22,6 +22,10 @@
   animation: bottle-ritual-enter 180ms ease-out both;
 }
 
+.bottle-ritual--leaving {
+  pointer-events: none;
+}
+
 .bottle-ritual__shade,
 .bottle-ritual__beam,
 .bottle-ritual__pool,

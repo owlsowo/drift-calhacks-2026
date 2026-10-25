@@ -111,7 +111,8 @@
 .bottle-ritual__world-choice:disabled {
   cursor: wait;
 }
-.bottle-ritual--world.bottle-ritual--opening .bottle-ritual__world-choice {
+.bottle-ritual--world:is(.bottle-ritual--opening, .bottle-ritual--leaving)
+  .bottle-ritual__world-choice {
   opacity: 0;
   transition: opacity 250ms;
 }
