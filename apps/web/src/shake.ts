@@ -48,7 +48,12 @@ export class MotionShakeMeter {
     const read = (value: Acceleration) => [value?.x, value?.y, value?.z];
     let values = read(acceleration);
     if (!values.some((value) => typeof value === 'number' && Number.isFinite(value))) {
-      const raw = read(includingGravity).map((value) =>
+      const gravityValues = read(includingGravity);
+      // Browsers can emit an all-null reading while permission/sensors start.
+      // It is not a resting zero-gravity sample and must not prime the baseline.
+      if (!gravityValues.some((value) => typeof value === 'number' && Number.isFinite(value)))
+        return undefined;
+      const raw = gravityValues.map((value) =>
         typeof value === 'number' && Number.isFinite(value) ? value : 0,
       );
       // Prime the filter from the resting phone, not an invented zero-gravity reading.

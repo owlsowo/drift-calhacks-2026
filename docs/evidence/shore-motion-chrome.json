@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-25T05:48:58.577Z",
+  "engine": "Chrome",
+  "checks": [
+    "The real fallback component requests motion only on opt-in, handles denial, rejects weak/changing-axis bumps and fires once on four deliberate same-axis reversals",
+    "Hidden-page transitions and disabled controls discard partial gestures; gravity-only samples prime at rest and still recognize a fresh deliberate shake",
+    "Pointer-held input cannot combine with phone samples; opting out stops motion and the component fixture creates no real round or provider action"
+  ],
+  "errors": [],
+  "scope": "Actual Shore fallback component mounted with a recording action in a disposable local app. Synthetic motion, permission/visibility/disabled states; no database actions, provider calls, physical sensors or OS permission-sheet claim."
+}

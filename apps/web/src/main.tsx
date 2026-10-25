@@ -1946,8 +1946,11 @@ function App() {
             also keeps track of which replies you have yet to open.
           </p>
           <p>
-            AI guidance is optional and stays separate from your words. Starter content is always
-            labeled.
+            In the live game, Claude checks your submitted words and story context for safety.
+            Optional Hints give direction without filling your note. After a reply is accepted,
+            Claude also uses the pair to arrange a shared illustration from a small art library;
+            both story lines stay unchanged. Checks can miss things; use Report to flag a postcard.
+            Starter content is always labeled.
           </p>
           <p>
             On a completed human story, either co-writer can send one private thank-you. Only the

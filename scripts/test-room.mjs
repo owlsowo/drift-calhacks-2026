@@ -8,6 +8,7 @@ if (
   ![
     'gate-layout',
     'daily-clarity',
+    'shore-motion',
     'qr-invitation',
     'shared-landing',
     'scenes',
@@ -104,6 +105,7 @@ try {
     }
   }
   const sceneFiles = {
+    'shore-motion': 'shore-motion-ui.mjs',
     'qr-invitation': 'qr-invitation-ui.mjs',
     'daily-clarity': 'daily-clarity-ui.mjs',
     'shared-landing': 'shared-landing-ui.mjs',

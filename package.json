@@ -57,7 +57,8 @@
     "test:upgrade-check": "node scripts/upgrade-check-fixture.mjs",
     "test:daily-clarity": "node scripts/test-room.mjs daily-clarity",
     "test:shared-landing": "node scripts/test-room.mjs shared-landing",
-    "test:qr-invitation": "node scripts/test-room.mjs qr-invitation"
+    "test:qr-invitation": "node scripts/test-room.mjs qr-invitation",
+    "test:shore-motion": "node scripts/test-room.mjs shore-motion"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
