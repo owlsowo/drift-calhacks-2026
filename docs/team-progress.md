@@ -318,3 +318,9 @@ The user authorizes status posts and project-related replies in the Calhacks gro
 - The five objects are the visual pickup ritual for one authoritative server assignment; they do not fabricate five independent writers, stories or availability counts. No schema, quota, verification or model-policy change.
 - Track value: a more tangible daily interaction supports the creative/demo case while preserving the live human-writing/SpacetimeDB loop. This establishes product behavior, not award eligibility or user-impact evidence. The hosted automated profiles remain blocked by human verification; the owner reports it works in ordinary Chrome. A fresh hosted full story loop and physical phones remain separate.
 - Product commit and served deployment verification follow this tested checkpoint; submission remains team-owned.
+
+### 08:24 UTC — five-bottle release served
+
+- Product `fb3abbdf3309400723a5d66183b9a68e7683756b` is pushed. CI `40176287920` succeeded, including 59 unit/132 server checks, typechecks, the upgrade compatibility check and production build.
+- Cloudflare version `7c08c1a2-33fa-4ad5-b473-cd050723363c` serves this release. Five HTML/JS/CSS assets match the tested local build, recorded in `world-bottles-deployment-2026-10-25.json`. The backend remains unchanged at `014437e`.
+- No new hosted stories, paid evaluation or protection changes. Fresh automated full hosted completion remains unestablished at human verification; the owner reports verification works in ordinary Chrome. Submission remains team-owned.

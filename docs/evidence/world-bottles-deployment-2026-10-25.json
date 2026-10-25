@@ -1,0 +1,34 @@
+{
+  "checkedAt": "2026-10-25T08:22:14.378Z",
+  "productCommit": "fb3abbdf3309400723a5d66183b9a68e7683756b",
+  "deployment": "7c08c1a2-33fa-4ad5-b473-cd050723363c",
+  "url": "https://drift-game.drift-calhacks-2026-owlsowo.workers.dev",
+  "assets": [
+    {
+      "asset": "/index.html",
+      "sha256": "47d7d4e182205b5fb523beeb71b52b39d1b5f58cfc5115fa99ac35dad637faad",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-CEjnUXXC.js",
+      "sha256": "b14644012b115f417b4aed188cb486fd3bc8365fbf0d3a6973e718fb3ff2b4c8",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DvnSHnti.css",
+      "sha256": "06bfea82369de50b422181516ed4750ea3b6666ebc5497a02a0c3c9eaee0318a",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/invitation-code-CV1MYBGB.js",
+      "sha256": "a17c054bfa7d335713bb3e15a4f77a3ed2d2a010345fe04dbf06dd46cfce1e03",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DIX1a7NO.js",
+      "sha256": "3e182fcf114757a336f0dbfbca43e465e5ff3e6a7da820e5c1ca10c3f86824c1",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Read-only deployed byte comparison. No new hosted story, model call or human-check completion."
+}
