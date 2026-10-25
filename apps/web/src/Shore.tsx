@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type PointerEvent, type RefObject } from 'react';
 import { LoaderCircle, Smartphone } from 'lucide-react';
-import { ShakeMeter } from './shake';
+import { MotionShakeMeter, ShakeMeter } from './shake';
 import { FIRST_TIDE_DAY, type Prompt } from '../../../packages/game-rules/index';
 import './shore.css';
 
@@ -124,6 +124,7 @@ export function Shore({
     if (empty) emptyHeading.current?.focus();
   }, [empty]);
   const meter = useRef(new ShakeMeter());
+  const phoneMeter = useRef(new MotionShakeMeter());
   const pointer = useRef<
     { id: number; x: number; y: number; anchorX: number; anchorY: number } | undefined
   >(undefined);
@@ -149,6 +150,7 @@ export function Shore({
     } finally {
       fired.current = false;
       meter.current.reset();
+      phoneMeter.current.reset();
       setProgress(0);
     }
   }
@@ -160,28 +162,38 @@ export function Shore({
     if (result.complete) void activateRef.current();
   }
   useEffect(() => {
-    if (!motion || mode !== 'catch') return;
-    let gravity = [0, 0, 0];
-    const listener = (e: DeviceMotionEvent) => {
-      if (disabledRef.current || document.visibilityState !== 'visible' || fired.current) return;
-      let values = [e.acceleration?.x, e.acceleration?.y, e.acceleration?.z];
-      if (!values.some((v) => v != null)) {
-        const g = e.accelerationIncludingGravity;
-        values = [g?.x, g?.y, g?.z].map((v, i) => {
-          const n = v ?? 0;
-          gravity[i] = gravity[i] * 0.85 + n * 0.15;
-          return n - gravity[i];
-        });
-      }
-      const strongest = values.reduce<number>(
-        (a, b) => (Math.abs(b ?? 0) > Math.abs(a) ? (b ?? 0) : a),
-        0,
+    phoneMeter.current.reset();
+    setProgress(0);
+    if (!motion || mode !== 'catch' || pickDisabled) return;
+    const resetMotion = () => {
+      phoneMeter.current.reset();
+      setProgress(0);
+    };
+    const listener = (event: DeviceMotionEvent) => {
+      if (
+        disabledRef.current ||
+        document.visibilityState !== 'visible' ||
+        fired.current ||
+        pointer.current
+      )
+        return;
+      const result = phoneMeter.current.sample(
+        event.acceleration,
+        event.accelerationIncludingGravity,
+        performance.now(),
       );
-      if (Math.abs(strongest) > 8) beat(strongest, performance.now());
+      if (!result) return;
+      setProgress(result.progress);
+      if (result.complete) void activateRef.current();
     };
     window.addEventListener('devicemotion', listener);
-    return () => window.removeEventListener('devicemotion', listener);
-  }, [motion, mode]);
+    document.addEventListener('visibilitychange', resetMotion);
+    return () => {
+      window.removeEventListener('devicemotion', listener);
+      document.removeEventListener('visibilitychange', resetMotion);
+      phoneMeter.current.reset();
+    };
+  }, [motion, mode, pickDisabled]);
   async function enableMotion() {
     if (!isSecureContext) {
       setMotionMessage('Phone shake needs HTTPS. You can drag the bottle or use the buttons.');
@@ -217,6 +229,7 @@ export function Shore({
       anchorY: e.clientY,
     };
     meter.current.reset();
+    phoneMeter.current.reset();
     setProgress(0);
     setDragging(true);
   }

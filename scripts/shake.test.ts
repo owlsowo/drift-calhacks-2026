@@ -64,3 +64,15 @@ test('phone gravity fallback primes at rest; resets and pauses discard partial g
     false,
   );
 });
+
+test('unavailable sensor startup readings do not invent a zero-gravity baseline', () => {
+  const meter = new MotionShakeMeter();
+  assert.equal(meter.sample(null, null, 0), undefined);
+  assert.equal(
+    meter.sample({ x: null, y: null, z: null }, { x: null, y: null, z: null }, 80),
+    undefined,
+  );
+  assert.equal(meter.sample(null, { x: 0, y: 0, z: 9.81 }, 160)?.progress, 0);
+  for (const [index, x] of [18, -18, 18, -18, 18].entries())
+    assert.equal(meter.sample(null, { x, y: 0, z: 9.81 }, 240 + index * 80)?.complete, index === 4);
+});

@@ -86,3 +86,24 @@
     animation: none;
   }
 }
+
+/* A failed optional illustration should leave the human note in the foreground. */
+.scene-placeholder.is-unavailable {
+  aspect-ratio: auto;
+  min-height: 54px;
+  flex-direction: row;
+  gap: 10px;
+  padding: 10px 12px;
+  box-shadow: none;
+  border: 1px solid #74695824;
+}
+.scene-placeholder.is-unavailable svg {
+  width: 36px;
+  height: 38px;
+  flex: 0 0 36px;
+}
+.sea-world .scene-placeholder.is-unavailable p {
+  margin: 0;
+  text-align: left;
+  font: 400 11px/1.6 var(--letter-ui);
+}
