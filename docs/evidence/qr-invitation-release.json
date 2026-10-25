@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-10-25T05:38:52.343Z",
+  "sourceCommit": "c5fbfcb5d49234053c27b3e902bece20e53d0216",
+  "cloudflareVersion": "f0aec4f8-2dc3-44a8-8d65-1672e61851b4",
+  "assets": [
+    {
+      "asset": "/assets/index-CFZ4q4nc.js",
+      "sha256": "3e5ba87de913b6702a0c903def49c49dd3b922ad77b61c28e8bd3a80491af800",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-CGC4oXpR.css",
+      "sha256": "e8036ef0e8630e9e868029cc30e13dc0988ee704d1b19ff2eb94622907fbb004",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/invitation-code-CV1MYBGB.js",
+      "sha256": "a17c054bfa7d335713bb3e15a4f77a3ed2d2a010345fe04dbf06dd46cfce1e03",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Matching tested frontend entry, CSS, lazy encoder and unchanged ocean. Five local QR cases per Chrome/WebKit independently decode rendered screenshots and exercise two guests; 44 unit tests, build and script types pass. No backend update, paid model call or physical camera scan.",
+  "ci": {
+    "run": 40166249000,
+    "conclusion": "success"
+  },
+  "hostedReadOnlyCheck": {
+    "dialogOpened": true,
+    "samePublicBottleHref": true,
+    "focusReturnedToTrigger": true,
+    "scope": "Opened and closed the QR on the team-provided live beginning. No production story, thank-you or provider request; no physical camera scan."
+  }
+}
