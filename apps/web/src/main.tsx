@@ -49,6 +49,7 @@ import { BottleRitual, type BottleRitualKind } from './BottleRitual';
 import { useDriftNavigation } from './useDriftNavigation';
 import { confirmedAction } from './confirmed-action';
 import { useCoastPeriod } from './useCoastPeriod';
+import { storyReviewReason, sameStoryReview, type StoryReviewTarget } from './story-review';
 import './natural.css';
 import './postcard-scene.css';
 import './daylight-coast.css';
@@ -318,8 +319,11 @@ function App() {
   navigation.current = { view, playingRoundId, selectedBeginningId };
   const [bottleLookup, setBottleLookup] = useState('');
   const [modal, setModal] = useState<
-    'how' | 'report' | 'hide' | 'withdraw' | 'privacy' | 'qr' | 'vote-check' | null
+    'how' | 'report' | 'hide' | 'withdraw' | 'privacy' | 'qr' | 'vote-check' | 'story-review' | null
   >(null);
+  const [storyReview, setStoryReview] = useState<(StoryReviewTarget & { reason: string }) | null>(
+    null,
+  );
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
@@ -487,6 +491,37 @@ function App() {
     : '';
   const draft = draftState.key === currentDraftKey ? draftState.text : '';
   const count = words(draft).length;
+  const reviewTarget: StoryReviewTarget | null = active
+    ? {
+        draftKey: currentDraftKey,
+        roundId: active.id,
+        version: active.version,
+        stage: active.stage,
+        assignmentId: active.assignmentId,
+        text: draft,
+      }
+    : null;
+  useEffect(() => {
+    if (
+      modal === 'story-review' &&
+      storyReview &&
+      (view !== 'play' || !reviewTarget || !sameStoryReview(storyReview, reviewTarget))
+    ) {
+      setModal(null);
+      setStoryReview(null);
+      setError('Your bottle changed. Review your saved words before sending.');
+    }
+  }, [
+    modal,
+    storyReview,
+    view,
+    currentDraftKey,
+    active?.id,
+    active?.version,
+    active?.stage,
+    active?.assignmentId,
+    draft,
+  ]);
   const dailyRounds = s.rounds.filter((r) => r.day === nowDay).length;
   const returnedToday = released.reduce(
     (total, letter) =>
@@ -713,8 +748,32 @@ function App() {
     setError('');
     setToast('Bottle released. Replies will appear in My bottles.');
   }
-  async function submit() {
-    if (!active || closedWrite) return;
+  async function submit(reviewed?: StoryReviewTarget) {
+    if (!active || closedWrite || !reviewTarget || actionRunning.current) return;
+    if (reviewed) {
+      const latest = game.snapshot().rounds.find((round) => round.id === active.id);
+      if (
+        !latest ||
+        !sameStoryReview(reviewed, reviewTarget) ||
+        latest.version !== reviewed.version ||
+        latest.stage !== reviewed.stage ||
+        latest.assignmentId !== reviewed.assignmentId
+      ) {
+        setModal(null);
+        setStoryReview(null);
+        setError('Your bottle changed. Review your saved words before sending.');
+        return;
+      }
+    } else {
+      const reason = storyReviewReason(draft);
+      if (reason) {
+        setStoryReview({ ...reviewTarget, reason });
+        setModal('story-review');
+        return;
+      }
+    }
+    setModal(null);
+    setStoryReview(null);
     const roundId = active.id;
     const stage = active.stage;
     const text = draft;
@@ -1263,7 +1322,7 @@ function App() {
                     <div className="desk-actions">
                       <button
                         className="button primary"
-                        onClick={submit}
+                        onClick={() => void submit()}
                         disabled={
                           controlsDisabled ||
                           closedWrite ||
@@ -1946,6 +2005,46 @@ function App() {
           <Check size={17} />
           {toast}
         </div>
+      )}
+      {modal === 'story-review' && storyReview && (
+        <Modal title="Give this note another look?" onClose={() => setModal(null)}>
+          <p>{storyReview.reason}</p>
+          <div className="writing-context">
+            <strong>{active?.stage === 'reply' ? 'How to respond' : 'Original prompt'}</strong>
+            <p>{active?.stage === 'reply' ? prompt?.reply : prompt?.setup}</p>
+            {active?.stage === 'reply' && assignment && (
+              <>
+                <strong>Their beginning</strong>
+                <p>{assignment.text}</p>
+              </>
+            )}
+          </div>
+          <blockquote className="review-words">{storyReview.text}</blockquote>
+          <p>
+            Your words stay yours. This small local reminder can miss the joke. Sending still uses
+            the usual safety check.
+          </p>
+          <div className="modal-actions">
+            <button className="button" onClick={() => setModal(null)}>
+              Keep editing
+            </button>
+            <button
+              className="button primary"
+              disabled={
+                controlsDisabled ||
+                !!s.service?.paused ||
+                closedWrite ||
+                !!checksExhausted ||
+                !reviewTarget ||
+                !sameStoryReview(storyReview, reviewTarget) ||
+                (active?.stage === 'reply' && (remaining <= 0 || assignmentUnavailable))
+              }
+              onClick={() => void submit(storyReview)}
+            >
+              Send these words anyway
+            </button>
+          </div>
+        </Modal>
       )}
       {modal === 'vote-check' && (
         <Modal title="Keep the votes human" onClose={() => setModal(null)}>

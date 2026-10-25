@@ -998,3 +998,13 @@ input:focus-visible {
 .sea-world .unfinished-bottle .story-context {
   color: #ccd9e2;
 }
+
+.modal .review-words {
+  margin: 18px 0;
+  padding: 12px 16px;
+  border-left: 2px solid #a9b2ba;
+  font:
+    400 25px/1.45 'Kalam',
+    cursive;
+  overflow-wrap: anywhere;
+}
