@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T06:02:02.452Z",
+  "sourceCommit": "d7b3f6605ba1eb6e48da5d807f87241a91c76e23",
+  "cloudflareVersion": "d7707699-ed80-4444-a753-b259eb18fdac",
+  "assets": [
+    {
+      "asset": "/assets/index-5LI4BKP1.js",
+      "sha256": "e4b31350e4cfe7a8509130f46ded6ef84ab73e772e2e6fdfc443bff36cad328e",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DT65UjyJ.css",
+      "sha256": "a98a904c5a999c39b4e5dcbeeefeff70bca2afa241ad1d7075309311cd787002",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend-only memoization of unchanged postcards. Thirty-card synthetic shelf reduces repeated date formats from 120 to zero in a 2.3-second clock sample; new cards, changed text and thanks still render. Seven Chrome private-thanks and eleven Chrome letter cases, build/script types pass. No FPS/GPU/physical-phone claim, backend update or provider call.",
+  "ci": {
+    "run": 40167471732,
+    "conclusion": "success"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "observedAt": "2026-10-25T06:08:00.764738+00:00",
+  "checks": [
+    "A newly shared team postcard renders its saved illustration on the hosted HTTPS application",
+    "The canonical accessible scene description and both original lines are present",
+    "Share, Save image, Copy text and the parent bottle route are available to an independent public reader"
+  ],
+  "scope": "Read-only observation of the team-provided public card, with screenshot outside Git. No new agent-authored production story or provider call. Does not establish a physical phone flow, provider billing review or moderation quality."
+}

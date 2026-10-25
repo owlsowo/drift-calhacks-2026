@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-10-25T06:06:23.023Z",
+  "engine": "WebKit",
+  "checks": [
+    "Larger handwritten daily instructions and dock labels remain readable between header and dock across desktop, narrow phones and short landscape",
+    "A real local private thank-you, unopened marker and date remain separate beneath the full ending at all four widths, without horizontal overflow or selected accessibility violations"
+  ],
+  "errors": [],
+  "scope": "Disposable keyless local two-writer story/private thanks and responsive browser layouts. No provider call, production story, real phone, camera or native share claim."
+}

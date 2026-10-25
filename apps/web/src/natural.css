@@ -905,3 +905,60 @@ input:focus-visible {
     overflow-y: auto;
   }
 }
+
+/* Put the invitation in the same handwriting as the notes, at reading size. */
+.sea-world .daily-tide h2 {
+  font-size: 30px;
+  line-height: 1.35;
+}
+.sea-world .daily-tide > p:not(.tide-status) {
+  font: 400 18px/1.5 var(--letter-hand);
+}
+.sea-world .dock-action {
+  font: 400 18px/1.35 var(--letter-hand);
+}
+.sea-world .writing-desk h1 {
+  font: 400 23px/1.45 var(--letter-hand);
+}
+.sea-world .word-feedback {
+  font-size: 14px;
+}
+.sea-world .invitation-actions > p,
+.sea-world .pass-it-on p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.sea-world .ending-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 10px;
+}
+.sea-world .ending-preview > span {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+.sea-world .ending-preview > small {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  grid-column: 1;
+  grid-row: 2;
+  max-width: none;
+  white-space: normal;
+}
+.sea-world .ending-preview > small time,
+.sea-world .ending-preview .thanks-label {
+  white-space: nowrap;
+}
+.sea-world .ending-preview > svg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+@media (max-height: 480px) {
+  .sea-world .daily-tide h2 {
+    font-size: 25px;
+  }
+}
