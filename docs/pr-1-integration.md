@@ -19,4 +19,4 @@ These are desktop browser engines with synthetic inputs and local SpacetimeDB, n
 
 ## Deployment boundary
 
-This merge does not deploy the new schema or replace the live database. Bottle fields are removed and beginning/pair fields are added, so a data-preserving migration must be prepared before updating the hosted backend and frontend together. The existing hosted release stays available. No hosted data was deleted or reset to complete this integration.
+The initial merge did not deploy the rewritten schema. Follow-up `c2e0d4d` replaces the breaking rewrite with an additive migration, retaining old columns and appending defaulted fields. That upgrade and the matching frontend are now deployed on the existing hosted identity. All eleven rounds/four bottles and other old records survived the verified backfill; see `letter-migration.md`, `letter-upgrade-hosted.json` and `independent-letters-release.json`. No database reset was used.

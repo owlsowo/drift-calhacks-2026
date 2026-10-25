@@ -35,6 +35,8 @@ Afternoon recheck: the [public listing](https://cal-hacks-13-0.devpost.com/) sti
 
 ## Sources
 
+At the 01:35 UTC deployment checkpoint, the organizer's rendered [Hive prize page](https://hive.hackberkeley.org/prizes), updated October 24 at 3:13 PM, was inspected. Meta's detailed card evaluates meaningful connection, AI's integration/importance, originality and demo strength; it does not state a Muse or Meta-model requirement. This supports keeping the existing Claude role under the published criteria, not a guarantee of eligibility or advancement under separate Round 2 rules. The same page lists an MLH Best Use of Gen AI category using public model APIs; availability of its submission option is not established by that listing alone.
+
 Evening recheck: the official Devpost listing explicitly includes Most Technically Complex Hack and evaluates engineering depth and architectural command. It is now an additional stretch target using the existing build, bringing the planned portfolio to ten routes. Figma and Mana remain included. This does not establish final entry selection, stacking or eligibility; no extra provider or feature was added to claim the category.
 
 - [Organizer guide](https://docs.google.com/document/d/1RQrueC9wm5u8uxtWSC2gadIchp05hVayhGUrIjxT9dE/edit)
