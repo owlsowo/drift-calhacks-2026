@@ -402,8 +402,12 @@ export const game = {
   },
   async paid(operation: 'setup' | 'reply' | 'nudge', roundId: string, text: string) {
     if (!connection?.isActive) throw Error('You’re offline. Your draft is saved.');
+    const round = state.rounds.find((item) => item.id === roundId);
+    if (operation !== 'setup' && !round)
+      throw Error('Your bottle is still arriving. Reconnect and try again.');
+    const context = operation === 'setup' ? undefined : `${round!.assignmentId}:${round!.version}`;
     const key = `drift:request:${state.identity}:${operation}:${roundId}`;
-    let prior: { text: string; id: string } | undefined;
+    let prior: { text: string; id: string; context?: string } | undefined;
     try {
       const item = JSON.parse(saved(key));
       if (
@@ -415,8 +419,13 @@ export const game = {
     } catch {
       /* First dispatch. */
     }
-    const requestId = prior?.text === text ? prior.id : crypto.randomUUID();
-    persist(key, JSON.stringify({ text, id: requestId }));
+    // Legacy records keep their ID for one server-validated replay; never redispatch an
+    // uncertain same-assignment request just because its old cache lacks metadata.
+    const requestId =
+      prior?.text === text && (prior.context === undefined || prior.context === context)
+        ? prior.id
+        : crypto.randomUUID();
+    persist(key, JSON.stringify({ text, id: requestId, context }));
     const args = { roundId, requestId, text };
     const value =
       operation === 'setup'
@@ -424,7 +433,14 @@ export const game = {
         : operation === 'reply'
           ? await connection.procedures.submitReply(args)
           : await connection.procedures.requestNudge(args);
-    if (!value.message.includes('pending or uncertain')) forget(key);
+    if (!value.message.includes('pending or uncertain')) {
+      try {
+        // A late response must not erase a newer assignment's pending retry record.
+        if (JSON.parse(saved(key)).id === requestId) forget(key);
+      } catch {
+        /* Another completed action may already have removed its record. */
+      }
+    }
     if (!value.ok) throw Error(value.message);
     return value;
   },
