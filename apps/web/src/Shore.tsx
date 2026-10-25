@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type PointerEvent, type RefObject } from 'react';
 import { LoaderCircle, Smartphone } from 'lucide-react';
 import { ShakeMeter } from './shake';
-import type { Prompt } from '../../../packages/game-rules/index';
+import { FIRST_TIDE_DAY, type Prompt } from '../../../packages/game-rules/index';
 import './shore.css';
 
 type MotionConstructor = typeof DeviceMotionEvent & { requestPermission?: () => Promise<string> };

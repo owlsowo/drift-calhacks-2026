@@ -1,6 +1,7 @@
 import './csp-serialization';
 import { DbConnection } from './module_bindings';
 import { encodeDraft, decodeDraft } from './drafts';
+import type { CardAction } from '../../../packages/activity/index';
 import {
   emptyBook,
   loadBottleBook,
@@ -60,6 +61,7 @@ const blank: Snapshot = {
 let state = blank;
 let connection: DbConnection | undefined;
 const listeners = new Set<() => void>();
+const reportedActions = new Set<string>();
 let queued = false;
 const database = import.meta.env.VITE_SPACETIMEDB_DATABASE || 'drift-local';
 const host =
@@ -112,6 +114,25 @@ function pruneDrafts() {
   } catch {
     storageUnavailable();
   }
+}
+export function localDrafts(identity: string) {
+  if (!identity) return [];
+  const prefix = `drift:draft:${identity}:`;
+  const keys = new Set(memory.keys());
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) keys.add(key);
+    }
+  } catch {
+    storageUnavailable();
+  }
+  return [...keys]
+    .filter((key) => key.startsWith(prefix))
+    .flatMap((key) => {
+      const text = saved(key);
+      return text.trim() ? [{ key, text }] : [];
+    });
 }
 function emit(patch: Partial<Snapshot> = {}) {
   if (connection?.isActive) {
@@ -266,6 +287,19 @@ function waitForRound(kind: 'write' | 'catch'): Promise<string> {
   });
 }
 export const game = {
+  async cardAction(cardId: string, action: CardAction) {
+    if (!connection?.isActive || !state.identity) return;
+    const key = `${state.identity}:${cardId}:${action}`;
+    if (reportedActions.has(key)) return;
+    reportedActions.add(key);
+    try {
+      await connection.reducers.recordCardAction({ cardId, action });
+    } catch {
+      // Best effort: diagnostics never turn a successful reading/export into an error.
+      // The server also deduplicates, so a later view/reconnect can safely try again.
+      reportedActions.delete(key);
+    }
+  },
   async setHello(cardId: string, accepted: boolean) {
     if (!connection?.isActive) throw Error('Reconnect before changing your invitation.');
     await connection.reducers.setHelloIntent({ cardId, accepted });

@@ -45,7 +45,7 @@ export async function postcardPng(card: Card): Promise<Blob> {
     paper.onload = () => resolve();
     paper.onerror = () =>
       reject(Error('Couldn’t create your image. Try copying the text instead.'));
-    paper.src = new URL('/assets/letter-paper.webp', location.origin).href;
+    paper.src = new URL('/assets/paper-texture.jpg', location.origin).href;
   });
   await Promise.all([document.fonts.load('400 70px Kalam'), paperReady]);
   await document.fonts.ready;
@@ -54,6 +54,8 @@ export async function postcardPng(card: Card): Promise<Blob> {
   canvas.height = 1350;
   const c = canvas.getContext('2d')!;
   c.drawImage(paper, 0, 0, canvas.width, canvas.height);
+  c.fillStyle = 'rgba(242,235,217,.86)';
+  c.fillRect(0, 0, canvas.width, canvas.height);
   const edgeShade = c.createLinearGradient(0, 0, canvas.width, canvas.height);
   edgeShade.addColorStop(0, 'rgba(255,255,255,.04)');
   edgeShade.addColorStop(0.5, 'rgba(36,47,61,0)');

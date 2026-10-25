@@ -8,30 +8,14 @@
   opacity: 1;
 }
 
-/* Strong alpha bounds of the 2172×724 cutout: y=247…537. Crop its transparent
-   padding, then immerse the bottom edge a few pixels into the rendered sea. */
+/* Original SVG lighthouse; no generated coastal image is distributed. */
 .ocean-world.fft-ocean .fft-headland {
+  position: absolute;
   top: auto;
   bottom: calc(60% - 5px);
-  right: -1%;
-  width: clamp(270px, 38vw, 670px);
-  aspect-ratio: 7.49;
-  overflow: hidden;
-  filter: brightness(0.87) saturate(0.85);
-}
-.ocean-world.fft-ocean .fft-headland img {
-  position: absolute;
-  left: 0;
-  top: -85.17%;
-  width: 100%;
+  right: 5%;
+  width: clamp(40px, 6vw, 95px);
   height: auto;
-}
-@media (max-width: 700px) {
-  .ocean-world.fft-ocean .fft-headland {
-    right: -4%;
-    width: max(260px, 66vw);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ocean-world.fft-ocean .fft-surface { transition: none; }
+  aspect-ratio: 5 / 6;
+  filter: brightness(0.87);
 }

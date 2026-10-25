@@ -160,6 +160,23 @@ try {
     );
     await limitedPage.getByRole('button', { name: 'Release', exact: true }).click();
     await limitedPage.getByRole('button', { name: 'Catch a bottle', exact: true }).waitFor();
+    await limitedPage.evaluate(async () => {
+      const { game } = await import('/src/game.ts');
+      const round = game.snapshot().rounds.find((r) => r.stage !== 'done');
+      await game.abandon(round.id);
+    });
+    await limitedPage.getByRole('button', { name: 'My postcards', exact: true }).click();
+    await limitedPage.getByText('Your earlier words', { exact: true }).click();
+    assert.equal(
+      await limitedPage.locator('.earlier-draft blockquote').innerText(),
+      'I taught the octopus insider trading.',
+    );
+    await capture(
+      limitedPage,
+      `${width}x${height}`,
+      'storage-draft-recovery',
+      'With storage blocked, a closed-round draft remains available from memory in this tab; no reload persistence is claimed.',
+    );
     await limited.close();
   }
   await fs.writeFile(

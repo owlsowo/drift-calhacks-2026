@@ -8,7 +8,10 @@ if (!origin || !process.env.DRIFT_TEST_DATABASE?.startsWith('drift-test-'))
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const contexts = await Promise.all(
   [360, 1440].map((width) =>
-    browser.newContext({ viewport: { width, height: width===360?800:1000 }, reducedMotion: 'reduce' }),
+    browser.newContext({
+      viewport: { width, height: width === 360 ? 800 : 1000 },
+      reducedMotion: 'reduce',
+    }),
   ),
 );
 const [A, B] = await Promise.all(contexts.map((c) => c.newPage()));
@@ -57,10 +60,26 @@ try {
   await button(A, 'Send reply').click();
   await A.getByRole('heading', { name: 'Saved reply' }).waitFor();
   await button(B, 'My postcards 1').waitFor();
+  const visualOrder = await A.evaluate(() => {
+    const bottom = (selector) => document.querySelector(selector).getBoundingClientRect().bottom;
+    const top = (selector) => document.querySelector(selector).getBoundingClientRect().top;
+    return (
+      bottom('.reveal-copy h1') <= top('.reveal-art') &&
+      bottom('.reveal-art') <= top('.share-actions') &&
+      bottom('.share-actions') <= top('.pass-it-on')
+    );
+  });
+  assert.ok(
+    visualOrder,
+    'The completed postcard and sharing controls precede the optional contribution',
+  );
   await screen(A, 'catch-first-reveal-360.png');
   await screen(B, 'returned-bottle-1440.png');
   pass(
     'Finishing immediately creates a postcard, returns it live, and offers an optional beginning',
+  );
+  pass(
+    'The mobile postcard appears before its sharing controls and optional next-beginning invitation',
   );
   await button(A, 'Toss my own bottle').click();
   await A.getByRole('textbox').fill('I taught the octopus insider trading.');

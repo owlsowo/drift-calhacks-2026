@@ -97,6 +97,7 @@ try {
   await B.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await B.getByText('I taught the octopus insider trading.', { exact: true }).waitFor();
   pass('Each identity catches the other writer, never itself');
+  await B.getByRole('textbox').fill('Your account has been permanently frozen.');
   await A.getByRole('textbox').fill('Our lawyers would like another hand.');
   await screen(A, 'reply-360.png');
   await screen(B, 'reply-1440.png');

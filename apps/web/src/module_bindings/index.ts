@@ -39,6 +39,7 @@ import ClaimBottleReducer from "./claim_bottle_reducer";
 import HideMyCardReducer from "./hide_my_card_reducer";
 import PurgeOldDataReducer from "./purge_old_data_reducer";
 import ReconcileAiCallReducer from "./reconcile_ai_call_reducer";
+import RecordCardActionReducer from "./record_card_action_reducer";
 import RefreshDayReducer from "./refresh_day_reducer";
 import ReportContentReducer from "./report_content_reducer";
 import ResolveReportReducer from "./resolve_report_reducer";
@@ -52,6 +53,7 @@ import StartCatchingReducer from "./start_catching_reducer";
 import StartRoundReducer from "./start_round_reducer";
 
 // Import all procedure arg schemas
+import * as AdminActivityProcedure from "./admin_activity_procedure";
 import * as AdminAiCallsProcedure from "./admin_ai_calls_procedure";
 import * as AdminAiUsageProcedure from "./admin_ai_usage_procedure";
 import * as AdminProbeClaudeProcedure from "./admin_probe_claude_procedure";
@@ -177,6 +179,7 @@ const reducersSchema = __reducers(
   __reducerSchema("hide_my_card", HideMyCardReducer),
   __reducerSchema("purge_old_data", PurgeOldDataReducer),
   __reducerSchema("reconcile_ai_call", ReconcileAiCallReducer),
+  __reducerSchema("record_card_action", RecordCardActionReducer),
   __reducerSchema("refresh_day", RefreshDayReducer),
   __reducerSchema("report_content", ReportContentReducer),
   __reducerSchema("resolve_report", ResolveReportReducer),
@@ -192,6 +195,7 @@ const reducersSchema = __reducers(
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
 const proceduresSchema = __procedures(
+  __procedureSchema("admin_activity", AdminActivityProcedure.params, AdminActivityProcedure.returnType),
   __procedureSchema("admin_ai_calls", AdminAiCallsProcedure.params, AdminAiCallsProcedure.returnType),
   __procedureSchema("admin_ai_usage", AdminAiUsageProcedure.params, AdminAiUsageProcedure.returnType),
   __procedureSchema("admin_probe_claude", AdminProbeClaudeProcedure.params, AdminProbeClaudeProcedure.returnType),
