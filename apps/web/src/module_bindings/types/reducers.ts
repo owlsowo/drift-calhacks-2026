@@ -24,6 +24,7 @@ import SetPauseReducer from "../set_pause_reducer";
 import SkipBottleReducer from "../skip_bottle_reducer";
 import StartCatchingReducer from "../start_catching_reducer";
 import StartRoundReducer from "../start_round_reducer";
+import ThankCoWriterReducer from "../thank_co_writer_reducer";
 import WithdrawMyBeginningReducer from "../withdraw_my_beginning_reducer";
 
 export type AbandonRoundParams = __Infer<typeof AbandonRoundReducer>;
@@ -44,5 +45,6 @@ export type SetPauseParams = __Infer<typeof SetPauseReducer>;
 export type SkipBottleParams = __Infer<typeof SkipBottleReducer>;
 export type StartCatchingParams = __Infer<typeof StartCatchingReducer>;
 export type StartRoundParams = __Infer<typeof StartRoundReducer>;
+export type ThankCoWriterParams = __Infer<typeof ThankCoWriterReducer>;
 export type WithdrawMyBeginningParams = __Infer<typeof WithdrawMyBeginningReducer>;
 

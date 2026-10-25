@@ -273,6 +273,8 @@ type Tx = ReducerCtx<typeof db.schemaType>;
 type Proc = ProcedureCtx<typeof db.schemaType>;
 type Round = Infer<typeof round.rowType>;
 type Bottle = Infer<typeof bottle.rowType>;
+// Private co-writer receipt; deliberately outside the analytics CARD_ACTIONS mask.
+const THANK_YOU_BIT = 1 << 5;
 const now = (ctx: { timestamp: { microsSinceUnixEpoch: bigint } }) =>
   Number(ctx.timestamp.microsSinceUnixEpoch) / 1000;
 const same = (a: { toHexString(): string }, b: { toHexString(): string }) =>
@@ -1375,6 +1377,31 @@ export const withdraw_my_beginning = db.reducer({ bottleId: t.string() }, (ctx, 
   // Existing paid-result validation also rejects replies/hints after this hide.
   hideBeginning(ctx, b);
 });
+export const thank_co_writer = db.reducer({ cardId: t.string() }, (ctx, { cardId }) => {
+  const a = ctx.db.authorship.id.find(cardId);
+  const card = ctx.db.postcard.id.find(cardId);
+  if (
+    !a ||
+    !card ||
+    a.hidden ||
+    !a.setupOwner ||
+    card.seeded ||
+    same(a.setupOwner, a.replyOwner) ||
+    !(same(a.setupOwner, ctx.sender) || same(a.replyOwner, ctx.sender))
+  )
+    fail('This thank-you is only for the two writers of a shared postcard.');
+  if (
+    card.createdMs < now(ctx) - 30 * 86400000 ||
+    [...ctx.db.report.owner.filter(ctx.sender)].some(
+      (r) => r.target === cardId || r.target === card.beginningId,
+    )
+  )
+    fail('This postcard is no longer available.');
+  const field = same(a.setupOwner, ctx.sender) ? 'setupActions' : 'replyActions';
+  if (a[field] & THANK_YOU_BIT) return;
+  // Preserve existing private open/share flags without recording an analytics event.
+  ctx.db.authorship.id.update({ ...a, [field]: a[field] | THANK_YOU_BIT });
+});
 export const set_pause = db.reducer({ paused: t.bool() }, (ctx, { paused }) => {
   const c = admin(ctx);
   ctx.db.config.id.update({ ...c, paused });
@@ -1699,6 +1726,37 @@ export const my_cards = db.view({ name: 'my_cards', public: true }, t.array(owne
   }
   return rows;
 });
+const appreciation = t.row('Appreciation', {
+  cardId: t.string(),
+  sent: t.bool(),
+  received: t.bool(),
+});
+export const my_appreciation = db.view(
+  { name: 'my_appreciation', public: true },
+  t.array(appreciation),
+  (ctx) => {
+    const rows = [];
+    const reported = new Set([...ctx.db.report.owner.filter(ctx.sender)].map((r) => r.target));
+    for (const a of ctx.db.authorship.iter()) {
+      if (
+        a.hidden ||
+        !a.setupOwner ||
+        same(a.setupOwner, a.replyOwner) ||
+        !(same(a.setupOwner, ctx.sender) || same(a.replyOwner, ctx.sender))
+      )
+        continue;
+      const card = ctx.db.postcard.id.find(a.id);
+      if (!card || card.seeded || reported.has(card.id) || reported.has(card.beginningId)) continue;
+      const isSetup = same(a.setupOwner, ctx.sender);
+      rows.push({
+        cardId: card.id,
+        sent: !!((isSetup ? a.setupActions : a.replyActions) & THANK_YOU_BIT),
+        received: !!((isSetup ? a.replyActions : a.setupActions) & THANK_YOU_BIT),
+      });
+    }
+    return rows;
+  },
+);
 // Separate additive view: existing clients keep the original my_cards wire shape.
 // The open bit is recorded only when the author's full postcard is visible.
 const unopenedReturn = t.row('UnopenedReturn', { id: t.string() });

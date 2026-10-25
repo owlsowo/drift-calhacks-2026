@@ -2173,3 +2173,53 @@ a {
     transition: none;
   }
 }
+
+.co-writer-thanks {
+  border-top: 1px solid #b8b3a3;
+  margin: 4px 25px 16px;
+  padding-top: 14px;
+  text-align: center;
+  color: #334c50;
+}
+.co-writer-thanks .text-button {
+  justify-content: center;
+  margin-inline: auto;
+  min-height: 44px;
+  color: #5a4039;
+}
+.co-writer-thanks .text-button:disabled {
+  opacity: 0.75;
+}
+.co-writer-thanks small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #536365;
+}
+.thanks-received {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 0 7px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.thanks-received svg,
+.thanks-label svg {
+  flex-shrink: 0;
+  color: #7d4c42;
+}
+.thanks-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #5c413b;
+}
+.collection-card .thanks-label {
+  display: flex;
+  padding: 8px 12px 12px;
+}

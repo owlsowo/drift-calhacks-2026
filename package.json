@@ -17,6 +17,7 @@
     "test:shore": "node scripts/test-room.mjs shore",
     "test:catch-first": "node scripts/test-room.mjs catch-first",
     "test:gate-layout": "node scripts/test-room.mjs gate-layout",
+    "test:thanks": "node scripts/test-room.mjs thanks",
     "test:withdrawal": "node scripts/test-room.mjs withdrawal",
     "test:invitations": "node scripts/test-room.mjs invite",
     "test:coast": "node scripts/test-room.mjs coast",
