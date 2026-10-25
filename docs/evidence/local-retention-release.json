@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-25T02:07:50.378Z",
+  "sourceCommit": "e298e2a81b84534ed4c74f4ecfaf4aaaa715c001",
+  "cloudflareVersion": "1f936ef8-629c-4d45-b0c2-290dd1cb33a7",
+  "ci": {
+    "run": 40153206152,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-DSnzQBin.js",
+      "sha256": "fd39c53f546ad6ccc1c42d72a5693df3dd29fa1ecdd481f075e7873762866938",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DozChoTl.css",
+      "sha256": "0d8614a6d9412c93d3e772550b70d979e85b97bb7f2c29e0d710d0ee1b429a38",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "headers": {
+    "contentSecurityPolicy": "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; frame-src https://challenges.cloudflare.com; connect-src 'self' https://challenges.cloudflare.com https://*.spacetimedb.com wss://*.spacetimedb.com; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'"
+  },
+  "scope": "Frontend only. Six local retention checks per Chrome/WebKit verify actual local commit/replay with injected response loss and SQL readback; ten letter and six ritual checks per engine pass with synchronous readiness polling. No provider calls or hosted synthetic story created by this release probe; no database change."
+}

@@ -35,3 +35,11 @@ The user authorizes status posts and project-related replies in the Calhacks gro
 - Six synthetic local checks pass per Chrome/WebKit, with selected accessibility/short-landscape scans, plus 27 unit checks and ten current Chrome letter checks. Motion/permission tests are emulated; physical phones remain unverified.
 - This improves the distinctive Creative/general demo and accessible People-First interaction. Existing Claude/Spacetime integrations are preserved; no new track eligibility is claimed. README now separates historical checks from current release gates and accurately identifies the photographic fallback.
 - Next: expire failed-transport retry records without losing request IDs or creating duplicate paid dispatches. Hosted new-mechanics/model verification remains separate.
+
+## 2026-10-25 02:08 UTC — bounded retries live
+
+- Product `e298e2a` is pushed; CI `40153206152` passed; Cloudflare `1f936ef8-629c-4d45-b0c2-290dd1cb33a7` serves the matching tested entry JS/CSS and ocean chunk. The new hosted Privacy explanation was inspected. The repository remains private.
+- Retry records expire after seven days and clear sooner on confirmed results. Original IDs survive legacy migration, reload and unknown transport outcomes. Connection callbacks are guarded against replaced connections.
+- Each Chrome/WebKit engine passes six retention, ten letter and six ritual checks (44 current local browser checks total). Actual local commit/replay plus owner readback verifies no duplicate request; response loss, clocks, motion and storage failure are injected. The async-predicate test wait was corrected to poll real synchronous state, and all current suites were rerun. No paid provider call, attendee test or physical-phone result is claimed.
+- Track value: clearer shared authorship supports Meta/connection and Creative/general judging; restored tactile interaction strengthens the recognizable bottle demo; bounded retry text and accessible fallback controls support People-First and protect Claude request accounting. Existing SpacetimeDB/Claude/Figma/Mana contributions are preserved, without adding superficial integrations.
+- Remaining product work: direct invitation to complete an open beginning and a new hosted multi-writer/model check under the revised mechanics. Physical phone checks and submission writing remain separate.
