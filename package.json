@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/scene-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts scripts/bottle-link.test.ts scripts/coast-time.test.ts scripts/story-context.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/scene-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts scripts/bottle-link.test.ts scripts/coast-time.test.ts scripts/story-context.test.ts scripts/story-review.test.ts",
     "starters:check": "tsx scripts/check-starters.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
@@ -65,7 +65,8 @@
     "test:shelf-render": "node scripts/test-room.mjs shelf-render",
     "test:type-layout": "node scripts/test-room.mjs type-layout",
     "test:votes": "node scripts/test-room.mjs votes",
-    "test:voting-migration": "DRIFT_SCENE_MIGRATION_REF=HEAD DRIFT_MIGRATION_VOTES=true node --import tsx scripts/scene-migration.mjs"
+    "test:voting-migration": "DRIFT_SCENE_MIGRATION_REF=HEAD DRIFT_MIGRATION_VOTES=true node --import tsx scripts/scene-migration.mjs",
+    "test:story-review": "node scripts/test-room.mjs story-review"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",

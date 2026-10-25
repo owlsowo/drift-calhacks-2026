@@ -6,6 +6,7 @@ process.chdir(root);
 const mode = process.argv[2] || 'ui';
 if (
   ![
+    'story-review',
     'response-context',
     'gate-layout',
     'daily-clarity',
@@ -109,6 +110,7 @@ try {
     }
   }
   const sceneFiles = {
+    'story-review': 'story-review-ui.mjs',
     votes: 'votes-ui.mjs',
     'response-context': 'response-context-ui.mjs',
     'type-layout': 'type-layout-ui.mjs',
