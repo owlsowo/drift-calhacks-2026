@@ -28,7 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import '@fontsource/kalam/latin-400.css';
-import { game, persist, saved, type Snapshot } from './game';
+import { game, localDrafts, persist, saved, type Snapshot } from './game';
 import { words, dayOf, type Prompt, type Card } from '../../../packages/game-rules/index';
 import { savePng, shareCard, cardText, copyText, preparePostcard } from './export';
 import './style.css';
@@ -276,6 +276,22 @@ async function confirmThanks(cardId: string) {
   }
 }
 
+function DailyTurnReceipt({ used, reset }: { used?: number; reset: string }) {
+  if (used === undefined) return null;
+  return (
+    <div className="daily-turn-receipt" role="group" aria-label="Today's turns">
+      <div>
+        <strong>{used}/3 turns used today</strong>
+        <span>New tide at {reset}</span>
+      </div>
+      <p>
+        Starting a beginning or a pickup uses a turn. Reading and continuing don't. Closing or
+        withdrawing a bottle doesn't restore one.
+      </p>
+    </div>
+  );
+}
+
 function App() {
   const s = useSyncExternalStore(game.subscribe, game.snapshot);
   const beforeNavigation = useRef(() => {});
@@ -342,6 +358,47 @@ function App() {
   );
   const assignmentUnavailable = s.connected && active?.stage === 'reply' && !assignment;
   const closedWrite = active?.stage === 'write' && active.day !== nowDay;
+  const unfinished = s.rounds.flatMap((round) => {
+    if (round.stage === 'write' && round.day === nowDay)
+      return [
+        {
+          id: round.id,
+          label: round.setupAttempts >= 3 ? 'Review your beginning' : 'Continue your beginning',
+          detail:
+            round.setupAttempts >= 3
+              ? 'Your checks are used. Your words are still here to copy.'
+              : 'Your private beginning, in the same turn.',
+        },
+      ];
+    if (round.stage === 'catch' && round.day === nowDay)
+      return [
+        {
+          id: round.id,
+          label: 'Continue picking up',
+          detail: 'Your pickup turn is already started.',
+        },
+      ];
+    if (round.stage === 'reply' && (round.day === nowDay || round.leaseMs > clock)) {
+      const available =
+        round.leaseMs > clock &&
+        s.assignments.some((item) => item.roundId === round.id && item.id === round.assignmentId);
+      const canContinue = available && round.replyAttempts < 3;
+      return [
+        {
+          id: round.id,
+          label: canContinue ? 'Continue your ending' : 'Review your ending',
+          detail: canContinue
+            ? 'Your caught bottle and private words are waiting.'
+            : 'Your words are still here to copy before moving on.',
+        },
+      ];
+    }
+    return [];
+  });
+  const [hasSavedWords, setHasSavedWords] = useState(false);
+  useEffect(() => {
+    setHasSavedWords(localDrafts(s.identity).length > 0);
+  }, [s.identity, s.rounds, view]);
   const released = s.book.beginningIds
     .flatMap((id) => {
       const beginning = s.beginnings.find((item) => item.id === id);
@@ -405,6 +462,7 @@ function App() {
       ).length
     : 0;
   const ownership = s.ownership.find((o) => o.id === selected);
+  const publicCardReader = view === 'card' && !!card && !ownership;
   const appreciation = s.appreciation.find((item) => item.cardId === selected);
   const cardId = card?.id;
   const ownsVisibleCard = !!ownership && !ownership.hidden;
@@ -632,7 +690,7 @@ function App() {
     if (navigationGeneration.current !== startedAt) return;
     navigate({ view: 'today' }, true);
     setError('');
-    setToast('Bottle released');
+    setToast('Bottle released. Replies will appear in My bottles.');
   }
   async function submit() {
     if (!active || closedWrite) return;
@@ -786,13 +844,19 @@ function App() {
               className="shore-back"
               onClick={() => {
                 navigate({
-                  view: view === 'card' || view === 'beginning' ? 'collection' : 'today',
+                  view: publicCardReader
+                    ? 'today'
+                    : view === 'card' || view === 'beginning'
+                      ? 'collection'
+                      : 'today',
                 });
                 setError('');
               }}
             >
               <ChevronLeft size={16} />{' '}
-              {view === 'card' || view === 'beginning' ? 'Back to bottles' : 'Back to the sea'}
+              {!publicCardReader && (view === 'card' || view === 'beginning')
+                ? 'Back to bottles'
+                : 'Back to the sea'}
             </button>
           )}
           <button
@@ -901,8 +965,23 @@ function App() {
                       This prompt has closed, or your round is finished. Your saved words stay on
                       this browser.
                     </p>
-                    <button className="button primary" disabled={controlsDisabled} onClick={begin}>
-                      Write a beginning <ArrowRight size={18} />
+                    <button
+                      className="button primary"
+                      disabled={
+                        !writeRound && (controlsDisabled || !!s.service?.paused || dailyRounds >= 3)
+                      }
+                      onClick={
+                        writeRound
+                          ? () => navigate({ view: 'play', roundId: writeRound.id })
+                          : begin
+                      }
+                    >
+                      {writeRound
+                        ? writeRound.setupAttempts >= 3
+                          ? 'Review your beginning'
+                          : 'Continue your beginning'
+                        : 'Write a beginning'}{' '}
+                      <ArrowRight size={18} />
                     </button>
                     <EarlierDrafts
                       identity={s.identity}
@@ -1290,6 +1369,16 @@ function App() {
                         </button>
                       </div>
                     }
+                    {publicCardReader && (
+                      <div className="pass-it-on">
+                        <p>
+                          A beginning and an ending, six words each. Make one with someone else.
+                        </p>
+                        <button className="text-button" onClick={() => navigate({ view: 'today' })}>
+                          Try today’s bottle <ArrowRight size={16} aria-hidden="true" />
+                        </button>
+                      </div>
+                    )}
                     {s.service?.helloEnabled && ownership && !card.seeded && (
                       <HelloPanel
                         cardId={card.id}
@@ -1359,18 +1448,63 @@ function App() {
                 </h1>
                 <span className="collection-total">Saved on this browser</span>
               </div>
+              <DailyTurnReceipt used={s.connected ? dailyRounds : undefined} reset={reset} />
+              {unfinished.length > 0 && (
+                <section className="shelf-in-progress" aria-labelledby="in-progress-title">
+                  <h2 id="in-progress-title">In progress</h2>
+                  <div className="unfinished-bottles">
+                    {unfinished.map((round, index) => (
+                      <button
+                        key={round.id}
+                        className="unfinished-bottle"
+                        aria-label={round.label}
+                        aria-describedby={`unfinished-detail-${index}`}
+                        onClick={() => navigate({ view: 'play', roundId: round.id })}
+                      >
+                        <span>
+                          <strong>{round.label}</strong>
+                          <small id={`unfinished-detail-${index}`}>{round.detail}</small>
+                        </span>
+                        <ArrowRight size={16} aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
               {released.length === 0 && completed.length === 0 && (
-                <div className="collection-empty">
-                  <Bottle />
-                  <h2>No saved bottles yet.</h2>
-                  <p>Release a beginning, or pick up someone else’s.</p>
-                  <button
-                    className="button primary"
-                    onClick={needsShoreCheck ? () => navigate({ view: 'today' }) : begin}
-                    disabled={needsShoreCheck ? !!busy : controlsDisabled || !!s.service?.paused}
-                  >
-                    {needsShoreCheck ? 'Start at the sea' : 'Write a beginning'}
-                  </button>
+                <div
+                  className={`collection-empty${unfinished.length ? ' collection-in-progress' : ''}`}
+                >
+                  {!unfinished.length && <Bottle />}
+                  <h2>
+                    {unfinished.length
+                      ? unfinished.length === 1
+                        ? 'A bottle is still in progress.'
+                        : 'Your bottles are still in progress.'
+                      : hasSavedWords
+                        ? 'Your words are saved here.'
+                        : 'No saved bottles yet.'}
+                  </h2>
+                  <p>
+                    {unfinished.length
+                      ? 'Continue above. Your shared beginnings and replies will appear here.'
+                      : hasSavedWords
+                        ? 'Open Your earlier words below to copy a saved draft.'
+                        : 'Release a beginning, or pick up someone else’s.'}
+                  </p>
+                  {!unfinished.length && (
+                    <button
+                      className="button primary"
+                      onClick={needsShoreCheck ? () => navigate({ view: 'today' }) : begin}
+                      disabled={
+                        (!writeRound && dailyRounds >= 3) ||
+                        !!s.service?.paused ||
+                        (needsShoreCheck ? !!busy || !s.connected : controlsDisabled)
+                      }
+                    >
+                      {needsShoreCheck ? 'Start at the sea' : 'Write a beginning'}
+                    </button>
+                  )}
                 </div>
               )}
               {released.length > 0 && (
@@ -1716,7 +1850,11 @@ function App() {
               finish it.
             </li>
           </ol>
-          <p>Up to three bottles a day. One skip per reply.</p>
+          <p>
+            Three turns a day, shared between beginnings and endings. One skip per reply. Find
+            unfinished words in My bottles and continue the same turn.
+          </p>
+          <DailyTurnReceipt used={s.connected ? dailyRounds : undefined} reset={reset} />
           {s.service?.sandbox && !s.service.aiReady && (
             <p>This is a local preview. Message checks and AI hints are off.</p>
           )}

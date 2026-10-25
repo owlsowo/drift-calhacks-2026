@@ -7,6 +7,8 @@ const mode = process.argv[2] || 'ui';
 if (
   ![
     'gate-layout',
+    'daily-clarity',
+    'shared-landing',
     'scenes',
     'scene-flow',
     'scene-results',
@@ -101,6 +103,8 @@ try {
     }
   }
   const sceneFiles = {
+    'daily-clarity': 'daily-clarity-ui.mjs',
+    'shared-landing': 'shared-landing-ui.mjs',
     scenes: 'scenes-ui.mjs',
     'scene-flow': 'scene-flow-ui.mjs',
     'scene-results': 'scene-results-ui.mjs',

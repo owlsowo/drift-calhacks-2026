@@ -54,7 +54,9 @@
     "test:scene-results": "node scripts/test-room.mjs scene-results",
     "test:scene-asset-failures": "node scripts/test-room.mjs scene-asset-failures",
     "test:scene-migration": "node --import tsx scripts/scene-migration.mjs",
-    "test:upgrade-check": "node scripts/upgrade-check-fixture.mjs"
+    "test:upgrade-check": "node scripts/upgrade-check-fixture.mjs",
+    "test:daily-clarity": "node scripts/test-room.mjs daily-clarity",
+    "test:shared-landing": "node scripts/test-room.mjs shared-landing"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
