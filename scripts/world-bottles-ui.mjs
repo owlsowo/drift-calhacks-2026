@@ -8,6 +8,7 @@ const output = new URL('../test-results/world-bottles/', import.meta.url);
 await fs.mkdir(output, { recursive: true });
 const checks = [];
 const errors = [];
+const exitChecks = [];
 for (const engine of ['chrome', 'webkit']) {
   const browser =
     engine === 'chrome'
@@ -36,6 +37,46 @@ for (const engine of ['chrome', 'webkit']) {
     page.evaluate((n) => {
       Math.random = () => (n - 3 + 0.5) / 3;
     }, count);
+  async function checkExit(action) {
+    const result = await page.evaluate(async (action) => {
+      const choices = [...document.querySelectorAll('[data-bottle-choice]')];
+      if (action === 'cancel') document.querySelector('.bottle-ritual__cancel').click();
+      if (action === 'open') choices[0].click();
+      if (action === 'open-last') choices.at(-1).click();
+      const samples = [];
+      const started = performance.now();
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(Error('The exit never completed.')), 3000);
+        const sample = () => {
+          const dialog = document.querySelector('.bottle-ritual');
+          if (!dialog) {
+            clearTimeout(timeout);
+            resolve({ samples, elapsed: performance.now() - started });
+            return;
+          }
+          if (dialog.classList.contains('bottle-ritual--leaving')) {
+            const sprite = document.querySelector('.world-bottle-sprite:not([hidden])');
+            samples.push({
+              opacity: Number(getComputedStyle(dialog).opacity),
+              glass: sprite ? Number(sprite.style.opacity) : null,
+            });
+          }
+          requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      });
+    }, action);
+    assert.ok(
+      result.samples.some((s) => s.opacity > 0.01 && s.opacity < 0.95),
+      `${engine}/${action}: the dialog must visibly fade before it unmounts.`,
+    );
+    if (engine === 'webkit' && action !== 'release')
+      assert.ok(
+        result.samples.some((s) => s.glass > 0 && s.glass < 0.95),
+        'The fallback bottle fades with the overlay instead of popping away.',
+      );
+    exitChecks.push({ engine, action, elapsed: result.elapsed, samples: result.samples.length });
+  }
   try {
     await page.goto(`${origin}/bottle-preview.html`);
     if (engine === 'chrome')
@@ -156,7 +197,7 @@ for (const engine of ['chrome', 'webkit']) {
     );
     assert.ok(contrast.after.outside < contrast.before.outside * 0.42, JSON.stringify(contrast));
     assert.ok(contrast.after.inside > contrast.before.inside * 0.68, JSON.stringify(contrast));
-    await page.keyboard.press('Escape');
+    await checkExit('cancel');
     await page.getByRole('button', { name: 'Resume sea', exact: true }).click();
     pass('Actual pixels darken the sea outside the spotlights while keeping the lit water clear.');
     for (let i = 0; i < 5; i++) {
@@ -164,7 +205,8 @@ for (const engine of ['chrome', 'webkit']) {
       await page.getByRole('button', { name: 'Pick up', exact: true }).click();
       const choice = page.locator('[data-bottle-choice]').nth(i);
       await expect(choice).toBeEnabled();
-      await choice.click();
+      if (i === 0) await checkExit('open');
+      else await choice.click();
       await expect(page.getByRole('dialog')).toHaveCount(0);
       await expect(page.getByLabel('Opened bottles')).toHaveText(String(i + 1));
     }
@@ -174,7 +216,7 @@ for (const engine of ['chrome', 'webkit']) {
       await expect(page.locator('.fft-surface')).toHaveAttribute('data-bottle-count', '1');
     else await expect(page.locator('.world-bottle-sprite:visible')).toHaveCount(1);
     await page.screenshot({ path: new URL(`${engine}-throw.png`, output).pathname });
-    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await checkExit('release');
     await chooseCount(3);
     await page.getByRole('button', { name: 'Pick up', exact: true }).click();
     await expect(page.locator('[data-bottle-choice]').first()).toBeEnabled();
@@ -199,9 +241,12 @@ for (const engine of ['chrome', 'webkit']) {
     await page.getByRole('button', { name: 'Pick up', exact: true }).click();
     await expect(page.locator('[data-bottle-choice]').last()).toBeEnabled();
     await page.screenshot({ path: new URL(`${engine}-night-reduced.png`, output).pathname });
-    await page.locator('[data-bottle-choice]').last().click();
+    await checkExit('open-last');
     await expect(page.getByLabel('Opened bottles')).toHaveText('7');
     pass('Paused sea and reduced-motion night remain usable without restarting the scene.');
+    pass(
+      'Opening, Back to sea and release retain the dialog until a real exit fade completes, including reduced motion.',
+    );
   } finally {
     await browser.close();
   }
@@ -216,6 +261,7 @@ await fs.writeFile(
         'Development-only preview: actual headless Metal WebGPU on Chrome and WebKit CSS fallback. No database, paid models, live stories or physical-phone claim.',
       checks,
       errors,
+      exitChecks,
     },
     null,
     2,

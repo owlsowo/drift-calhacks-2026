@@ -19,6 +19,7 @@ const THROW_MS = 1450;
 const ARRIVAL_MS = 750;
 const OPEN_MS = 350;
 const FADE_MS = 110;
+const EXIT_MS = 240;
 type MotionConstructor = typeof DeviceMotionEvent & { requestPermission?: () => Promise<string> };
 let phoneShakeOptedIn = false;
 
@@ -45,6 +46,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
   const mounted = useRef(true);
   const completed = useRef(false);
   const openingRef = useRef(false);
+  const leavingRef = useRef(false);
   const completeRef = useRef(onComplete);
   const cancelRef = useRef(onCancel);
   completeRef.current = onComplete;
@@ -56,6 +58,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
   );
   const [arrived, setArrived] = useState(false);
   const [opening, setOpening] = useState(false);
+  const [leaving, setLeaving] = useState<'complete' | 'cancel' | null>(null);
   const [showWaiting, setShowWaiting] = useState(false);
   const [hidden, setHidden] = useState(() => document.visibilityState === 'hidden');
   const [dragging, setDragging] = useState(false);
@@ -106,10 +109,48 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
   }, [worldScene, kind, phase]);
 
   function finish() {
-    if (completed.current) return;
-    completed.current = true;
-    completeRef.current();
+    if (completed.current || leavingRef.current) return;
+    leavingRef.current = true;
+    setLeaving('complete');
   }
+
+  useEffect(() => {
+    if (!leaving) return;
+    const duration = reducedMotion ? FADE_MS : EXIT_MS;
+    const target = dialog.current;
+    const animation = target?.animate(
+      [{ opacity: getComputedStyle(target).opacity }, { opacity: 0 }],
+      { duration, easing: 'ease-out', fill: 'forwards' },
+    );
+    // The glass lives in the ocean renderer, outside the dialog. Fade it with
+    // the veil, including when the sea is paused or using the SVG fallback.
+    const bottles =
+      worldScene && kind === 'pickup'
+        ? worldScene.bottles
+            .slice(0, choiceCount)
+            .map((bottle) => ({ bottle, opacity: bottle.opacity }))
+        : [];
+    const started = performance.now();
+    let frame = 0;
+    const fade = (now: number) => {
+      const opacity = (1 - Math.min(1, (now - started) / duration)) ** 2;
+      for (const item of bottles) item.bottle.opacity = item.opacity * opacity;
+      if (bottles.length) worldScene?.notify();
+      if (opacity > 0) frame = requestAnimationFrame(fade);
+    };
+    if (bottles.length) frame = requestAnimationFrame(fade);
+    const timer = window.setTimeout(() => {
+      if (completed.current) return;
+      completed.current = true;
+      if (leaving === 'cancel') cancelRef.current();
+      else completeRef.current();
+    }, duration);
+    return () => {
+      window.clearTimeout(timer);
+      cancelAnimationFrame(frame);
+      animation?.cancel();
+    };
+  }, [leaving, reducedMotion, worldScene, kind, choiceCount]);
 
   useEffect(() => {
     mounted.current = true;
@@ -177,6 +218,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
     if (
       !arrived ||
       completed.current ||
+      leavingRef.current ||
       openingRef.current ||
       document.visibilityState !== 'visible'
     )
@@ -287,9 +329,17 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
   }
 
   function cancel() {
-    if (kind !== 'pickup' || phase !== 'moving' || openingRef.current || completed.current) return;
-    completed.current = true;
-    cancelRef.current();
+    if (
+      kind !== 'pickup' ||
+      phase !== 'moving' ||
+      openingRef.current ||
+      completed.current ||
+      leavingRef.current
+    )
+      return;
+    leavingRef.current = true;
+    setLeaving('cancel');
+    dialog.current?.focus({ preventScroll: true });
   }
 
   function keyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -320,7 +370,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
     buttons[next].focus({ preventScroll: true });
   }
 
-  const state = opening ? 'opening' : arrived ? 'arrived' : phase;
+  const state = leaving ? 'leaving' : opening ? 'opening' : arrived ? 'arrived' : phase;
   return (
     <div
       className={`bottle-ritual${worldScene ? ' bottle-ritual--world' : ''} bottle-ritual--${kind} bottle-ritual--${state}${reducedMotion ? ' bottle-ritual--reduced' : ''}${hidden ? ' bottle-ritual--hidden' : ''}${dragging ? ' bottle-ritual--dragging' : ''}`}
@@ -395,7 +445,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
                 if (index === 0) openButton.current = node;
               }}
               aria-label={index === 0 ? 'Open bottle' : `Open bottle ${index + 1}`}
-              disabled={!arrived || opening || hidden}
+              disabled={!arrived || opening || !!leaving || hidden}
               onClick={open}
               data-bottle-choice={index + 1}
             >
@@ -413,7 +463,7 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
           className="bottle-ritual__open"
           ref={openButton}
           aria-label="Open bottle"
-          disabled={!arrived || opening}
+          disabled={!arrived || opening || !!leaving}
           onPointerDown={down}
           onPointerMove={move}
           onPointerUp={releasePointer}
@@ -474,7 +524,13 @@ export function BottleRitual({ kind, phase, onComplete, onCancel, worldScene }: 
         </p>
       )}
       {kind === 'pickup' && phase === 'moving' && !opening && (
-        <button type="button" className="bottle-ritual__cancel" ref={cancelButton} onClick={cancel}>
+        <button
+          type="button"
+          className="bottle-ritual__cancel"
+          ref={cancelButton}
+          onClick={cancel}
+          disabled={!!leaving}
+        >
           Back to sea
         </button>
       )}
