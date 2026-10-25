@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-25T01:53:28.715Z",
+  "engine": "Chrome",
+  "mode": "Isolated local database, synthetic sample assignment, AI disabled; emulated motion/permissions, not a physical phone test",
+  "checks": [
+    "One-way travel and incomplete drags do not open a bottle or synthesize a tap",
+    "Four deliberate pointer reversals open the real received note over the sea; desktop and short landscape controls remain readable",
+    "Escape returns to sea, keyboard focus stays in the ritual, and Enter opens without shaking",
+    "Motion permission is requested only by its explicit control; denial and API failure leave the bottle operable",
+    "Opted-in phone motion ignores weak input, changing axes and hidden-page events; a fresh deliberate shake opens once",
+    "The in-memory phone opt-in survives reopening without another request, can be turned off, and reduced-motion tap opening remains available"
+  ],
+  "errors": []
+}

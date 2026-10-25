@@ -16,6 +16,7 @@
     "test:ui": "node scripts/test-room.mjs ui",
     "test:shore": "node scripts/test-room.mjs shore",
     "test:catch-first": "node scripts/test-room.mjs catch-first",
+    "test:ritual": "node scripts/test-room.mjs ritual",
     "test:letters": "node scripts/test-room.mjs letters",
     "test:empty": "node scripts/test-room.mjs empty",
     "test:webkit": "node scripts/test-room.mjs webkit",

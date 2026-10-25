@@ -8,11 +8,11 @@
 
 ## Current status
 
-The current local build uses React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The server harness passes 55 transaction/privacy/failure/budget/pool tests, and 24 rule/model/gesture/draft/CSP/starter/cost/cookie tests pass. TypeScript/Vite production build and script typechecks pass. A manual three-writer sandbox flow verified one beginning receiving two different endings, independent Release/Pick up drafts, and saved beginning/pair shelves after reload. The browser’s actual first-party ID cookies were checked. See `docs/letter-pools-review.md`.
+The build uses React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The hosted independent-letter upgrade preserved the original database and records with defaulted appended columns and an owner backfill. See [migration evidence](docs/letter-migration.md). The current three-writer integration passes ten checks in Chrome and ten in WebKit: multiple endings, independent drafts, real ID cookies, reload recovery, private/public contribution captions and actual PNG download. These are isolated synthetic checks with model calls disabled.
 
-The quiet full-screen coast now uses the actual MIT-licensed Noniv WebGPU FFT engine, with a fixed blue-hour camera, moonlight and a separate headland overlay that meets the water. The original generated coast remains the unsupported-browser fallback. The three controls sit on a narrow textured wooden trapezoid flush with the bottom edge. Help contains motion controls. Rendering implementation/attribution: `docs/ocean-engine.md`; generated assets/prompts: `docs/coast-art.md`. The focused `npm run test:letters` browser script is available but has not been executed; current browser verification was manual. Older automated UI/accessibility evidence describes earlier mechanics and visual checkpoints.
+The full-screen sea uses the locally bundled MIT-licensed Noniv WebGPU FFT engine. Unsupported devices and reduced motion use the credited sea photograph. The bottle and lighthouse are original SVG, the dock is CSS, and paper uses a real credited photograph; **no AI-generated images ship in the runtime**. See [asset sources](docs/asset-sources.md). The note opens over the same sea. The current pickup ritual supports deliberate pointer shakes alongside tap/keyboard opening, with explicit opt-in phone motion, an off control and reduced-motion support. Browser sensor checks are emulated; physical phones remain unverified.
 
-**Live checkpoint:** Cloudflare HTTPS and Maincloud are deployed. A real hosted two-browser Claude flow and server-side Turnstile negative checks passed; see `docs/live-release.md`. Figma Make informed the empty-sea/returned-story iteration; a shared native Figma Slides deck includes the playable prototype. Mana built Bottle Kitchen; an actual draft export was validated and refused for production installation. See `docs/workflow-checkpoint.md`. **Not yet verified:** actual phones, attendee outcomes, Notability use or final sponsor eligibility. Local development is clearly marked and may explicitly disable model checks. This is never evidence of a live AI integration. No attendee pilot has been conducted.
+**Live checkpoint:** Cloudflare HTTPS and Maincloud are deployed. The contribution-caption release is `e0df0d3` ([served-file evidence](docs/evidence/contribution-release.json)); the new shake refinement is recorded separately when deployed. A real hosted two-browser Claude flow and Turnstile negative checks passed before the independent-letter redesign. A new hosted multi-writer/model flow under the revised mechanics remains pending; local tests do not establish it. Figma Make/Slides and Mana Bottle Kitchen have actual workflow artifacts: [workflow checkpoint](docs/workflow-checkpoint.md). Actual phones, attendee outcomes and final sponsor eligibility remain unverified. The team owns submission writing.
 
 ## Local development
 
@@ -53,17 +53,20 @@ npm run test:server
 npm run check:server
 npm run check:scripts
 npm run build
-npm run test:ui
 npm run test:letters
-npm run test:a11y
-npm run test:shore
-npm run test:webkit
-npm run test:recovery
-npm run test:coldstart
+DRIFT_TEST_ENGINE=webkit npm run test:letters
+npm run test:ritual
+DRIFT_TEST_ENGINE=webkit npm run test:ritual
+npm run test:migration
+npm run test:paper-fallbacks
 npm run eval:models -- --dry-run
 ```
 
 The integration tests require the local database server. Each creates a disposable database and, for browser tests, its own frontend; cleanup leaves the main development database alone. They use synthetic fixtures in isolated browsers, save screenshots and test full reload recovery, live returns and downloads. They do not establish model quality or social impact. `test:live` probes concurrent claims and access controls; `test:states` injects loading, pause and offline failures.
+
+### Earlier verification checkpoints
+
+The older `test:ui`, `test:shore`, `test:webkit`, `test:recovery`, `test:coldstart` and demo scripts describe earlier mechanics and are not passing release gates for the independent-letter redesign. The records below are historical context; use the current letter/ritual/migration checks above for this build. Install the WebKit engine with `npx playwright install webkit` before current WebKit checks.
 
 `test:webkit` additionally needs `npx playwright install webkit`. The actual engine passes the catch/open/write/return/export loop with an iPhone viewport, and found a mobile completion-order bug now fixed. Share cancellation/denial use injected adapters; physical iPhones, motion sensors and OS share sheets remain separate checks. See [browser evidence and limits](docs/browser-checks.md).
 
