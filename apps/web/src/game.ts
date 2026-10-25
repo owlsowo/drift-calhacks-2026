@@ -23,6 +23,8 @@ import type {
   Beginning,
   UnopenedReturn,
   Appreciation,
+  VoteTotal,
+  MyVote,
 } from './module_bindings/types';
 export type Snapshot = {
   connected: boolean;
@@ -36,6 +38,8 @@ export type Snapshot = {
   ownership: OwnedCard[];
   unopenedReturns: UnopenedReturn[];
   appreciation: Appreciation[];
+  voteTotals: VoteTotal[];
+  votes: MyVote[];
   outgoing: Outgoing[];
   cards: Postcard[];
   scenes: PostcardScene[];
@@ -60,6 +64,8 @@ const blank: Snapshot = {
   ownership: [],
   unopenedReturns: [],
   appreciation: [],
+  voteTotals: [],
+  votes: [],
   outgoing: [],
   cards: [],
   scenes: [],
@@ -170,6 +176,8 @@ function emit(patch: Partial<Snapshot> = {}) {
       ownership: [...connection.db.myCards.iter()],
       unopenedReturns: [...connection.db.myUnopenedReturns.iter()],
       appreciation: [...connection.db.myAppreciation.iter()],
+      voteTotals: [...connection.db.cardVoteTotals.iter()],
+      votes: [...connection.db.myCardVotes.iter()],
       outgoing: [...connection.db.myOutgoing.iter()],
       cards: [...connection.db.postcard.iter()],
       scenes: [...connection.db.postcardScene.iter()],
@@ -237,6 +245,8 @@ function connect() {
         conn.db.myCards,
         conn.db.myUnopenedReturns,
         conn.db.myAppreciation,
+        conn.db.cardVoteTotals,
+        conn.db.myCardVotes,
         conn.db.myOutgoing,
         conn.db.postcard,
         conn.db.postcardScene,
@@ -272,6 +282,8 @@ function connect() {
           'SELECT * FROM my_cards',
           'SELECT * FROM my_unopened_returns',
           'SELECT * FROM my_appreciation',
+          'SELECT * FROM card_vote_totals',
+          'SELECT * FROM my_card_votes',
           'SELECT * FROM my_outgoing',
           'SELECT * FROM postcard',
           'SELECT * FROM postcard_scene',
@@ -422,6 +434,10 @@ export const game = {
   async withdraw(bottleId: string) {
     if (!connection?.isActive) throw Error('Reconnect before withdrawing your bottle.');
     await connection.reducers.withdrawMyBeginning({ bottleId });
+  },
+  async vote(cardId: string, voted: boolean) {
+    if (!connection?.isActive) throw Error('Reconnect to change your upvote.');
+    await connection.reducers.setCardVote({ cardId, voted });
   },
   async thank(cardId: string) {
     if (!connection?.isActive) throw Error('Reconnect to send your thanks.');

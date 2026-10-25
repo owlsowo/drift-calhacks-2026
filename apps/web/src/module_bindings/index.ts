@@ -46,6 +46,7 @@ import ReportContentReducer from "./report_content_reducer";
 import ResolveReportReducer from "./resolve_report_reducer";
 import RetireBottleReducer from "./retire_bottle_reducer";
 import SetAiBudgetReducer from "./set_ai_budget_reducer";
+import SetCardVoteReducer from "./set_card_vote_reducer";
 import SetDispatchCapReducer from "./set_dispatch_cap_reducer";
 import SetHelloIntentReducer from "./set_hello_intent_reducer";
 import SetPauseReducer from "./set_pause_reducer";
@@ -73,8 +74,10 @@ import * as VerifyShoreProcedure from "./verify_shore_procedure";
 
 // Import all table schema definitions
 import BeginningRow from "./beginning_table";
+import CardVoteTotalsRow from "./card_vote_totals_table";
 import MyAppreciationRow from "./my_appreciation_table";
 import MyAssignmentRow from "./my_assignment_table";
+import MyCardVotesRow from "./my_card_votes_table";
 import MyCardsRow from "./my_cards_table";
 import MyHelloRow from "./my_hello_table";
 import MyOutgoingRow from "./my_outgoing_table";
@@ -152,6 +155,13 @@ const tablesSchema = __schema({
       { name: 'today_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, TodayRow),
+  cardVoteTotals: __table({
+    name: 'card_vote_totals',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, CardVoteTotalsRow),
   myAppreciation: __table({
     name: 'my_appreciation',
     indexes: [
@@ -166,6 +176,13 @@ const tablesSchema = __schema({
     constraints: [
     ],
   }, MyAssignmentRow),
+  myCardVotes: __table({
+    name: 'my_card_votes',
+    indexes: [
+    ],
+    constraints: [
+    ],
+  }, MyCardVotesRow),
   myCards: __table({
     name: 'my_cards',
     indexes: [
@@ -231,6 +248,7 @@ const reducersSchema = __reducers(
   __reducerSchema("resolve_report", ResolveReportReducer),
   __reducerSchema("retire_bottle", RetireBottleReducer),
   __reducerSchema("set_ai_budget", SetAiBudgetReducer),
+  __reducerSchema("set_card_vote", SetCardVoteReducer),
   __reducerSchema("set_dispatch_cap", SetDispatchCapReducer),
   __reducerSchema("set_hello_intent", SetHelloIntentReducer),
   __reducerSchema("set_pause", SetPauseReducer),
@@ -261,10 +279,14 @@ const proceduresSchema = __procedures(
 
 type __SchemaWithTableAccessorAliases = Omit<typeof tablesSchema.schemaType, "tables"> & {
   tables: typeof tablesSchema.schemaType.tables & {
+    /** @deprecated Use `cardVoteTotals` instead. This alias will be removed in the next major version. */
+    readonly "card_vote_totals": Omit<typeof tablesSchema.schemaType.tables["cardVoteTotals"], "accessorName"> & { readonly accessorName: "card_vote_totals" };
     /** @deprecated Use `myAppreciation` instead. This alias will be removed in the next major version. */
     readonly "my_appreciation": Omit<typeof tablesSchema.schemaType.tables["myAppreciation"], "accessorName"> & { readonly accessorName: "my_appreciation" };
     /** @deprecated Use `myAssignment` instead. This alias will be removed in the next major version. */
     readonly "my_assignment": Omit<typeof tablesSchema.schemaType.tables["myAssignment"], "accessorName"> & { readonly accessorName: "my_assignment" };
+    /** @deprecated Use `myCardVotes` instead. This alias will be removed in the next major version. */
+    readonly "my_card_votes": Omit<typeof tablesSchema.schemaType.tables["myCardVotes"], "accessorName"> & { readonly accessorName: "my_card_votes" };
     /** @deprecated Use `myCards` instead. This alias will be removed in the next major version. */
     readonly "my_cards": Omit<typeof tablesSchema.schemaType.tables["myCards"], "accessorName"> & { readonly accessorName: "my_cards" };
     /** @deprecated Use `myHello` instead. This alias will be removed in the next major version. */
@@ -297,8 +319,10 @@ const REMOTE_MODULE = {
 >;
 
 const tableAccessorAliases = {
+  "card_vote_totals": "cardVoteTotals",
   "my_appreciation": "myAppreciation",
   "my_assignment": "myAssignment",
+  "my_card_votes": "myCardVotes",
   "my_cards": "myCards",
   "my_hello": "myHello",
   "my_outgoing": "myOutgoing",
@@ -326,10 +350,14 @@ function __withTableAccessorAliases<T extends object>(target: T, freeze = false)
 
 type __DbViewBase = __DbConnectionImpl<typeof REMOTE_MODULE>["db"];
 export type DbView = __DbViewBase & {
+  /** @deprecated Use `cardVoteTotals` instead. This alias will be removed in the next major version. */
+  readonly "card_vote_totals": __DbViewBase["cardVoteTotals"];
   /** @deprecated Use `myAppreciation` instead. This alias will be removed in the next major version. */
   readonly "my_appreciation": __DbViewBase["myAppreciation"];
   /** @deprecated Use `myAssignment` instead. This alias will be removed in the next major version. */
   readonly "my_assignment": __DbViewBase["myAssignment"];
+  /** @deprecated Use `myCardVotes` instead. This alias will be removed in the next major version. */
+  readonly "my_card_votes": __DbViewBase["myCardVotes"];
   /** @deprecated Use `myCards` instead. This alias will be removed in the next major version. */
   readonly "my_cards": __DbViewBase["myCards"];
   /** @deprecated Use `myHello` instead. This alias will be removed in the next major version. */
@@ -348,10 +376,14 @@ export type DbView = __DbViewBase & {
 
 type __TablesBase = __QueryBuilder<typeof tablesSchema.schemaType>;
 export type Tables = __TablesBase & {
+  /** @deprecated Use `cardVoteTotals` instead. This alias will be removed in the next major version. */
+  readonly "card_vote_totals": __TablesBase["cardVoteTotals"];
   /** @deprecated Use `myAppreciation` instead. This alias will be removed in the next major version. */
   readonly "my_appreciation": __TablesBase["myAppreciation"];
   /** @deprecated Use `myAssignment` instead. This alias will be removed in the next major version. */
   readonly "my_assignment": __TablesBase["myAssignment"];
+  /** @deprecated Use `myCardVotes` instead. This alias will be removed in the next major version. */
+  readonly "my_card_votes": __TablesBase["myCardVotes"];
   /** @deprecated Use `myCards` instead. This alias will be removed in the next major version. */
   readonly "my_cards": __TablesBase["myCards"];
   /** @deprecated Use `myHello` instead. This alias will be removed in the next major version. */

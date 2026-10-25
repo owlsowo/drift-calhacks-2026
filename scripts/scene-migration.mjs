@@ -168,7 +168,13 @@ const tables = [
   'activity_day',
   'schema_migration',
 ];
-const sceneTables = ['postcard_scene', 'postcard_scene_status', 'scene_job', 'scene_schedule'];
+const sceneTables = [
+  'postcard_scene',
+  'postcard_scene_status',
+  'scene_job',
+  'scene_schedule',
+  ...(process.env.DRIFT_MIGRATION_VOTES === 'true' ? ['card_vote', 'vote_rate'] : []),
+];
 let published = false;
 try {
   const legacy = await archive(legacyRef, 'legacy');
@@ -350,7 +356,12 @@ try {
     ],
   };
   await fs.writeFile(
-    path.join(root, 'docs/evidence/scene-migration.json'),
+    path.join(
+      root,
+      process.env.DRIFT_MIGRATION_VOTES === 'true'
+        ? 'docs/evidence/voting-migration.json'
+        : 'docs/evidence/scene-migration.json',
+    ),
     JSON.stringify(report, null, 2) + '\n',
   );
   console.log(JSON.stringify(report, null, 2));

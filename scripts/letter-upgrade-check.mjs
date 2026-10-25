@@ -27,17 +27,20 @@ export const requiredTables = [
   'activity_day',
   'schema_migration',
 ];
-export const sceneTables = [
+export const optionalTables = [
   'postcard_scene',
   'postcard_scene_status',
   'scene_job',
   'scene_schedule',
+  'card_vote',
+  'vote_rate',
 ];
-const tables = [...requiredTables, ...sceneTables];
+const tables = [...requiredTables, ...optionalTables];
 const primaryKeys = {
   hello: 'cardId',
   report_resolution: 'reportId',
   shore_pass: 'owner',
+  vote_rate: 'owner',
   postcard_scene: 'cardId',
   postcard_scene_status: 'cardId',
   scene_job: 'cardId',
@@ -158,7 +161,7 @@ export function verifyRecords(snapshot, after) {
   check(
     Array.isArray(absent) &&
       new Set(absent).size === absent.length &&
-      absent.every((table) => sceneTables.includes(table)),
+      absent.every((table) => optionalTables.includes(table)),
     'Invalid absent-table manifest.',
   );
   check(
@@ -211,7 +214,7 @@ export async function runUpgradeCheck(action, { run = spawnSync, workspace = roo
   check(['backup', 'verify'].includes(action), 'Use backup or verify.');
   const reader = createOwnerReader(run, workspace);
   const available = reader.describe();
-  const absentBeforeUpgrade = sceneTables.filter((table) => !available.includes(table));
+  const absentBeforeUpgrade = optionalTables.filter((table) => !available.includes(table));
   function quiescentRead() {
     const records = { config: reader.sql('config'), round: reader.sql('round') };
     if (available.includes('scene_job')) records.scene_job = reader.sql('scene_job');
@@ -253,7 +256,7 @@ export async function runUpgradeCheck(action, { run = spawnSync, workspace = roo
       newTableExpectedCounts: Object.fromEntries(absentBeforeUpgrade.map((table) => [table, 0])),
     };
   }
-  for (const table of sceneTables)
+  for (const table of optionalTables)
     check(available.includes(table), 'Expected post-upgrade table is missing: ' + table);
   quiescentRead();
   const file = (await fs.readFile(pointer, 'utf8')).trim();
