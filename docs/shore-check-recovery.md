@@ -1,0 +1,7 @@
+# Recovering the human-check loader
+
+A failed Turnstile script used to remain in the document. Retry attached new listeners to that already-failed element, so the browser never fetched it again. The first-load check could therefore require a full page reload on a poor connection.
+
+The loader now records the shared script's outcome. An explicit Retry replaces a failed tag; a normally loading script or healthy API is reused. A twelve-second loading deadline distinguishes a slow request from a definitive script error. It says the check is taking longer and offers connection/retry guidance. Retry keeps sharing a still-pending request and rearms the wait; it does not pretend to force another network fetch. A genuine browser script error remains eligible for replacement/refetch on explicit Retry. No cache-busting parameters or automatic extra requests are added. Effect cleanup removes listeners and timers, and a late load after navigation cannot mount a widget in the wrong view. Widget cleanup uses the API instance that created it. These changes do not issue a pass or weaken server verification.
+
+The local Chrome/WebKit fault suite aborts or stalls the script request and supplies an inert widget implementation. It checks refetch, reuse, cleanup and cancelled callbacks while writing remains disabled and no round is allocated. It never invokes a success callback, solves a challenge, issues a verification pass or uses a real Turnstile API response. The existing normal hosted check remains separate from this injected loader evidence.

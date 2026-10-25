@@ -8,11 +8,13 @@
 
 ## Current status
 
-The build uses React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. One shared daily prompt gives two people a beginning/ending pair to write. Invitations target a specific beginning, multiple people can finish it, and private unopened markers survive time away. Spacetime subscriptions deliver the result and confirm committed replies when a procedure response is lost. Claude moderates submitted words and offers optional contextual guidance; it does not fill the writing input. See [retry recovery](docs/hint-retry-context.md) and [unopened replies](docs/unopened-returns.md).
+Public links now follow the visible beginning or completed pair. Back/Forward and reload restore those views and private drafts without starting another turn; completed notes link to the other endings from their bottle. Closed-day beginnings keep their words and an explicit path to today's prompt. See [navigation and recovery](docs/navigation-and-recovery.md) and [human-check script recovery](docs/shore-check-recovery.md).
+
+The build uses React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. One shared daily prompt gives two people a beginning/ending pair to write. Invitations target a specific beginning, multiple people can finish it, and private unopened markers survive time away. Spacetime subscriptions deliver the result and confirm committed replies when a procedure response is lost. Claude moderates submitted words and offers optional contextual guidance; it does not fill the writing input. Original authors can withdraw their beginning and all associated public replies, while an active recipient keeps their draft. Either human co-writer can send one private thank-you on a completed pair. See [retry recovery](docs/hint-retry-context.md), [author withdrawal](docs/author-withdrawal.md), [private thanks](docs/private-appreciation.md) and [unopened replies](docs/unopened-returns.md).
 
 The full-screen sea uses the locally bundled MIT-licensed Noniv WebGPU FFT engine. The team-approved AI coast artwork provides the responsive fallback, and its transparent lighthouse/headland sits over the simulated water. The bottle is original SVG, the dock is CSS, and paper uses a real credited photograph. Pause and reduced motion remain supported. See [asset sources](docs/asset-sources.md). The shore now shows the shared daily tide/theme and the six-word premise; the note opens over the same sea. The current pickup ritual supports deliberate pointer shakes alongside tap/keyboard opening, with explicit opt-in phone motion, an off control and reduced-motion support. Browser sensor checks are emulated; physical phones remain unverified.
 
-**Live checkpoint:** Cloudflare HTTPS and Maincloud serve the assignment-safe retry release `5e1b6b7` ([served-file and upgrade evidence](docs/evidence/hint-retries-release.json)). The paper animation correction is also live. A teammate reports a successful incognito invitation, ending submission and visible return under the current mechanics. One real hosted contextual Claude Hint has been inspected without submitting an ending. The automated three-profile completion still stopped at manual Cloudflare checks; physical-phone sharing, attendee outcomes and final sponsor eligibility remain unverified. Current local checks include 79 server tests, seven retry/confirmation cases per Chrome/WebKit, six retention cases per engine and the eleven-case Chrome letter flow with actual PNG download. Local writers, hint transports and fault conditions are synthetic; these checks do not establish population moderation quality.
+**Live checkpoint:** Cloudflare HTTPS and Maincloud serve private co-writer thanks `4c217cc` ([served-file and upgrade evidence](docs/evidence/appreciation-release.json)), alongside author withdrawal, assignment-safe retries, bounded keepsake export and corrected paper motion. The full-quality ocean is unchanged. A teammate reports a successful incognito invitation, ending submission and visible return under the current mechanics. One real hosted contextual Claude Hint has been inspected without submitting an ending. Physical-phone sharing, attendee outcomes and final sponsor eligibility remain unverified. The current suite includes 100 server tests and Chrome/WebKit feature checks for retry recovery, withdrawal and private thanks, plus an actual PNG download. Local writers, hint transports and fault conditions are synthetic; they do not establish population moderation quality.
 
 Figma Make/Slides and Mana Bottle Kitchen have actual [workflow artifacts](docs/workflow-checkpoint.md). The team handles submission writing. The [final-push priorities](docs/final-twelve-hour-product-priorities.md) separate current organizer guidance, sponsor criteria and product inferences. Original data-preserving migration details remain in [migration evidence](docs/letter-migration.md).
 
@@ -63,6 +65,11 @@ DRIFT_TEST_ENGINE=webkit npm run test:invitations
 npm run test:coast
 npm run test:retention
 DRIFT_TEST_ENGINE=webkit npm run test:retention
+npm run test:withdrawal
+DRIFT_TEST_ENGINE=webkit npm run test:withdrawal
+npm run test:thanks
+DRIFT_TEST_ENGINE=webkit npm run test:thanks
+npm run test:keepsake
 npm run test:hint-retries
 DRIFT_TEST_ENGINE=webkit npm run test:hint-retries
 npm run test:ritual
@@ -92,7 +99,7 @@ The [note-opening comparison](docs/note-opening.md) covers image delays, a compl
 
 - The server checks exact word count and character limits. Unicode letters/numbers count; emoji-only chunks do not.
 - Private rounds, bottles, requests, reports, ownership and counters cannot be queried by other writers. Caller-specific views expose only permitted progress.
-- Only approved anonymous beginning and postcard text is public. Either author can hide it; hiding deletes the public projection.
+- Only approved anonymous beginning and postcard text is public. Either co-writer can hide their shared pair; the beginning’s original author can withdraw the whole bottle and its replies. Private thanks is visible only to the two original writers and disappears with the hidden pair.
 - Catching is transactional. Each response round has its own assignment, version and absolute ten-minute lease. Different writers may respond to the same beginning concurrently. A late model callback rechecks the response round before publication.
 - Paid operations persist a bound request before dispatch, enforce round/global quotas, and finalize separately. Duplicate IDs do not spend again; reusing an ID for changed content fails.
 - Publication of each pair, response-round completion and both authors’ ownership finalize atomically; the beginning stays open for other writers.

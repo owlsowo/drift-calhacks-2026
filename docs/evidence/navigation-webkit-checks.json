@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-25T05:06:42.922Z",
+  "engine": "WebKit",
+  "scope": "Disposable real local state and synthetic stories, AI off; old-day client state, lost start receipt and clipboard injected. No physical-phone or overnight-use claim.",
+  "checks": [
+    "The displayed beginning and pair match their URLs; in-app Back/Forward reopens them without consuming another turn",
+    "The count of alternative endings updates live; opening and reloading another writer’s pair preserves its exact public link without author privileges",
+    "Alternative-ending counts exclude this viewer’s reported pair without hiding another writer’s public story for everyone",
+    "Home clears the stale story URL and My bottles reloads as the shelf, with no new rounds from read-only navigation",
+    "Private play survives Back/Forward and reload with its draft and same round; draft text and private round ID never enter the URL",
+    "A real beginning round opens from subscription confirmation even when its reducer acknowledgement is lost, consuming exactly one turn",
+    "A rejected start restores controls and does not invent an editor or create another round",
+    "A beginning committed after browser Back cannot pull the reader out of their chosen public bottle",
+    "An injected closed-day beginning disables paid publication, preserves focused copyable text and explicitly opens a fresh empty current round while retaining the old draft",
+    "If a new-tide start fails after the old round closes, Home keeps the failure visible and the old draft intact without allocating another turn"
+  ]
+}

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts",
     "starters:check": "tsx scripts/check-starters.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
@@ -17,6 +17,7 @@
     "test:shore": "node scripts/test-room.mjs shore",
     "test:catch-first": "node scripts/test-room.mjs catch-first",
     "test:gate-layout": "node scripts/test-room.mjs gate-layout",
+    "test:navigation": "node scripts/test-room.mjs navigation",
     "test:thanks": "node scripts/test-room.mjs thanks",
     "test:withdrawal": "node scripts/test-room.mjs withdrawal",
     "test:invitations": "node scripts/test-room.mjs invite",
@@ -45,7 +46,8 @@
     "test:states": "node scripts/test-room.mjs states",
     "demo:rehearse": "node scripts/test-room.mjs demo --rehearse",
     "demo:record": "node scripts/test-room.mjs demo",
-    "test:migration": "node --import tsx scripts/letter-migration.mjs"
+    "test:migration": "node --import tsx scripts/letter-migration.mjs",
+    "test:shore-script-retry": "node scripts/test-room.mjs shore-script-retry"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",

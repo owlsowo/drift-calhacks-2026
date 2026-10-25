@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-25T04:04:59.070Z",
+  "checkedAt": "2026-10-25T05:12:24.595Z",
   "engine": "Chrome",
   "checks": [
     "A lost hint response survives reload with the original same-assignment request ID; confirmed replay clears its retry text",

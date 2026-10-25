@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-25T05:11:25.045Z",
+  "engine": "Chrome",
+  "mode": "Disposable local database with synthetic gate secret. All API scripts are locally intercepted inert placeholders, script failures/delays and clock are injected. No success callback, challenge solving, pass issuance, external Turnstile API response or provider call.",
+  "checks": [
+    "A failed API script is replaced on explicit Retry, makes a new intercepted request and renders an inert widget without issuing a pass",
+    "A healthy API is reused across Retry; the old widget is removed once and its late error/expiry callbacks are ignored",
+    "Retry shares an API request still loading normally and mounts the arriving API only once",
+    "Leaving before script load prevents a stale widget mount; returning reuses the loaded API without another request",
+    "A stalled load gets bounded feedback; Retry preserves the pending request and mounts its eventual response once, with old timers cancelled"
+  ],
+  "errors": []
+}
