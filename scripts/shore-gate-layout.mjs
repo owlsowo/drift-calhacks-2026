@@ -84,6 +84,16 @@ try {
   await A.getByRole('textbox', { name: 'Your six-word beginning', exact: true }).fill(
     'A saved local draft',
   );
+  const writer = await context(chrome, 390, 844),
+    W = await ready(writer, `${origin}/?bottle=${encodeURIComponent(id)}`);
+  await button(W, 'Write an ending').click();
+  await button(W, 'Open bottle').click();
+  await W.getByRole('textbox', { name: 'Your six-word ending', exact: true }).fill(
+    'Our lawyers would like another hand.',
+  );
+  await button(W, 'Send reply').click();
+  await W.getByRole('heading', { name: 'Saved reply', exact: true }).waitFor();
+  await button(A, 'Open returned postcard').waitFor();
   const update = spawnSync(process.execPath, ['scripts/spacetime.mjs', 'publish-test', database], {
     env: { ...process.env, DRIFT_TEST_GATE: 'true' },
     encoding: 'utf8',
@@ -96,6 +106,19 @@ try {
     'A saved local draft',
   );
   pass('A newly required human check stays inside the writing view and preserves its local draft');
+  await button(A, 'Drift home').click();
+  await A.setViewportSize({ width: 390, height: 844 });
+  await button(A, 'Open returned postcard').waitFor();
+  assert.equal(await A.locator('.shore-gate').count(), 0);
+  assert.equal(await A.getByRole('button', { name: /^Release a bottle/ }).isDisabled(), true);
+  assert.ok(await A.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1));
+  await capture(A, 'return-before-check');
+  await button(A, 'Dismiss returned bottle notice').click();
+  await A.locator('.shore-gate--shore .mock-human-check').waitFor();
+  assert.equal(await A.getByRole('button', { name: /^Release a bottle/ }).isDisabled(), true);
+  pass(
+    'A real return takes shore notice priority; dismissing it reveals the pending check, with writing protected throughout',
+  );
   for (const [width, height] of [
     [390, 844],
     [320, 740],
