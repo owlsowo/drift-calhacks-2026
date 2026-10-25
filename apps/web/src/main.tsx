@@ -29,7 +29,7 @@ import {
 import '@fontsource/kalam/latin-400.css';
 import { game, persist, saved, type Snapshot } from './game';
 import { words, dayOf, type Prompt, type Card } from '../../../packages/game-rules/index';
-import { savePng, shareCard, cardText, copyText } from './export';
+import { savePng, shareCard, cardText, copyText, preparePostcard } from './export';
 import './style.css';
 import { HelloPanel } from './HelloPanel';
 import { friendlyError } from './errors';
@@ -338,6 +338,9 @@ function App() {
   const card = s.cards.find((c) => c.id === selected && !s.reported.some((r) => r.id === c.id));
   const ownership = s.ownership.find((o) => o.id === selected);
   const cardId = card?.id;
+  useEffect(() => {
+    if (view === 'card' && card) void preparePostcard(card).catch(() => {});
+  }, [view, card]);
   const ownsVisibleCard = !!ownership && !ownership.hidden;
   const recordOpen = useCallback(() => {
     if (cardId && ownsVisibleCard && s.connected) void game.cardAction(cardId, 'open');
