@@ -15,7 +15,7 @@ struct Frame {
   camPos:   vec4f,     // xyz metres, w = time (s)
   camRight: vec4f,     // xyz * tan(fovX/2)
   camUp:    vec4f,     // xyz * tan(fovY/2)
-  camFwd:   vec4f,     // xyz
+  camFwd:   vec4f,     // xyz forward, w = daytime lighting (0 night, 1 day)
   sunDir:   vec4f,     // xyz towards sun, w = solar illuminance scale
   screen:   vec4f,     // w, h, 1/w, 1/h
   cascL:    array<vec4f, 2>,  // cascade patch sizes (m), index [c>>2][c&3]
