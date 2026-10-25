@@ -8,11 +8,13 @@
 
 ## Current status
 
-The build uses React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. The hosted independent-letter upgrade preserved the original database and records with defaulted appended columns and an owner backfill. See [migration evidence](docs/letter-migration.md). The current three-writer integration passes ten checks in Chrome and ten in WebKit: multiple endings, independent drafts, real ID cookies, reload recovery, private/public contribution captions and actual PNG download. These are isolated synthetic checks with model calls disabled.
+The build uses React 19, TypeScript, Vite 8 and SpacetimeDB 2.13. One shared daily prompt gives two people a beginning/ending pair to write. Invitations target a specific beginning, multiple people can finish it, and private unopened markers survive time away. Spacetime subscriptions deliver the result and confirm committed replies when a procedure response is lost. Claude moderates submitted words and offers optional contextual guidance; it does not fill the writing input. See [retry recovery](docs/hint-retry-context.md) and [unopened replies](docs/unopened-returns.md).
 
 The full-screen sea uses the locally bundled MIT-licensed Noniv WebGPU FFT engine. The team-approved AI coast artwork provides the responsive fallback, and its transparent lighthouse/headland sits over the simulated water. The bottle is original SVG, the dock is CSS, and paper uses a real credited photograph. Pause and reduced motion remain supported. See [asset sources](docs/asset-sources.md). The shore now shows the shared daily tide/theme and the six-word premise; the note opens over the same sea. The current pickup ritual supports deliberate pointer shakes alongside tap/keyboard opening, with explicit opt-in phone motion, an off control and reduced-motion support. Browser sensor checks are emulated; physical phones remain unverified.
 
-**Live checkpoint:** Cloudflare HTTPS and Maincloud are deployed. The contribution-caption release is `e0df0d3` ([served-file evidence](docs/evidence/contribution-release.json)); the shake refinement `4acb0a3` is also live ([release proof](docs/evidence/bottle-ritual-release.json)). A real hosted two-browser Claude flow and Turnstile negative checks passed before the independent-letter redesign. A new hosted multi-writer/model flow under the revised mechanics remains pending: its three fresh browser profiles reached manual Cloudflare checkboxes and stopped before any story/model action. See [human-check entry](docs/shore-check-entry.md); local tests do not establish that hosted gate. Figma Make/Slides and Mana Bottle Kitchen have actual workflow artifacts: [workflow checkpoint](docs/workflow-checkpoint.md). Actual phones, attendee outcomes and final sponsor eligibility remain unverified. The team owns submission writing.
+**Live checkpoint:** Cloudflare HTTPS and Maincloud serve the assignment-safe retry release `5e1b6b7` ([served-file and upgrade evidence](docs/evidence/hint-retries-release.json)). The paper animation correction is also live. A teammate reports a successful incognito invitation, ending submission and visible return under the current mechanics. One real hosted contextual Claude Hint has been inspected without submitting an ending. The automated three-profile completion still stopped at manual Cloudflare checks; physical-phone sharing, attendee outcomes and final sponsor eligibility remain unverified. Current local checks include 79 server tests, seven retry/confirmation cases per Chrome/WebKit, six retention cases per engine and the eleven-case Chrome letter flow with actual PNG download. Local writers, hint transports and fault conditions are synthetic; these checks do not establish population moderation quality.
+
+Figma Make/Slides and Mana Bottle Kitchen have actual [workflow artifacts](docs/workflow-checkpoint.md). The team handles submission writing. The [final-push priorities](docs/final-twelve-hour-product-priorities.md) separate current organizer guidance, sponsor criteria and product inferences. Original data-preserving migration details remain in [migration evidence](docs/letter-migration.md).
 
 ## Local development
 
@@ -61,6 +63,8 @@ DRIFT_TEST_ENGINE=webkit npm run test:invitations
 npm run test:coast
 npm run test:retention
 DRIFT_TEST_ENGINE=webkit npm run test:retention
+npm run test:hint-retries
+DRIFT_TEST_ENGINE=webkit npm run test:hint-retries
 npm run test:ritual
 DRIFT_TEST_ENGINE=webkit npm run test:ritual
 npm run test:migration

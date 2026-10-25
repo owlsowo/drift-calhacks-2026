@@ -1,0 +1,8 @@
+{
+  "engine": "Chrome",
+  "fault": "stalled-paper",
+  "result": {
+    "state": "still-pending",
+    "elapsedMs": 4003
+  }
+}

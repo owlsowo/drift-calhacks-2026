@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-25T04:22:01.911Z",
+  "sourceCommit": "5e1b6b7eb5244fef1da7e8f46ea28164fa9d9bac",
+  "mode": "Normal hosted browser flow with an existing normal verified session. One optional Hint requested; no ending submitted, public story created, challenge interaction automated or evaluation allowance raised.",
+  "checks": [
+    "Shared current beginning opens into its assigned editor",
+    "Real contextual Hint appears and the Hint control returns with one use remaining",
+    "Hint suggests a direction relating the game and captain; it does not supply a six-word ending",
+    "The ending remains empty and no public completion is submitted"
+  ],
+  "provider": {
+    "model": "claude-sonnet-5-5",
+    "state": "settled",
+    "outcome": "accepted",
+    "inputTokens": 687,
+    "outputTokens": 38,
+    "estimatedMicros": 1754
+  },
+  "review": "One Codex-reviewed contextual sample. This is not an attendee evaluation, population moderation-quality estimate or physical-phone check.",
+  "screenshot": "Local task outputs only; participant beginning text is not copied into this report"
+}

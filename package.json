@@ -21,6 +21,7 @@
     "test:coast": "node scripts/test-room.mjs coast",
     "test:retention": "node scripts/test-room.mjs retention",
     "test:hint-retries": "node scripts/test-room.mjs hint-retries",
+    "test:keepsake": "node scripts/test-room.mjs keepsake",
     "test:ritual": "node scripts/test-room.mjs ritual",
     "test:letters": "node scripts/test-room.mjs letters",
     "test:returns": "node scripts/test-room.mjs returns",

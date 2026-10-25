@@ -42,19 +42,40 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, width: number) {
 export async function postcardPng(card: Card): Promise<Blob> {
   const paper = new Image();
   paper.decoding = 'async';
-  const paperReady = new Promise<void>((resolve, reject) => {
-    paper.onload = () => resolve();
-    paper.onerror = () =>
-      reject(Error('Couldn’t create your image. Try copying the text instead.'));
+  const paperReady = new Promise<boolean>((resolve) => {
+    const finish = (loaded: boolean) => {
+      clearTimeout(timer);
+      paper.onload = null;
+      paper.onerror = null;
+      resolve(loaded);
+    };
+    const timer = setTimeout(() => finish(false), 1200);
+    paper.onload = () => finish(true);
+    paper.onerror = () => finish(false);
     paper.src = new URL('/assets/paper-texture.jpg', location.origin).href;
   });
-  await Promise.all([document.fonts.load('400 70px Kalam'), paperReady]);
-  await document.fonts.ready;
+  let fontTimer: ReturnType<typeof setTimeout> | undefined;
+  const handwritingReady = Promise.race([
+    document.fonts
+      .load('400 70px Kalam')
+      .then((faces) => faces.length > 0)
+      .catch(() => false),
+    new Promise<boolean>((resolve) => {
+      fontTimer = setTimeout(() => resolve(false), 1200);
+    }),
+  ]).finally(() => clearTimeout(fontTimer));
+  const [hasPaper, hasHandwriting] = await Promise.all([paperReady, handwritingReady]);
+  const handwriting = hasHandwriting ? 'Kalam' : 'Georgia, serif';
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
   canvas.height = 1350;
-  const c = canvas.getContext('2d')!;
-  c.drawImage(paper, 0, 0, canvas.width, canvas.height);
+  const c = canvas.getContext('2d');
+  if (!c) throw Error('Couldn’t create your image. Try copying the text instead.');
+  if (hasPaper) c.drawImage(paper, 0, 0, canvas.width, canvas.height);
+  else {
+    c.fillStyle = '#f2ebd9';
+    c.fillRect(0, 0, canvas.width, canvas.height);
+  }
   c.fillStyle = 'rgba(242,235,217,.86)';
   c.fillRect(0, 0, canvas.width, canvas.height);
   const edgeShade = c.createLinearGradient(0, 0, canvas.width, canvas.height);
@@ -83,7 +104,7 @@ export async function postcardPng(card: Card): Promise<Blob> {
     let size = 70;
     let lines: string[] = [];
     do {
-      c.font = `400 ${size}px Kalam`;
+      c.font = `400 ${size}px ${handwriting}`;
       lines = wrap(c, part.text, 880);
       if (
         (lines.length * size * 1.4 <= 380 && lines.every((l) => c.measureText(l).width <= 880)) ||
@@ -114,23 +135,63 @@ export async function postcardPng(card: Card): Promise<Blob> {
   c.fillText(location.host, 100, 1270);
   c.font = '400 16px Arial, sans-serif';
   c.fillText(
-    'Paper photo: D Sharon Pruitt · CC BY 2.0 · ' + location.host + '/credits.html',
+    hasPaper
+      ? 'Paper photo: D Sharon Pruitt · CC BY 2.0 · ' + location.host + '/credits.html'
+      : 'Drift · ' + location.host,
     100,
     1310,
     880,
   );
-  return new Promise((resolve, reject) =>
-    canvas.toBlob(
-      (blob) =>
-        blob
-          ? resolve(blob)
-          : reject(Error('Couldn’t create your image. Try copying the text instead.')),
-      'image/png',
-    ),
-  );
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(Error('Couldn’t create your image. Try copying the text instead.')),
+      2000,
+    );
+    canvas.toBlob((blob) => {
+      clearTimeout(timer);
+      if (blob) resolve(blob);
+      else reject(Error('Couldn’t create your image. Try copying the text instead.'));
+    }, 'image/png');
+  });
+}
+
+const prepared = new Map<string, { expiresAt: number; promise: Promise<Blob>; blob?: Blob }>();
+const postcardKey = (card: Card) =>
+  JSON.stringify([
+    card.id,
+    card.setup,
+    card.reply,
+    card.seeded,
+    card.starterKind,
+    card.createdMs,
+    location.host,
+  ]);
+export function preparePostcard(card: Card): Promise<Blob> {
+  const key = postcardKey(card);
+  for (const [oldKey, entry] of prepared)
+    if (entry.expiresAt <= Date.now()) prepared.delete(oldKey);
+  const existing = prepared.get(key);
+  if (existing) return existing.promise;
+  while (prepared.size >= 6) prepared.delete(prepared.keys().next().value!);
+  const entry = {
+    expiresAt: Date.now() + 300000,
+    promise: postcardPng(card),
+    blob: undefined as Blob | undefined,
+  };
+  entry.promise = entry.promise
+    .then((blob) => {
+      entry.blob = blob;
+      return blob;
+    })
+    .catch((error) => {
+      if (prepared.get(key) === entry) prepared.delete(key);
+      throw error;
+    });
+  prepared.set(key, entry);
+  return entry.promise;
 }
 export async function savePng(card: Card) {
-  const blob = await postcardPng(card);
+  const blob = await preparePostcard(card);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -142,15 +203,28 @@ export async function shareCard(card: Card) {
   const url = cardUrl(card);
   if (navigator.share) {
     try {
-      const blob = await postcardPng(card);
-      const file = new File([blob], `drift-${card.id.slice(0, 8)}.png`, { type: 'image/png' });
-      if (navigator.canShare?.({ files: [file] }))
+      const cached = prepared.get(postcardKey(card));
+      const blob = cached && cached.expiresAt > Date.now() ? cached.blob : undefined;
+      const file = blob
+        ? new File([blob], `drift-${card.id.slice(0, 8)}.png`, { type: 'image/png' })
+        : undefined;
+      let acceptsImage = false;
+      try {
+        acceptsImage = !!file && !!navigator.canShare?.({ files: [file] });
+      } catch {
+        /* Share the story URL instead. */
+      }
+      // Invoke the native sheet during this click, without waiting on fonts or images.
+      if (file && acceptsImage)
         await navigator.share({
           title: 'Drift',
           text: cardText(card) + '\n' + url,
           files: [file],
         });
-      else await navigator.share({ title: 'Drift', text: cardText(card), url });
+      else {
+        void preparePostcard(card).catch(() => {});
+        await navigator.share({ title: 'Drift', text: cardText(card), url });
+      }
       return 'Shared';
     } catch (error) {
       if ((error as Error).name === 'AbortError') throw error;

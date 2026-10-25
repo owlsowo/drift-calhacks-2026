@@ -1,0 +1,199 @@
+{
+  "checkedAt": "2026-10-25T04:25:35.782Z",
+  "mode": "Isolated browser export functions with synthetic story text. Image/font stalls and native sharing/clipboard adapters are injected; actual PNG is encoded and decoded. This is not a physical OS share-sheet check.",
+  "checks": [
+    {
+      "engine": "Chrome",
+      "fault": "stalled-paper",
+      "result": {
+        "state": "complete",
+        "width": 1080,
+        "height": 1350,
+        "type": "image/png",
+        "bytes": 776746,
+        "text": [
+          "I challenged their shark to",
+          "poker.",
+          "Our lawyers would like",
+          "another hand.",
+          "Oct 24, 2026",
+          "Two writers. One little story.",
+          "127.0.0.1:65482",
+          "Drift · 127.0.0.1:65482"
+        ],
+        "elapsedMs": 1805
+      }
+    },
+    {
+      "engine": "Chrome",
+      "fault": "failed-paper",
+      "result": {
+        "state": "complete",
+        "width": 1080,
+        "height": 1350,
+        "type": "image/png",
+        "bytes": 776746,
+        "text": [
+          "I challenged their shark to",
+          "poker.",
+          "Our lawyers would like",
+          "another hand.",
+          "Oct 24, 2026",
+          "Two writers. One little story.",
+          "127.0.0.1:65482",
+          "Drift · 127.0.0.1:65482"
+        ],
+        "elapsedMs": 108
+      }
+    },
+    {
+      "engine": "Chrome",
+      "fault": "stalled-font",
+      "result": {
+        "state": "complete",
+        "width": 1080,
+        "height": 1350,
+        "type": "image/png",
+        "bytes": 1456154,
+        "text": [
+          "I challenged their shark to",
+          "poker.",
+          "Our lawyers would like",
+          "another hand.",
+          "Oct 24, 2026",
+          "Two writers. One little story.",
+          "127.0.0.1:65482",
+          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:65482/credits.html"
+        ],
+        "elapsedMs": 2797
+      }
+    },
+    {
+      "engine": "Chrome",
+      "fault": "stalled-unrelated-font",
+      "result": {
+        "state": "complete",
+        "width": 1080,
+        "height": 1350,
+        "type": "image/png",
+        "bytes": 1461363,
+        "text": [
+          "I challenged their shark to",
+          "poker.",
+          "Our lawyers would like",
+          "another hand.",
+          "Oct 24, 2026",
+          "Two writers. One little story.",
+          "127.0.0.1:65482",
+          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:65482/credits.html"
+        ],
+        "elapsedMs": 176
+      }
+    },
+    {
+      "engine": "Chrome",
+      "check": "Native Share is invoked with active user activation immediately: URL before image preparation, actual PNG once prepared"
+    },
+    {
+      "engine": "Chrome",
+      "check": "Native cancellation stays cancelled without copying; denial falls back to the exact public story URL"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "stalled-paper",
+      "result": {
+        "state": "complete",
+        "width": 1080,
+        "height": 1350,
+        "type": "image/png",
+        "bytes": 1253987,
+        "text": [
+          "I challenged their shark to",
+          "poker.",
+          "Our lawyers would like",
+          "another hand.",
+          "Oct 24, 2026",
+          "Two writers. One little story.",
+          "127.0.0.1:65482",
+          "Drift · 127.0.0.1:65482"
+        ],
+        "elapsedMs": 1320
+      }
+    },
+    {
+      "engine": "WebKit",
+      "fault": "failed-paper",
+      "result": {
+        "state": "complete",
+        "width": 1080,
+        "height": 1350,
+        "type": "image/png",
+        "bytes": 1254372,
+        "text": [
+          "I challenged their shark to",
+          "poker.",
+          "Our lawyers would like",
+          "another hand.",
+          "Oct 24, 2026",
+          "Two writers. One little story.",
+          "127.0.0.1:65482",
+          "Drift · 127.0.0.1:65482"
+        ],
+        "elapsedMs": 197
+      }
+    },
+    {
+      "engine": "WebKit",
+      "fault": "stalled-font",
+      "result": {
+        "state": "complete",
+        "width": 1080,
+        "height": 1350,
+        "type": "image/png",
+        "bytes": 1603297,
+        "text": [
+          "I challenged their shark to",
+          "poker.",
+          "Our lawyers would like",
+          "another hand.",
+          "Oct 24, 2026",
+          "Two writers. One little story.",
+          "127.0.0.1:65482",
+          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:65482/credits.html"
+        ],
+        "elapsedMs": 1314
+      }
+    },
+    {
+      "engine": "WebKit",
+      "fault": "stalled-unrelated-font",
+      "result": {
+        "state": "complete",
+        "width": 1080,
+        "height": 1350,
+        "type": "image/png",
+        "bytes": 1609368,
+        "text": [
+          "I challenged their shark to",
+          "poker.",
+          "Our lawyers would like",
+          "another hand.",
+          "Oct 24, 2026",
+          "Two writers. One little story.",
+          "127.0.0.1:65482",
+          "Paper photo: D Sharon Pruitt · CC BY 2.0 · 127.0.0.1:65482/credits.html"
+        ],
+        "elapsedMs": 277
+      }
+    },
+    {
+      "engine": "WebKit",
+      "check": "Native Share is invoked with active user activation immediately: URL before image preparation, actual PNG once prepared"
+    },
+    {
+      "engine": "WebKit",
+      "check": "Native cancellation stays cancelled without copying; denial falls back to the exact public story URL"
+    }
+  ],
+  "errors": []
+}

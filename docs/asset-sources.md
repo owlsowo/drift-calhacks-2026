@@ -10,7 +10,7 @@ The interface uses team-approved AI coast/lighthouse artwork, real paper photogr
 
 The paper ball remains available under its original share-alike license. The site’s Image credits page carries attribution and license links alongside the distributed assets.
 
-Interface references: [the owner's supplied WeChat video](https://www.bilibili.com/video/BV1PW411x7n4/), [classic WeChat screenshots](https://www.freedomwall.net/technews/revolutionize-your-mobile-messaging-and-calling-experience-with-wechat/), and [QQ Mail bottle imagery](https://www.woshipm.com/it/5063202.html). These inform the sea, distant lighthouse, bottom dock and note-opening ritual. No Tencent screenshot or video is distributed in the application. Bottle, lighthouse, dock and folding geometry are original SVG/CSS components.
+Interface references: [the owner's supplied WeChat video](https://www.bilibili.com/video/BV1PW411x7n4/), [classic WeChat screenshots](https://www.freedomwall.net/technews/revolutionize-your-mobile-messaging-and-calling-experience-with-wechat/), and [QQ Mail bottle imagery](https://www.woshipm.com/it/5063202.html). These inform the sea, distant lighthouse, bottom dock and note-opening ritual. No Tencent screenshot or video is distributed in the application. Bottle, dock and folding geometry are original SVG/CSS components; the active coast/lighthouse assets are the approved PR artwork described above.
 
 ## Quiet-coast integration
 
