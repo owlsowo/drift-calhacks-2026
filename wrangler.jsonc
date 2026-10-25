@@ -1,5 +1,10 @@
 {
   "name": "drift-game",
   "compatibility_date": "2026-10-24",
-  "assets": { "directory": "./dist", "not_found_handling": "single-page-application" }
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "driftbottle.ink", "custom_domain": true },
+    { "pattern": "www.driftbottle.ink", "custom_domain": true },
+  ],
+  "assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
 }

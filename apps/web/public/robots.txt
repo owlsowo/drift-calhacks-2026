@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+# Publicly shared bottles are for their readers, not a searchable story directory.
+Disallow: /*?
+
+Sitemap: https://driftbottle.ink/sitemap.xml

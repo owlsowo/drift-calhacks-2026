@@ -2,7 +2,9 @@
 
 **Six words from you. Six from a stranger.** A mobile web game where two people make a tiny comedy postcard together.
 
-[Play the deployed game](https://drift-game.drift-calhacks-2026-owlsowo.workers.dev/) · [Submission video draft and provenance](docs/video-handoff.md) · [Figma / Mana workflow artifacts](docs/workflow-checkpoint.md)
+[Play the deployed game](https://driftbottle.ink/) · [Original address](https://drift-game.drift-calhacks-2026-owlsowo.workers.dev/) · [Submission video draft and provenance](docs/video-handoff.md) · [Figma / Mana workflow artifacts](docs/workflow-checkpoint.md)
+
+The original address stays available for existing players: guest identity and saved bottle history are browser-origin specific. The new domain opens its own guest shelf. Public bottle links remain shareable.
 
 **Release** writes a beginning letter. **Pick up** finds another writer’s beginning and lets you add an ending. These are separate actions with independent drafts. A beginning stays in the daily pool so several people can each complete a different pair from it. **My bottles** stores beginning IDs and completed-pair IDs in first-party cookies; opening a beginning retrieves all its endings. Drafts and the anonymous session token remain in local storage. Public IDs allow reading approved letters, while author-only actions still require the owning session. Sample starters are clearly labeled and AI guidance never writes either creative line. Open your released beginning to invite someone to finish it; recipients choose to write, and public link views do not use a daily turn. Invited and random pickup share the same server rules.
 
