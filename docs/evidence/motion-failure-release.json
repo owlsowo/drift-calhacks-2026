@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-25T05:52:27.682Z",
+  "sourceCommit": "a3ee14bf9622fc37d02cebfd5c4d39c3f36cd3c6",
+  "cloudflareVersion": "26407620-aee8-49cf-9278-197d4ae3e33b",
+  "assets": [
+    {
+      "asset": "/assets/index-FwqDhPzl.js",
+      "sha256": "c176f4eff53c6196bc6f6c5e186d7ed5f49080d264508656d92063f1aa1c7ccc",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DT65UjyJ.css",
+      "sha256": "a98a904c5a999c39b4e5dcbeeefeff70bca2afa241ad1d7075309311cd787002",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend-only release: unavailable sensor-startup reading guard and legacy fallback filter, compact failed-art notice and accurate Claude role in Privacy. Three emulated fallback component and six primary ritual checks per Chrome/WebKit, sixteen scene-asset faults, 45 unit tests, build/script types pass. No physical sensors, new provider call or backend change.",
+  "ci": {
+    "run": 40167057726,
+    "conclusion": "success"
+  },
+  "additionalVisualCheck": "Chrome/WebKit projected result checks retain both lines, export access and stable pending-to-ready dimensions; compact failed notice visually reviewed in a 390px WebKit viewport."
+}

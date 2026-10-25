@@ -16,9 +16,9 @@ const example = examples.find(
 );
 assert.ok(example, 'A recorded, valid Sonnet composition is required.');
 const cardId = 'synthetic-scene-results-pair';
-const out = new URL('../test-results/scene-results-ui/', import.meta.url);
-await fs.mkdir(out, { recursive: true });
 const engine = process.env.DRIFT_TEST_ENGINE === 'webkit' ? 'WebKit' : 'Chrome';
+const out = new URL(`../test-results/scene-results-ui/${engine.toLowerCase()}/`, import.meta.url);
+await fs.mkdir(out, { recursive: true });
 const browser =
   engine === 'WebKit'
     ? await webkit.launch()
@@ -248,6 +248,7 @@ try {
     );
     assert.equal(await page.evaluate(() => window.syntheticIllustrationCalls), 0);
     await noOverflow(page);
+    await page.screenshot({ path: new URL(`${role}-failed.png`, out).pathname, fullPage: true });
     pass(`${role} author retains both lines and export access after a failed illustration`);
     await context.close();
   }
@@ -261,6 +262,8 @@ try {
     new URL('report.json', out),
     JSON.stringify(
       {
+        engine,
+        checkedAt: new Date().toISOString(),
         mode: 'Synthetic browser snapshot projections; recorded Sonnet layout; no provider calls or fixture database writes.',
         checks,
         sharedSceneMatches: true,
