@@ -91,9 +91,22 @@ export const Authorship = __t.object("Authorship", {
   id: __t.string(),
   setupOwner: __t.option(__t.identity()),
   replyOwner: __t.identity(),
+  beginningId: __t.string(),
   hidden: __t.bool(),
 });
 export type Authorship = __Infer<typeof Authorship>;
+
+export const Beginning = __t.object("Beginning", {
+  id: __t.string(),
+  day: __t.u32(),
+  promptId: __t.string(),
+  promptJson: __t.string(),
+  text: __t.string(),
+  seeded: __t.bool(),
+  starterKind: __t.string(),
+  createdMs: __t.f64(),
+});
+export type Beginning = __Infer<typeof Beginning>;
 
 export const Bottle = __t.object("Bottle", {
   id: __t.string(),
@@ -103,12 +116,10 @@ export const Bottle = __t.object("Bottle", {
   text: __t.string(),
   seeded: __t.bool(),
   seedIndex: __t.u32(),
-  claimRound: __t.string(),
-  claimVersion: __t.u32(),
-  claimUntil: __t.f64(),
   cardId: __t.string(),
   hidden: __t.bool(),
   starterKind: __t.string(),
+  createdMs: __t.f64(),
 });
 export type Bottle = __Infer<typeof Bottle>;
 
@@ -193,6 +204,7 @@ export type OwnedCard = __Infer<typeof OwnedCard>;
 
 export const Postcard = __t.object("Postcard", {
   id: __t.string(),
+  beginningId: __t.string(),
   promptId: __t.string(),
   setup: __t.string(),
   reply: __t.string(),

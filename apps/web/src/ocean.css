@@ -1,0 +1,37 @@
+/* The fixed camera projects the mean water plane to 40% of the viewport. */
+.ocean-world.fft-ocean .fft-surface {
+  display: block;
+  opacity: 0;
+  transition: none;
+}
+.ocean-world.fft-ocean.ocean-ready .fft-surface {
+  opacity: 1;
+}
+
+/* Strong alpha bounds of the 2172×724 cutout: y=247…537. Crop its transparent
+   padding, then immerse the bottom edge a few pixels into the rendered sea. */
+.ocean-world.fft-ocean .fft-headland {
+  top: auto;
+  bottom: calc(60% - 5px);
+  right: -1%;
+  width: clamp(270px, 38vw, 670px);
+  aspect-ratio: 7.49;
+  overflow: hidden;
+  filter: brightness(0.87) saturate(0.85);
+}
+.ocean-world.fft-ocean .fft-headland img {
+  position: absolute;
+  left: 0;
+  top: -85.17%;
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 700px) {
+  .ocean-world.fft-ocean .fft-headland {
+    right: -4%;
+    width: max(260px, 66vw);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ocean-world.fft-ocean .fft-surface { transition: none; }
+}

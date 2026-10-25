@@ -18,13 +18,13 @@ try {
     await p.goto(process.env.DRIFT_WEB_URL);
     const pick = p.getByRole('button', { name: 'Pick up a bottle', exact: true });
     await pick.click();
-    await p.getByRole('heading', { name: 'The water is quiet.', exact: true }).waitFor();
+    await p.getByRole('heading', { name: 'No bottles available.', exact: true }).waitFor();
     assert.equal(
       await p.evaluate(async () => (await import('/src/game.ts')).game.snapshot().rounds.length),
       0,
     );
     await p.getByRole('button', { name: 'Try again', exact: true }).click();
-    await p.getByRole('heading', { name: 'The water is quiet.', exact: true }).waitFor();
+    await p.getByRole('heading', { name: 'No bottles available.', exact: true }).waitFor();
     assert.equal(
       await p.evaluate(async () => (await import('/src/game.ts')).game.snapshot().rounds.length),
       0,
@@ -38,7 +38,7 @@ try {
       [],
     );
     await p.screenshot({ path: `docs/evidence/empty-tide-${width}.png`, fullPage: true });
-    await p.getByRole('button', { name: 'Toss a beginning', exact: true }).click();
+    await p.getByRole('button', { name: 'Release a beginning', exact: true }).click();
     const input = p.getByRole('textbox');
     await input.fill('Synthetic test draft stays with me.');
     await p.reload();

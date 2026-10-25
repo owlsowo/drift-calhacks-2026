@@ -1,0 +1,428 @@
+/* A small circle of lit water is the whole stage; the existing coast remains underneath. */
+.sea-world.has-bottle-ritual > .site-header,
+.sea-world.has-bottle-ritual > main {
+  visibility: hidden;
+}
+
+.bottle-ritual {
+  --ritual-pool-width: clamp(190px, 30vw, 420px);
+  --ritual-pool-height: clamp(50px, 8.5vw, 105px);
+  position: fixed;
+  z-index: 40;
+  inset: 0;
+  isolation: isolate;
+  overflow: hidden;
+  color: #e4edf0;
+  font:
+    14px/1.4 Arial,
+    sans-serif;
+  outline: none;
+  touch-action: manipulation;
+  animation: bottle-ritual-enter 180ms ease-out both;
+}
+
+.bottle-ritual__shade,
+.bottle-ritual__beam,
+.bottle-ritual__pool,
+.bottle-ritual__rings,
+.bottle-ritual__thrown {
+  pointer-events: none;
+}
+
+.bottle-ritual__shade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 34% 18% at 50% 62%,
+    rgba(3, 13, 29, 0.21),
+    rgba(3, 13, 29, 0.66) 92%
+  );
+}
+
+.bottle-ritual__beam {
+  position: absolute;
+  top: -4%;
+  left: 50%;
+  width: calc(var(--ritual-pool-width) + 35px);
+  height: 66%;
+  transform: translateX(-50%);
+  filter: blur(12px);
+  opacity: 0.86;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 12%, black 92%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 12%, black 92%, transparent);
+}
+
+/* Blur the clipped child so the light has soft edges rather than a solid triangle. */
+.bottle-ritual__beam::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+  background: linear-gradient(
+    to bottom,
+    rgba(218, 238, 245, 0.035),
+    rgba(218, 238, 245, 0.085) 75%,
+    rgba(218, 238, 245, 0.13)
+  );
+}
+
+.bottle-ritual__pool {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: var(--ritual-pool-width);
+  height: var(--ritual-pool-height);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse,
+    rgba(195, 224, 233, 0.26),
+    rgba(181, 215, 227, 0.18) 49%,
+    rgba(164, 202, 216, 0.07) 67%,
+    transparent 76%
+  );
+  filter: blur(3px);
+  box-shadow: 0 0 32px 8px rgba(160, 207, 222, 0.045);
+}
+
+.bottle-ritual__rings {
+  position: absolute;
+  inset: 0;
+}
+
+.bottle-ritual__rings i {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  width: calc(var(--ritual-pool-width) * 0.7);
+  height: calc(var(--ritual-pool-height) * 0.65);
+  border: 1px solid rgba(205, 233, 240, 0.35);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.22);
+}
+
+.bottle-ritual--release.bottle-ritual--moving .bottle-ritual__rings i {
+  animation: bottle-ritual-ring 300ms ease-out 1120ms both;
+}
+
+.bottle-ritual--release.bottle-ritual--moving .bottle-ritual__rings i:nth-child(2) {
+  animation-duration: 240ms;
+  animation-delay: 1200ms;
+}
+
+.bottle-ritual--release.bottle-ritual--moving .bottle-ritual__rings i:nth-child(3) {
+  animation-duration: 160ms;
+  animation-delay: 1280ms;
+}
+
+.bottle-ritual--pickup:is(.bottle-ritual--moving, .bottle-ritual--arrived) .bottle-ritual__rings i {
+  animation: bottle-ritual-ring 1000ms ease-out 250ms both;
+}
+
+.bottle-ritual--pickup .bottle-ritual__rings i:nth-child(2) {
+  animation-delay: 430ms;
+}
+.bottle-ritual--pickup .bottle-ritual__rings i:nth-child(3) {
+  animation-delay: 610ms;
+}
+
+.bottle-ritual .glass-bottle {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(1px 3px 3px rgba(0, 8, 18, 0.4));
+}
+
+.bottle-ritual .glass-bottle .floating-bottle {
+  animation: none;
+  transform: none;
+  transform-origin: center;
+}
+
+.bottle-ritual__thrown {
+  position: absolute;
+  left: 80%;
+  top: 85%;
+  width: clamp(49px, 6vw, 76px);
+  aspect-ratio: 180 / 290;
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 55%;
+  will-change: transform, opacity, top, left;
+}
+
+.bottle-ritual--release.bottle-ritual--moving .bottle-ritual__thrown {
+  animation: bottle-ritual-throw 1450ms linear both;
+}
+
+.bottle-ritual__open {
+  all: unset;
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  display: grid;
+  place-items: center;
+  width: 154px;
+  height: 116px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  border-radius: 50%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottle-ritual__open:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.bottle-ritual__found {
+  display: block;
+  width: 43px;
+  height: 70px;
+  transform: rotate(67deg) translateY(-3px);
+  opacity: 0;
+}
+
+.bottle-ritual--pickup.bottle-ritual--moving .bottle-ritual__found {
+  animation: bottle-ritual-arrive 750ms ease-out both;
+}
+
+.bottle-ritual--pickup.bottle-ritual--arrived .bottle-ritual__found {
+  opacity: 1;
+  animation: bottle-ritual-bob 3600ms ease-in-out infinite;
+}
+
+.bottle-ritual__open-label {
+  position: absolute;
+  top: 100%;
+  width: 140px;
+  text-align: center;
+  font:
+    14px/1.4 Arial,
+    sans-serif;
+  color: #e1e9ed;
+  text-shadow: 0 1px 4px #031322;
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+}
+
+.bottle-ritual--arrived .bottle-ritual__open-label {
+  opacity: 0.9;
+}
+
+.bottle-ritual--opening .bottle-ritual__found {
+  animation: bottle-ritual-lift 350ms ease-in both;
+}
+
+.bottle-ritual__cancel {
+  all: unset;
+  position: absolute;
+  left: max(18px, env(safe-area-inset-left));
+  top: max(12px, env(safe-area-inset-top));
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 8px;
+  font:
+    14px/1.4 Arial,
+    sans-serif;
+  color: #d9e1e5;
+  text-shadow: 0 1px 4px #031322;
+  cursor: pointer;
+}
+
+.bottle-ritual__cancel:hover {
+  color: #fff;
+}
+
+.bottle-ritual__open:focus-visible,
+.bottle-ritual__cancel:focus-visible {
+  outline: 2px solid #e0ebef;
+  outline-offset: 5px;
+}
+
+.bottle-ritual__waiting {
+  position: absolute;
+  top: calc(62% + var(--ritual-pool-height));
+  left: 50%;
+  margin: 0;
+  transform: translateX(-50%);
+  color: #cad7dd;
+  font:
+    14px/1.5 Arial,
+    sans-serif;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px #031322;
+}
+
+.bottle-ritual__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.bottle-ritual--hidden .bottle-ritual__found,
+.bottle-ritual--hidden .bottle-ritual__rings i {
+  animation-play-state: paused;
+}
+
+@keyframes bottle-ritual-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bottle-ritual-throw {
+  0% {
+    left: 80%;
+    top: 85%;
+    transform: translate(-50%, -50%) rotate(-5deg) scale(1);
+    opacity: 1;
+  }
+  20% {
+    left: 70%;
+    top: 61%;
+    transform: translate(-50%, -50%) rotate(-110deg) scale(0.94);
+    opacity: 1;
+  }
+  44% {
+    left: 59%;
+    top: 43%;
+    transform: translate(-50%, -50%) rotate(-280deg) scale(0.76);
+    opacity: 1;
+  }
+  64% {
+    left: 53%;
+    top: 49%;
+    transform: translate(-50%, -50%) rotate(-425deg) scale(0.56);
+    opacity: 0.95;
+  }
+  80% {
+    left: 50.5%;
+    top: 60%;
+    transform: translate(-50%, -50%) rotate(-535deg) scale(0.35);
+    opacity: 0.66;
+  }
+  91%,
+  100% {
+    left: 50%;
+    top: 62%;
+    transform: translate(-50%, -50%) rotate(-560deg) scale(0.24);
+    opacity: 0;
+  }
+}
+
+@keyframes bottle-ritual-arrive {
+  from {
+    opacity: 0;
+    transform: rotate(63deg) translateY(4px) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(67deg) translateY(-3px) scale(1);
+  }
+}
+
+@keyframes bottle-ritual-bob {
+  0%,
+  100% {
+    transform: rotate(67deg) translateY(-3px);
+  }
+  50% {
+    transform: rotate(70deg) translateY(0);
+  }
+}
+
+@keyframes bottle-ritual-lift {
+  from {
+    opacity: 1;
+    transform: rotate(67deg) translateY(-3px) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(15deg) translateY(-80px) scale(1.75);
+  }
+}
+
+@keyframes bottle-ritual-ring {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.22);
+  }
+  12% {
+    opacity: 0.42;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.bottle-ritual--reduced,
+.bottle-ritual--reduced .bottle-ritual__found,
+.bottle-ritual--reduced .bottle-ritual__thrown {
+  animation-duration: 110ms !important;
+}
+.bottle-ritual--reduced .bottle-ritual__rings {
+  display: none;
+}
+.bottle-ritual--reduced.bottle-ritual--moving .bottle-ritual__thrown {
+  left: 50%;
+  top: 62%;
+  animation-name: bottle-ritual-fade-out;
+}
+.bottle-ritual--reduced.bottle-ritual--moving .bottle-ritual__found {
+  animation-name: bottle-ritual-fade-in;
+}
+.bottle-ritual--reduced.bottle-ritual--arrived .bottle-ritual__found {
+  animation: none;
+  opacity: 1;
+}
+.bottle-ritual--reduced.bottle-ritual--opening .bottle-ritual__found {
+  animation-name: bottle-ritual-fade-out;
+}
+.bottle-ritual--reduced .bottle-ritual__open-label {
+  transition: none;
+}
+
+@keyframes bottle-ritual-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bottle-ritual-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottle-ritual {
+    animation: none;
+  }
+  .bottle-ritual__rings {
+    display: none;
+  }
+  .bottle-ritual .bottle-ritual__found,
+  .bottle-ritual .bottle-ritual__thrown {
+    animation-duration: 110ms !important;
+  }
+  .bottle-ritual.bottle-ritual--arrived .bottle-ritual__found {
+    animation: none;
+  }
+}
