@@ -1,0 +1,15 @@
+{
+  "createdAt": "2026-10-25T04:46:10.472Z",
+  "engine": "Chrome",
+  "scope": "Disposable local database; synthetic stories; AI off; clipboard and lost acknowledgement injected. No physical-phone or hosted-withdrawal claim.",
+  "checks": [
+    "A public link and copied ID-only shelf cookies grant no withdrawal UI or server authority",
+    "Withdrawal requires a clear scope confirmation; cancellation returns focus without changing either shared reply",
+    "One real withdrawal removes all public views and both pairs live across five identities, even when its acknowledgement is lost; quota and unrelated beginning remain",
+    "The active writer sees live removal without losing text or focus; sending stops and copying the saved draft still works",
+    "Catching after withdrawal keeps the same daily turn and skip allowance; the earlier draft remains recoverable separately",
+    "Reloading the withdrawn link stays unavailable, and the authenticated author can safely repeat withdrawal",
+    "A confirmation closed by another author tab cannot reopen itself for a different bottle",
+    "An injected previous-day unavailable assignment closes its old round before starting a real fresh catch instead of repeatedly reclaiming a closed prompt"
+  ]
+}

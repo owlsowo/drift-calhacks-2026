@@ -397,6 +397,10 @@ export const game = {
   async hide(cardId: string) {
     await connection!.reducers.hideMyCard({ cardId });
   },
+  async withdraw(bottleId: string) {
+    if (!connection?.isActive) throw Error('Reconnect before withdrawing your bottle.');
+    await connection.reducers.withdrawMyBeginning({ bottleId });
+  },
   async report(roundId: string, cardId: string, reason: string) {
     await connection!.reducers.reportContent({ roundId, cardId, reason });
   },

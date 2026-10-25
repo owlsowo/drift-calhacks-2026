@@ -1367,6 +1367,14 @@ export const my_hello = db.view(
 export const hide_my_card = db.reducer({ cardId: t.string() }, (ctx, { cardId }) =>
   hide(ctx, cardId),
 );
+export const withdraw_my_beginning = db.reducer({ bottleId: t.string() }, (ctx, { bottleId }) => {
+  const b = ctx.db.bottle.id.find(bottleId);
+  if (!b?.owner || !same(b.owner, ctx.sender))
+    fail('Only the writer who released this beginning can withdraw it.');
+  // Withdrawal remains available during a pause or an expired writing check.
+  // Existing paid-result validation also rejects replies/hints after this hide.
+  hideBeginning(ctx, b);
+});
 export const set_pause = db.reducer({ paused: t.bool() }, (ctx, { paused }) => {
   const c = admin(ctx);
   ctx.db.config.id.update({ ...c, paused });

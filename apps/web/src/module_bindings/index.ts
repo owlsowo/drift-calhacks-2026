@@ -52,6 +52,7 @@ import SetPauseReducer from "./set_pause_reducer";
 import SkipBottleReducer from "./skip_bottle_reducer";
 import StartCatchingReducer from "./start_catching_reducer";
 import StartRoundReducer from "./start_round_reducer";
+import WithdrawMyBeginningReducer from "./withdraw_my_beginning_reducer";
 
 // Import all procedure arg schemas
 import * as AdminActivityProcedure from "./admin_activity_procedure";
@@ -202,6 +203,7 @@ const reducersSchema = __reducers(
   __reducerSchema("skip_bottle", SkipBottleReducer),
   __reducerSchema("start_catching", StartCatchingReducer),
   __reducerSchema("start_round", StartRoundReducer),
+  __reducerSchema("withdraw_my_beginning", WithdrawMyBeginningReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
