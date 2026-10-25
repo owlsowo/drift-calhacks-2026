@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
@@ -30,6 +37,7 @@ import { Shore } from './Shore';
 import { Ocean } from './Ocean';
 import { PaperNote } from './PaperNote';
 import { ShoreGate } from './ShoreGate';
+import { EarlierDrafts } from './EarlierDrafts';
 import { BottleRitual, type BottleRitualKind } from './BottleRitual';
 import './natural.css';
 
@@ -229,6 +237,8 @@ function App() {
   const [reveal, setReveal] = useState('');
   const [seaPaused, setSeaPaused] = useState(false);
   const [gateReady, setGateReady] = useState(false);
+  const [returnedNotice, setReturnedNotice] = useState('');
+  const seenReturns = useRef<{ identity: string; ids: Set<string> } | null>(null);
   const [ritual, setRitual] = useState<{
     kind: BottleRitualKind;
     phase: 'waiting' | 'moving';
@@ -289,6 +299,11 @@ function App() {
     .sort((a, b) => b.createdMs - a.createdMs);
   const card = s.cards.find((c) => c.id === selected && !s.reported.some((r) => r.id === c.id));
   const ownership = s.ownership.find((o) => o.id === selected);
+  const cardId = card?.id;
+  const ownsVisibleCard = !!ownership && !ownership.hidden;
+  const recordOpen = useCallback(() => {
+    if (cardId && ownsVisibleCard && s.connected) void game.cardAction(cardId, 'open');
+  }, [cardId, ownsVisibleCard, s.connected]);
   const currentDraftKey = active
     ? `drift:draft:${s.identity}:${active.id}:${active.stage === 'reply' ? active.assignmentId : 'setup'}`
     : '';
@@ -300,6 +315,30 @@ function App() {
       total + letter.endings.filter((pair) => dayOf(pair.createdMs) === nowDay).length,
     0,
   );
+  const returnedCard = s.cards.find(
+    (item) =>
+      item.id === returnedNotice &&
+      s.ownership.some((owner) => owner.id === item.id && owner.role === 'setup' && !owner.hidden),
+  );
+  useEffect(() => {
+    if (!s.connected || !s.identity) return;
+    const returned = s.ownership
+      .filter((o) => o.role === 'setup' && !o.hidden)
+      .flatMap((o) => s.cards.filter((card) => card.id === o.id))
+      .sort((a, b) => b.createdMs - a.createdMs);
+    if (seenReturns.current?.identity !== s.identity) {
+      // The first complete subscription is a baseline, not a new-arrival event.
+      seenReturns.current = { identity: s.identity, ids: new Set(returned.map((card) => card.id)) };
+      setReturnedNotice('');
+      return;
+    }
+    const arriving = returned.find((card) => !seenReturns.current!.ids.has(card.id));
+    for (const card of returned) seenReturns.current.ids.add(card.id);
+    if (arriving) {
+      setToast('');
+      setReturnedNotice(arriving.id);
+    }
+  }, [s.connected, s.identity, s.ownership, s.cards]);
   const emptyTide = error.startsWith('No bottles are available');
   const remaining = active
     ? Math.max(0, Math.min(600, Math.ceil((active.leaseMs - clock) / 1000)))
@@ -312,7 +351,8 @@ function App() {
     const t = setInterval(update, 1000);
     return () => clearInterval(t);
   }, [s.clockOffsetMs]);
-  useEffect(() => {
+  // Restore before paint so switching between independent drafts never exposes an empty input.
+  useLayoutEffect(() => {
     setDraft({ key: currentDraftKey, text: currentDraftKey ? saved(currentDraftKey) : '' });
     setError('');
   }, [currentDraftKey]);
@@ -377,6 +417,12 @@ function App() {
       setPlayingRoundId(await game.start());
       setReveal('');
       setView('play');
+    });
+  }
+  async function copyDraft(text: string) {
+    await run('Copying…', async () => {
+      await copyText(text);
+      setToast('Draft copied');
     });
   }
   async function beginCatch() {
@@ -514,6 +560,7 @@ function App() {
     setError('');
   }
   function showCard(id: string) {
+    setReturnedNotice((current) => (current === id ? '' : current));
     setSelected(id);
     setView('card');
     setError('');
@@ -586,6 +633,27 @@ function App() {
         {s.connected && s.service?.botRequired && !gateReady && (
           <ShoreGate onVerified={() => setGateReady(true)} />
         )}
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          {returnedCard ? 'Your bottle came back. Someone added six words.' : ''}
+        </div>
+        {returnedCard && (
+          <aside className="returned-notice" aria-label="Returned bottle">
+            <div>
+              <Mail size={19} aria-hidden="true" />
+              <span>Your bottle came back. Someone added six words.</span>
+            </div>
+            <button className="text-button" onClick={() => showCard(returnedCard.id)}>
+              Open returned postcard <ArrowRight size={16} aria-hidden="true" />
+            </button>
+            <button
+              className="icon-button"
+              aria-label="Dismiss returned bottle notice"
+              onClick={() => setReturnedNotice('')}
+            >
+              <X size={17} aria-hidden="true" />
+            </button>
+          </aside>
+        )}
         <main id="main" className={`main view-${view}`} inert={!!ritual}>
           {view === 'today' && (
             <Shore
@@ -624,7 +692,7 @@ function App() {
             <section className={`play-layout ${active?.stage === 'catch' ? 'shore-play' : ''}`}>
               <div className="writing-desk">
                 {!active ? (
-                  <div className="empty-state">
+                  <div className="empty-state closed-round">
                     <Mail size={38} />
                     <h1 ref={heading} tabIndex={-1}>
                       This round has ended.
@@ -636,6 +704,14 @@ function App() {
                     <button className="button primary" disabled={controlsDisabled} onClick={begin}>
                       Write a beginning <ArrowRight size={18} />
                     </button>
+                    <EarlierDrafts
+                      identity={s.identity}
+                      rounds={s.rounds}
+                      day={nowDay}
+                      currentKey={currentDraftKey}
+                      busy={!!busy}
+                      onCopy={(text) => void copyDraft(text)}
+                    />
                   </div>
                 ) : active.stage === 'catch' ? (
                   <Shore
@@ -736,6 +812,25 @@ function App() {
                         )}
                       </div>
                     )}
+                    {active.stage === 'reply' && remaining <= 0 && !checksExhausted && (
+                      <div className="quota-recovery expiry-recovery" role="status">
+                        <p>
+                          <strong>This bottle has drifted on.</strong>{' '}
+                          {draft.trim()
+                            ? 'Your ending is still here. Copy it before catching a fresh beginning.'
+                            : 'Catch a fresh beginning when you’re ready.'}
+                        </p>
+                        {draft.trim() && (
+                          <button
+                            className="text-button"
+                            disabled={!!busy}
+                            onClick={() => void copyDraft(draft)}
+                          >
+                            <Copy size={14} /> Copy my draft
+                          </button>
+                        )}
+                      </div>
+                    )}
                     {checksExhausted && (
                       <div className="quota-recovery">
                         <p>
@@ -744,12 +839,8 @@ function App() {
                         <div>
                           <button
                             className="text-button"
-                            onClick={() =>
-                              run('Copying…', async () => {
-                                await copyText(draft);
-                                setToast('Draft copied');
-                              })
-                            }
+                            disabled={!!busy}
+                            onClick={() => void copyDraft(draft)}
                           >
                             <Copy size={14} />
                             Copy my draft
@@ -807,7 +898,7 @@ function App() {
                             </button>
                           ) : (
                             <button
-                              disabled={controlsDisabled}
+                              disabled={controlsDisabled || !!checksExhausted}
                               onClick={() =>
                                 run('Finding a fresh bottle…', () => pickUp(active.id))
                               }
@@ -862,6 +953,11 @@ function App() {
                             try {
                               const msg = await shareCard(card);
                               setToast(msg === 'Shared' ? 'Share sheet opened' : msg);
+                              if (ownership)
+                                void game.cardAction(
+                                  card.id,
+                                  msg === 'Shared' ? 'native_share_resolved' : 'link_copied',
+                                );
                             } catch (e) {
                               if ((e as Error).name !== 'AbortError') throw e;
                             }
@@ -878,6 +974,7 @@ function App() {
                           run('Making your image…', async () => {
                             await savePng(card);
                             setToast('Postcard image saved');
+                            if (ownership) void game.cardAction(card.id, 'png_requested');
                           })
                         }
                         disabled={!!busy}
@@ -891,6 +988,7 @@ function App() {
                           run('Copying…', async () => {
                             await copyText(cardText(card));
                             setToast('Story copied');
+                            if (ownership) void game.cardAction(card.id, 'words_copied');
                           })
                         }
                       >
@@ -925,7 +1023,7 @@ function App() {
               </div>
               {card && (
                 <div className="reveal-art">
-                  <PaperNote key={card.id} postcard>
+                  <PaperNote key={card.id} postcard onOpen={recordOpen}>
                     <Postcard card={card} />
                   </PaperNote>
                 </div>
@@ -1013,6 +1111,14 @@ function App() {
                   </button>
                 </form>
               </details>
+              <EarlierDrafts
+                identity={s.identity}
+                rounds={s.rounds}
+                day={nowDay}
+                currentKey={currentDraftKey}
+                busy={!!busy}
+                onCopy={(text) => void copyDraft(text)}
+              />
             </section>
           )}
           {view === 'beginning' && (
@@ -1164,7 +1270,8 @@ function App() {
             {s.service?.sandbox && !s.service.aiReady
               ? 'Message checks are off in this local preview.'
               : 'Your submitted words are checked before another writer receives them.'}{' '}
-            Completed postcards are anonymous and public through share links.
+            Released beginnings and completed replies are anonymous and public. A beginning can
+            receive endings from several writers; each pair has its own share link.
           </p>
           <p>
             Leave out names, contact details, and identifying information. First-party cookies save
@@ -1185,6 +1292,11 @@ function App() {
           <p>
             Usage and cost records contain no story text or identity. Individual records expire
             after thirty days, except unresolved billing checks; totals remain.
+          </p>
+          <p>
+            Private daily totals count completed stories, first postcard opens and export/share
+            requests. We use existing card ownership to avoid counting repeats. These totals contain
+            no words or identities and expire after thirty days.
           </p>
           <p>
             AI guidance is optional and stays separate from your words. Starter content is always

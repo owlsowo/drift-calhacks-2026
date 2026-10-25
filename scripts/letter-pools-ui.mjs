@@ -1,11 +1,16 @@
-import { chromium } from '@playwright/test';
+import { chromium, webkit } from '@playwright/test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import AxeBuilder from '@axe-core/playwright';
 
 const origin = process.env.DRIFT_WEB_URL;
 if (!origin || !process.env.DRIFT_TEST_DATABASE?.startsWith('drift-test-'))
   throw Error('Use npm run test:letters for an isolated local sandbox.');
-const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const engine = process.env.DRIFT_TEST_ENGINE === 'webkit' ? 'WebKit' : 'Chrome';
+const browser =
+  engine === 'WebKit'
+    ? await webkit.launch({ headless: true })
+    : await chromium.launch({ channel: 'chrome', headless: true });
 const contexts = [];
 const errors = [];
 const checks = [];
@@ -159,8 +164,22 @@ try {
   pass(
     'Each ending creates its own pair, finishes its pick-up round, and appears live in the original author’s pool',
   );
+  for (const [index, page] of [A, B, C].entries()) {
+    await page.screenshot({
+      path: new URL(`letter-pools-${engine.toLowerCase()}-view-${index}.png`, evidence).pathname,
+      fullPage: true,
+    });
+    const scan = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+      .analyze();
+    assert.deepEqual(
+      scan.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) })),
+      [],
+    );
+  }
+  pass('Selected accessibility checks pass on the author pool and both completed-reply views');
   await A.screenshot({
-    path: new URL('letter-pools-beginning-360.png', evidence).pathname,
+    path: new URL(`letter-pools-${engine.toLowerCase()}-beginning-360.png`, evidence).pathname,
     fullPage: true,
   });
 
@@ -267,10 +286,11 @@ try {
 
   assert.deepEqual(errors, []);
   await fs.writeFile(
-    new URL('letter-pools.json', evidence),
+    new URL(`letter-pools-${engine.toLowerCase()}.json`, evidence),
     JSON.stringify(
       {
         checkedAt: new Date().toISOString(),
+        engine,
         mode: 'Isolated local sandbox; synthetic writers; AI checks off; no paid model calls',
         beginningId,
         completedPairIds: [bCardId, cCardId],

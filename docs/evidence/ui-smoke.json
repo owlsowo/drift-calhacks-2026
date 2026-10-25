@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-24T22:05:48.476Z",
+  "checkedAt": "2026-10-25T00:12:40.475Z",
   "mode": "local SpacetimeDB with explicitly disabled AI checks; synthetic test inputs, no attendee pilot",
   "checks": [
     "Real database connection and responsive home at 360 / 1440 pixels",
@@ -10,6 +10,7 @@
     "Draft and exclusive assignment resume after a full reload",
     "A server-confirmed postcard survives a lost reply acknowledgment",
     "Original author receives the returned postcard without refreshing",
+    "A new return announces without taking draft focus; its open action reaches the right card and old cards stay quiet after reload",
     "Both authors complete a canonical two-human postcard",
     "One-sided hello intent stays private to the other author",
     "A failed private invitation read offers retry, keeps details hidden and clears the error after recovery",
@@ -52,6 +53,14 @@
     },
     {
       "artifact": "reveal-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "returned-notice-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "returned-notice-360.png",
       "violations": []
     },
     {

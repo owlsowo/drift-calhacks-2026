@@ -10,12 +10,13 @@ The software-only evidence case is a fresh-input, two-browser loop; actual subsc
 
 | Route                                     | Product/workflow contribution                                 | Evidence still required                                                                      |
 | ----------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Spacetime                                 | Core authoritative shared state, exclusive catch, live return | Hosted flow and race/permission checks passed; final judging demo and private-code access remain |
+| Spacetime                                 | Core authoritative shared state, independent catches, live multi-ending return | Hosted flow and race/permission checks passed; final judging demo and private-code access remain |
 | Anthropic                                 | Contextual moderation and optional writing guidance           | Real calls/evaluation passed with stated limits; truthful firsthand community/problem account remains |
 | Meta                                      | Human collaboration; AI helps a stuck writer participate      | Useful nudge demonstration and evidence of connection; no assumed Meta model requirement     |
 | People-First                              | Low-pressure shared activity, privacy, accessibility          | No pilot available; clearly state evidence limit                                             |
 | Most Creative / Hacker’s Choice / Overall | A complete, memorable play experience                         | Polished live demo and truthful submission                                                   |
-| Figma — Best Figma Workflow Hack           | Actual Make iteration, implemented handoff, native Slides with playable embed | Accessible files, Edu verification and stage log recorded; final <=3 min video/submission remain |
+| Most Technically Complex — stretch        | Independent timed rounds, bound external-model transactions, private views, cost holds and connected WebGL paper/sea | Existing architecture/race/failure evidence; final category selection and entry cap still need confirmation |
+| Figma — Best Figma Workflow Hack           | Actual Make iteration, implemented handoff, native Slides with playable embed | Accessible files, Edu verification and stage log recorded; 2:31 video draft needs review/upload and final submission |
 | Mana                                      | Working Bottle Kitchen app and actual export-to-validator handoff | Public app/build chat shared; include the concrete workflow moment in final demo/submission |
 | Notability                                | Real sketches, decisions, testing notes                       | Actual contemporaneous use and feature evidence                                              |
 | Commit Fellowship                         | Working prototype and intended follow-through                 | Team interest/eligibility, category opt-in, supplemental form                                |
@@ -30,7 +31,11 @@ The public rules page covers conduct and does not resolve entry limits or stacki
 
 Additional routes reviewed: Microsoft asks for a production-minded AI agent with customer understanding and measurable usefulness; the current social game is a weak competitive fit without changing its purpose. Fetch’s [event hackpack](https://www.fetch.ai/events/hackathons/calhacks-13-0/hackpack) requires an Agentverse/ACP workflow fully usable inside ASI:One and a public repository. That conflicts with the requested private repository and custom game experience. Snowflake would duplicate the existing model role. None is a default addition.
 
+Afternoon recheck: the [public listing](https://cal-hacks-13-0.devpost.com/) still contains the target sponsor/general routes and shows October 25 at 9 AM Pacific as the deadline. Its eligibility header lists adults, college students and teams of 2–4; actual team/check-in eligibility remains the owner's confirmation. The [rules page](https://cal-hacks-13-0.devpost.com/rules) still does not resolve prize stacking or an entry-count limit. No additional integration is justified by this recheck. Detailed Figma/organizer briefs remain the earlier read, rather than a new verification of their full text.
+
 ## Sources
+
+Evening recheck: the official Devpost listing explicitly includes Most Technically Complex Hack and evaluates engineering depth and architectural command. It is now an additional stretch target using the existing build, bringing the planned portfolio to ten routes. Figma and Mana remain included. This does not establish final entry selection, stacking or eligibility; no extra provider or feature was added to claim the category.
 
 - [Organizer guide](https://docs.google.com/document/d/1RQrueC9wm5u8uxtWSC2gadIchp05hVayhGUrIjxT9dE/edit)
 - [Current Devpost listing](https://cal-hacks-13-0.devpost.com/)
@@ -41,7 +46,7 @@ Additional routes reviewed: Microsoft asks for a production-minded AI agent with
 ## Short demo
 
 1. Writer A enters a fresh six-word setup and tosses it.
-2. Writer B submits their own setup, catches A’s, and asks for a contextual nudge with a fresh draft.
+2. Writer B catches A’s beginning and optionally asks for a contextual nudge with a fresh draft; writing another beginning is not required first.
 3. Writer B writes their own ending and seals the postcard.
 4. Show the finished card on B and its immediate return to A without refresh.
 5. Save the image. Briefly show one privacy/failure boundary, then explain the architecture.

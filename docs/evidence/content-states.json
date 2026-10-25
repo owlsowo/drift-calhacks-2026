@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-24T19:41:07.441Z",
+  "checkedAt": "2026-10-24T23:51:00.513Z",
   "mode": "isolated local sandbox; synthetic fault injection",
   "evidence": [
     {
@@ -33,6 +33,12 @@
       "observation": "Blocked browser storage is named honestly; draft and immutable request metadata remain in memory within the current tab."
     },
     {
+      "viewport": "360x800",
+      "state": "storage-draft-recovery",
+      "artifact": "storage-draft-recovery-360x800.png",
+      "observation": "With storage blocked, a closed-round draft remains available from memory in this tab; no reload persistence is claimed."
+    },
+    {
       "viewport": "1440x1000",
       "state": "loading",
       "artifact": "loading-1440x1000.png",
@@ -61,6 +67,12 @@
       "state": "storage-unavailable",
       "artifact": "storage-unavailable-1440x1000.png",
       "observation": "Blocked browser storage is named honestly; draft and immutable request metadata remain in memory within the current tab."
+    },
+    {
+      "viewport": "1440x1000",
+      "state": "storage-draft-recovery",
+      "artifact": "storage-draft-recovery-1440x1000.png",
+      "observation": "With storage blocked, a closed-round draft remains available from memory in this tab; no reload persistence is claimed."
     }
   ]
 }

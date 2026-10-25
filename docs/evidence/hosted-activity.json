@@ -1,0 +1,7 @@
+{
+  "checkedAt": "2026-10-24T23:06:38.195Z",
+  "database": "drift-calhacks-2026",
+  "scope": "Private UTC-day counts since this release; no backfill or unique-visitor estimate. Live means server configuration, not verified human/attendee activity. Client reports are best effort and deduplicated per author/card/action. Counts expire after thirty days.",
+  "interpretation": "PNG requested does not prove a file was saved. Native-share resolved does not prove recipient delivery. Completion timing includes moderation and is not end-to-end phone latency. Cohorts can span days, so these counts are not a conversion-rate denominator.",
+  "days": []
+}

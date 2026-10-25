@@ -1,6 +1,6 @@
 # Drift — tracks and submission checklist
 
-Checked October 24, 2026 against the current Devpost listing, organizer guide and Figma brief. These are target entries, not submitted or confirmed awards. Account login alone does not complete a workflow entry.
+Checked October 24, 2026 against the Devpost listing, organizer guide and Figma brief. The public listing and rules were rechecked that afternoon; detailed sponsor requirements below retain the earlier brief review. These are target entries, not submitted or confirmed awards.
 
 ## Target portfolio
 
@@ -13,8 +13,9 @@ Checked October 24, 2026 against the current Devpost listing, organizer guide an
 | Most Creative Project | A revival of QQ/WeChat drift bottles as a daily six-plus-six-word ritual | Explain the original inspiration and our contribution; show the physical interaction and coauthored artifact. No separate published essay requirement found. |
 | Hacker's Choice | A memorable experience other hackers can try | A working link, clear project image and concise demo. No separate published writeup requirement found. |
 | Overall awards | A complete project with intentional UX and engineering depth | Main Devpost submission and demonstration. First/second/third are placements, not three independent integrations. |
-| Best Figma Workflow Hack | A real prototype/iteration and traceable handoff into Drift | The detailed deliverables below. Still requires actual workflow work. |
-| Best Use of Mana | A useful planning/build/debug contribution | Explain where Mana helped; link one or two PUBLIC pages/chats actually used; show one moment where Mana changed the build or speed. A working app/agent inside Mana can earn bonus credit. Still requires actual workflow work. |
+| Most Technically Complex Hack — stretch | Authoritative concurrency, private views, bound AI transactions/cost holds and connected WebGL paper/sea | Use the existing architecture, ten-writer checks and failure/recovery evidence. Final category selection remains subject to the form/cap and team eligibility. |
+| Best Figma Workflow Hack | Actual Make iteration, implemented handoff and native Slides deck with playable embed | Stage log, Education verification and file access recorded. The 2:31 video draft needs team review/upload and files need embedding in the submission. |
+| Best Use of Mana | Working Bottle Kitchen app, public build chat and real export-to-validator handoff | The submission draft contains the concrete paragraph and public links; actual app/export gates appear in the video draft. Final category fields/upload remain. |
 
 Beginner is conditional on the team's eligibility. Notability, Commit Fellowship, domain and Vultr are not committed entries. Commit would require team interest, category opt-in and its supplemental form; Notability requires genuine contemporaneous use. We have not established an entry-count cap or prize-stacking policy.
 
@@ -23,7 +24,7 @@ Beginner is conditional on the team's eligibility. Notability, Commit Fellowship
 - Devpost project description: inspiration, what it does, how it was built, challenges, accomplishments, lessons and next steps. This structure is a practical drafting plan; the visible portal fields govern the final submission.
 - Project image and GitHub repository link are explicitly required by Devpost. Give judges source access while keeping the repository private.
 - Working public app URL and a clear demo video. Devpost allows a prerecorded or live demonstration; its judging criteria also call for a meaningful video for asynchronous sponsor review. The organizer guide expects a live demo at judging.
-- Use a video of at most three minutes so the same core recording also fits Figma. Include live two-identity behavior, Claude's role and a concise architecture explanation.
+- The 2:31 video draft is complete for review. It distinguishes recorded local two-identity behavior from separate hosted Claude evidence, and includes Spacetime/Figma/Mana work and image credits. See `docs/video-handoff.md`; review/upload are still pending.
 - Select the relevant prize categories in the actual submission form and answer any extra sponsor fields it presents.
 - Deadline: Sunday October 25, 2026, 9:00 AM Pacific. Be at the assigned judging table for the full 10:30 AM–12:30 PM window.
 
@@ -37,14 +38,14 @@ Beginner is conditional on the team's eligibility. Notability, Commit Fellowship
 
 For each stage record: tool/product and why, approximate minutes, effectiveness rating 1–5, how the output reached the final project, and relevant friction/rework. Do not invent timing, initial Figma usage, interviews or measured time savings. A later design iteration is valid when described honestly.
 
-Stage log working template:
+The saved Figma/daily-UI iteration through `86683ac` is recorded in `docs/figma-stage-log.md`, with the original iteration shown in the native deck and a dated evening update in its opening-slide notes. Later code-only recovery work is recorded separately in `docs/workflow-notes-evening.md`. These are Codex estimates/ratings for a later iteration, not measured time savings or attendee feedback:
 
 | Stage | Actual tools and why | Approx. minutes | Rating 1–5 | Output used in Drift | Friction |
 | --- | --- | --- | --- | --- | --- |
-| Ideation | To record | To record | To record | To record | To record |
-| Prototyping | To record | To record | To record | To record | To record |
-| Handoff | To record | To record | To record | To record | To record |
-| Code generation | To record | To record | To record | To record | To record |
+| Ideation | Owner references + existing app; Figma was not the original ideation tool | ~3 | 4 | Scoped empty/returned states and daily hierarchy | Late-stage scope only |
+| Prototyping | Figma Make | ~8 | 3 | Five sample states, compact empty note and daily identity | Oversized first version, cached frame, attribution correction, daily credit limit |
+| Handoff | Make recommendation + code review | ~4 | 4 | Empty recovery, return seal and daily hierarchy in `2544990` / `5043061` | Retained existing mesh; rejected input truncation and autofill |
+| Code generation | Codex React/CSS; separate Make prototype | ~14 | 4 | Tested/deployed daily UI and return notice; native Slides/embed | ~10 additional active minutes for original presentation work |
 
 The detailed Figma brief lists Best Design, Most Creative, Best Figma Workflow and Best Stage Log, while current Devpost exposes one Best Figma Workflow Hack entry. Prepare the full artifact bundle; do not count four confirmed separate entry slots without clarification.
 
@@ -55,14 +56,16 @@ The detailed Figma brief lists Best Design, Most Creative, Best Figma Workflow a
 - Demonstrate one specific moment where Mana changed what was built or accelerated it.
 - If pursuing the inside-Mana bonus, provide a working app/agent a judge can open and use.
 
-Suggested paragraph structure: problem encountered → work done in Mana → useful output → how it affected Drift → evidence links and an honest limitation. Fill this after actual use, rather than presenting planned work as completed.
+The concrete paragraph and artifact links are in `docs/workflow-checkpoint.md` and `docs/submission-draft.md`. The actual synthetic draft validates structurally and is refused for installation; all human lists remain empty. Mana's own reported test counts are distinguished from the independent browser checks.
 
 ## Human input still needed
 
-- Devpost draft link, teammate details and beginner eligibility.
+- Devpost draft link, teammate details and eligibility. The public overview lists ages 18+, college students and teams of 2–4; the team must confirm its actual eligibility/check-in and resolve any applicable exception with organizers. Beginner eligibility is separate.
 - A short, truthful account of who this is for and a problem the team has personally experienced. Do not invent an attendee interview or claim reduced loneliness without evidence.
 - Human-written starter lines if we want populated production inventory. Development samples remain labeled as samples.
 - Final review of the writeup, public workflow sharing and judge access to the private code.
+
+`docs/judge-handoff.md` provides the evidence map and local source-snapshot command. Creating that ZIP does not grant source access or submit the project.
 
 No additional account login is established as necessary for this target portfolio now that Figma and Mana are available.
 

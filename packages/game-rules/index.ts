@@ -17,6 +17,7 @@ export function validateLine(text: string): string | null {
 }
 export const normalize = (s: string) => s.trim().replace(/\s+/gu, ' ');
 export const dayOf = (timeMs: number) => Math.floor(timeMs / 86400000);
+export const FIRST_TIDE_DAY = dayOf(Date.parse('2026-10-24T00:00:00Z'));
 export const PROMPTS = [
   {
     id: 'aquarium',
@@ -120,7 +121,7 @@ export const PROMPTS = [
   },
 ] as const;
 export function promptForDay(day: number) {
-  const anchor = dayOf(Date.parse('2026-10-24T00:00:00Z'));
+  const anchor = FIRST_TIDE_DAY;
   const index = (((day - anchor) % PROMPTS.length) + PROMPTS.length) % PROMPTS.length;
   return PROMPTS[index];
 }

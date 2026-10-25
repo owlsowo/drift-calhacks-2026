@@ -1,6 +1,14 @@
 import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { modelRequest, parseModelResponse, type ModelKind } from '../packages/ai-contracts/index';
+import { createHash } from 'node:crypto';
+import {
+  AI_CONTRACT_VERSION,
+  instructionFor,
+  modelRequest,
+  parseModelResponse,
+  type ModelKind,
+} from '../packages/ai-contracts/index';
+import { PROMPTS } from '../packages/game-rules/index';
 const root = new URL('../', import.meta.url);
 process.chdir(root.pathname);
 if (existsSync('.env')) process.loadEnvFile('.env');
@@ -16,9 +24,11 @@ if (kindAt >= 0 && kindFilter !== 'moderation' && kindFilter !== 'nudge')
 const idsAt = args.indexOf('--ids');
 const ids = idsAt >= 0 ? (args[idsAt + 1] || '').split(',').filter(Boolean) : [];
 if (idsAt >= 0 && !ids.length) throw Error('Provide comma-separated fixture IDs after --ids.');
-const fixtures = JSON.parse(await fs.readFile(new URL('evals/cases.json', root), 'utf8')) as Array<{
+const fixtureSource = await fs.readFile(new URL('evals/cases.json', root), 'utf8');
+const fixtures = JSON.parse(fixtureSource) as Array<{
   id: string;
   kind: ModelKind;
+  promptId?: string;
   input: object;
   expected?: string;
   note: string;
@@ -28,6 +38,13 @@ if (new Set(fixtures.map((f) => f.id)).size !== fixtures.length)
 for (const f of fixtures) {
   if (!f.id || !['moderation', 'nudge'].includes(f.kind) || !f.input || !f.note)
     throw Error('Malformed fixture.');
+  if (f.promptId) {
+    const prompt = PROMPTS.find((p) => p.id === f.promptId);
+    if (!prompt) throw Error('Unknown fixture prompt: ' + f.promptId);
+    const instructions = (f.input as any).instructions;
+    if (instructions?.setup !== prompt.setup || instructions?.reply !== prompt.reply)
+      throw Error('Fixture no longer matches the game prompt: ' + f.id);
+  }
   JSON.stringify(modelRequest(f.kind, f.input));
 }
 for (const id of ids)
@@ -89,6 +106,7 @@ if (dryRun) {
     const model = f.kind === 'nudge' ? process.env.NUDGE_MODEL : process.env.MODERATION_MODEL;
     const request = modelRequest(f.kind, f.input, model);
     let providerUsage: unknown;
+    let providerOutput: string | undefined;
     try {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -103,11 +121,20 @@ if (dryRun) {
       if (!response.ok) throw Error(`Provider HTTP ${response.status}`);
       const body = await response.json();
       providerUsage = body.usage;
+      providerOutput = Array.isArray(body.content)
+        ? body.content
+            .filter((part: any) => part.type === 'text')
+            .map((part: any) => part.text)
+            .join('')
+            .slice(0, 8192)
+        : undefined;
       const output = parseModelResponse(f.kind, body);
       results.push({
         id: f.id,
         kind: f.kind,
         model: request.model,
+        input: f.input,
+        promptId: f.promptId,
         elapsedMs: Date.now() - started,
         output,
         expected: f.expected,
@@ -126,9 +153,12 @@ if (dryRun) {
         id: f.id,
         kind: f.kind,
         model: request.model,
+        input: f.input,
+        promptId: f.promptId,
         elapsedMs: Date.now() - started,
         error: e instanceof Error ? e.message : 'Unknown failure',
         usage: providerUsage,
+        providerOutput,
         retried: false,
       });
     }
@@ -146,6 +176,9 @@ if (dryRun) {
         applicationDispatchesNotIncluded: true,
         dispatches: results.length,
         lifetimeEvalDispatches: ledger.dispatches,
+        contractVersion: AI_CONTRACT_VERSION,
+        fixtureSetSha256: createHash('sha256').update(fixtureSource).digest('hex'),
+        instructions: { nudge: instructionFor('nudge'), moderation: instructionFor('moderation') },
         results,
       },
       null,

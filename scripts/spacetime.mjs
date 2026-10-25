@@ -25,6 +25,7 @@ if (['publish-test', 'delete-test', 'pause-test', 'resume-test'].includes(action
   env.DRIFT_TURNSTILE_SECRET = '';
   env.DRIFT_TURNSTILE_HOSTNAME = '';
   env.DRIFT_DEV_MODE = env.DRIFT_TEST_EMPTY === 'true' ? 'false' : 'true';
+  env.DRIFT_DEV_STARTERS = env.DRIFT_TEST_COLDSTART === 'true' ? 'false' : 'true';
   env.DRIFT_STARTERS_HUMAN_WRITTEN = 'false';
   env.DRIFT_HELLO_ENABLED = env.DRIFT_TEST_HELLO === 'true' ? 'true' : 'false';
   env.DRIFT_MEETING_SPOT = 'Synthetic test meeting point — not an event location';

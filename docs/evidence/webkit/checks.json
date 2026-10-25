@@ -1,0 +1,80 @@
+{
+  "checkedAt": "2026-10-25T00:55:02.416Z",
+  "mode": "Actual desktop Playwright WebKit engine with iPhone viewport/touch emulation; local isolated SpacetimeDB, AI off, synthetic inputs",
+  "status": "passed",
+  "engine": "27.2",
+  "capabilities": {
+    "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+    "touch": 0,
+    "share": true,
+    "fileShare": true,
+    "motion": true,
+    "secureContext": true,
+    "pointerCoarse": true
+  },
+  "activity": {
+    "roundStarted": 2,
+    "catchAssigned": 1,
+    "setupPublished": 1,
+    "peerCompleted": 1,
+    "teamCompleted": 0,
+    "sampleCompleted": 0,
+    "setupOpened": 1,
+    "replyOpened": 1,
+    "pngRequested": 1,
+    "wordsCopied": 1,
+    "nativeShareResolved": 1,
+    "linkCopied": 1,
+    "completionLe30s": 1,
+    "completionLe120s": 0,
+    "completionOver120s": 0
+  },
+  "checks": [
+    "Actual WebKit engine connects at iPhone 13 and desktop viewports with no horizontal overflow",
+    "WebKit draws moving sea pixels and the pause control freezes them",
+    "A peer note opens as a connected WebKit mesh over the sea; its exclusive catch and draft survive reload",
+    "WebKit announces a new returned bottle and opens its postcard without a refresh",
+    "Two WebKit identities receive the same canonical postcard without refresh and export a 1080×1350 PNG",
+    "Mobile completion keeps the title, postcard and sharing controls above the optional next-beginning invitation",
+    "Injected native-share cancellation stays quiet; injected share denial copies a link a third WebKit identity can open",
+    "Private owner totals observe visible author opens and export/share outcomes, exclude hidden pages/cancellation/public viewers, and deduplicate repeats",
+    "Forced WebGL unavailability leaves the photographed sea and readable CSS note fallback working"
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "artifact": "home-390.png",
+      "violations": []
+    },
+    {
+      "artifact": "home-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "writing-390.png",
+      "violations": []
+    },
+    {
+      "artifact": "returned-notice-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "postcard-390.png",
+      "violations": []
+    },
+    {
+      "artifact": "shared-card-390.png",
+      "violations": []
+    },
+    {
+      "artifact": "no-webgl-390.png",
+      "violations": []
+    }
+  ],
+  "limitations": [
+    "Not a physical iPhone/Safari run or real mobile keyboard test",
+    "Native share sheet cancellation/denial use injected browser adapters",
+    "No physical motion sensor or attendee testing",
+    "Forced no-WebGL branch is an explicit failure injection"
+  ]
+}

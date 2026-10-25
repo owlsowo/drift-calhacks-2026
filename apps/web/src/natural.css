@@ -80,8 +80,8 @@
   color: var(--letter-ink);
   background-color: var(--letter-paper);
   background-image:
-    linear-gradient(115deg, #e6eaf01f 0%, #c2cbd216 43%, #33445a14 100%),
-    url('/assets/letter-paper.webp');
+    linear-gradient(115deg, #f5f0e0e8 0%, #ede7d7e8 43%, #e5decee8 100%),
+    url('/assets/paper-texture.jpg');
   background-position: center;
   background-size: cover;
   border: 1px solid #a2a5a759;
@@ -214,7 +214,7 @@
   color: #f0eeea;
   background:
     linear-gradient(#1b273e91, #171d2cab),
-    url('/assets/wood-desk.webp') center 55% / 420px auto;
+    repeating-linear-gradient(2deg, #544136 0px, #5d493c 3px, #44372f 5px, #5a4437 8px);
   box-shadow:
     inset 0 1px 0 #d4c5ad30,
     inset 0 -1px 0 #0e142b6b,
@@ -233,7 +233,7 @@
   filter: brightness(1.13);
   background:
     linear-gradient(#1b273e91, #171d2cab),
-    url('/assets/wood-desk.webp') center 55% / 420px auto;
+    repeating-linear-gradient(2deg, #544136 0px, #5d493c 3px, #44372f 5px, #5a4437 8px);
 }
 .sea-world .button.secondary:hover:not(:disabled),
 .modal .button.secondary:hover:not(:disabled) {
@@ -743,4 +743,25 @@ input:focus-visible {
   .sea-world .collection-card {
     transition: none;
   }
+}
+
+/* Keep navigation legible over both the photographed fallback and returned-note panel. */
+.sea-world .site-header {
+  background: #102337;
+  border-radius: 3px;
+}
+.sea-world .returned-notice {
+  margin: 80px auto 0;
+  width: min(960px, calc(100% - 32px));
+  padding: 12px 16px;
+  border-radius: 3px;
+}
+.sea-world .returned-notice > .icon-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Keep the notice margin inside the scene so it cannot move the absolute header. */
+.sea-world {
+  display: flow-root;
 }

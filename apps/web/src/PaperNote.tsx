@@ -1,39 +1,118 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { GlassBottle } from './Shore';
+import { PaperSurface, NOTE_OPEN_MS } from './PaperSurface';
 
 export function PaperNote({
   children,
   closed = false,
   postcard = false,
+  onOpen,
 }: {
   children: ReactNode;
   closed?: boolean;
   postcard?: boolean;
+  onOpen?: () => void;
 }) {
   const note = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState(!closed);
+  const [opening, setOpening] = useState<'waiting' | 'mesh' | 'fallback'>('waiting');
+  const decision = useRef(opening);
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [phase, setPhase] = useState<'closed' | 'unfolding' | 'open'>(() =>
+    closed ? 'closed' : reduced() ? 'open' : 'unfolding',
+  );
   useEffect(() => {
-    if (!closed) setOpen(true);
-  }, [closed]);
+    if (phase !== 'unfolding') return;
+    const timer = setTimeout(
+      () => {
+        if (opening === 'waiting') {
+          if (decision.current !== 'waiting') return;
+          decision.current = 'fallback';
+          setOpening('fallback');
+        } else setPhase('open');
+      },
+      opening === 'waiting' ? 200 : opening === 'fallback' ? NOTE_OPEN_MS : NOTE_OPEN_MS + 1000,
+    );
+    return () => clearTimeout(timer);
+  }, [phase, opening]);
   useEffect(() => {
+    const preference = matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => {
+      if (preference.matches) setPhase((current) => (current === 'unfolding' ? 'open' : current));
+    };
+    preference.addEventListener('change', update);
+    return () => preference.removeEventListener('change', update);
+  }, []);
+  useEffect(() => {
+    if (phase !== 'open' || !onOpen || typeof IntersectionObserver !== 'function') return;
+    let inView = false;
+    const visible = () => {
+      if (inView && document.visibilityState === 'visible') onOpen();
+    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        inView = entry.isIntersecting && entry.intersectionRatio >= 0.1;
+        visible();
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(note.current!);
+    document.addEventListener('visibilitychange', visible);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', visible);
+    };
+  }, [phase, onOpen]);
+  useEffect(() => {
+    if (!closed && phase === 'closed') setPhase('open');
+  }, [closed, phase]);
+  useEffect(() => {
+    if (phase === 'unfolding') return;
     const target = note.current?.querySelector<HTMLElement>(
-      open ? '[tabindex="-1"]' : '.open-bottle',
+      phase === 'closed' ? '.open-bottle' : '[tabindex="-1"]',
     );
     target?.focus({ preventScroll: true });
-  }, [open]);
+  }, [phase]);
   return (
     <div
       ref={note}
-      className={`paper-note paper-${open ? 'open' : 'closed'} ${postcard ? 'postcard-paper' : ''}`}
-      data-paper-phase={open ? 'open' : 'closed'}
+      className={`paper-note paper-${phase} ${opening === 'mesh' ? 'has-paper-mesh' : ''} ${phase === 'unfolding' && opening === 'waiting' ? 'paper-waiting' : ''} ${postcard ? 'postcard-paper' : ''}`}
+      data-paper-phase={phase}
     >
-      {!open && (
-        <button className="open-bottle" onClick={() => setOpen(true)}>
-          <GlassBottle />
+      {phase === 'closed' && (
+        <button className="open-bottle" onClick={() => setPhase(reduced() ? 'open' : 'unfolding')}>
+          <img src="/assets/paper-ball.png" alt="" draggable={false} />
           <span>Open bottle</span>
+          <small>Someone’s words are inside.</small>
         </button>
       )}
-      {open && <div className="paper-content">{children}</div>}
+      {phase === 'unfolding' && (
+        <>
+          <img className="unfolding-ball" src="/assets/paper-ball.png" alt="" draggable={false} />
+          {opening !== 'fallback' && (
+            <PaperSurface
+              onReady={() => {
+                if (decision.current !== 'waiting') return false;
+                decision.current = 'mesh';
+                setOpening('mesh');
+                return true;
+              }}
+              onComplete={() => setPhase('open')}
+              onUnavailable={() => {
+                if (decision.current === 'mesh') setPhase('open');
+                else {
+                  decision.current = 'fallback';
+                  setOpening('fallback');
+                }
+              }}
+            />
+          )}
+          <span className="sr-only" role="status">
+            Unfolding the note.
+          </span>
+        </>
+      )}
+      <div className="paper-content" inert={phase !== 'open'} aria-hidden={phase !== 'open'}>
+        {children}
+      </div>
     </div>
   );
 }

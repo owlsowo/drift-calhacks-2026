@@ -1,0 +1,22 @@
+{
+  "mode": "Read-only HTTPS asset verification after Cloudflare publish",
+  "sourceCommit": "c3610daf0a2e96d71dbf50385e7442e5ca60be01",
+  "origin": "https://drift-game.drift-calhacks-2026-owlsowo.workers.dev",
+  "assets": [
+    {
+      "asset": "/assets/index-D46ec2G-.js",
+      "matchesLocalBuild": true,
+      "sha256": "920f9903e265864d37c87c8d0255873d7a19d3392879622a0268e531fb92a79e"
+    },
+    {
+      "asset": "/assets/index-DDBsuRgF.css",
+      "matchesLocalBuild": true,
+      "sha256": "9dda42f113b098a4d13b221f1cb3bce0e49041ac8f392769792c3e0090b6d333"
+    }
+  ],
+  "scope": "Proves deployed frontend assets match the locally tested build. No synthetic content or new model calls were created on production.",
+  "cloudflareVersion": "08aedf76-7afc-4798-8421-bc63599910fb",
+  "checkedAt": "2026-10-24T22:37:28.466327+00:00",
+  "ciRun": 40139264775,
+  "ciConclusion": "success"
+}

@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-10-25T01:18:58.587Z",
+  "mode": "Actual desktop Chrome/WebKit with touch viewport, injected rendering/image/preference faults; local sandbox, AI off, synthetic input, no provider calls",
+  "checks": [
+    {
+      "engine": "Chrome",
+      "fault": "no-webgl",
+      "result": "Readable, editable note with enabled submission; surface disposed and selected accessibility checks pass"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "image-failure",
+      "result": "Readable, editable note with enabled submission; surface disposed and selected accessibility checks pass"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "context-loss",
+      "result": "Readable, editable note with enabled submission; surface disposed and selected accessibility checks pass"
+    },
+    {
+      "engine": "Chrome",
+      "fault": "reduce-mid-opening",
+      "result": "Readable, editable note with enabled submission; surface disposed and selected accessibility checks pass"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "no-webgl",
+      "result": "Readable, editable note with enabled submission; surface disposed and selected accessibility checks pass"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "image-failure",
+      "result": "Readable, editable note with enabled submission; surface disposed and selected accessibility checks pass"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "context-loss",
+      "result": "Readable, editable note with enabled submission; surface disposed and selected accessibility checks pass"
+    },
+    {
+      "engine": "WebKit",
+      "fault": "reduce-mid-opening",
+      "result": "Readable, editable note with enabled submission; surface disposed and selected accessibility checks pass"
+    }
+  ],
+  "errors": [],
+  "limits": [
+    "Not a physical-phone, OS preference, GPU-loss or assistive-technology user test"
+  ]
+}

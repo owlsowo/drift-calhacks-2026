@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-24T23:55:57.455Z",
+  "sourceCommit": "8b9833408e9971d6e1f0561e2fb1b7b34560ce7d",
+  "cloudflareVersion": "f5c8e71b-aaa6-4a29-a6a9-2468d886394d",
+  "assets": [
+    {
+      "asset": "/assets/index-B7Cqlbri.js",
+      "sha256": "cd008925c97051a2cfbc3327b726f9cefabed31da5eb620e16aefc0bdbf21cfd",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-D6xaydzj.css",
+      "sha256": "da207cc5effc276e9bd04eb4a9fb4e4fca914f6646664cc6b08bd18fa0f06faf",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend draft/deadline recovery. No backend migration or paid calls. Recovery fixtures inject the UI clock/lease/withheld-assignment projection; authoritative server expiry/reassignment is covered separately by module tests."
+}

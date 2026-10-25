@@ -57,10 +57,21 @@ npm run test:ui
 npm run test:letters
 npm run test:a11y
 npm run test:shore
+npm run test:webkit
+npm run test:recovery
+npm run test:coldstart
 npm run eval:models -- --dry-run
 ```
 
 The integration tests require the local database server. Each creates a disposable database and, for browser tests, its own frontend; cleanup leaves the main development database alone. They use synthetic fixtures in isolated browsers, save screenshots and test full reload recovery, live returns and downloads. They do not establish model quality or social impact. `test:live` probes concurrent claims and access controls; `test:states` injects loading, pause and offline failures.
+
+`test:webkit` additionally needs `npx playwright install webkit`. The actual engine passes the catch/open/write/return/export loop with an iPhone viewport, and found a mobile completion-order bug now fixed. Share cancellation/denial use injected adapters; physical iPhones, motion sensors and OS share sheets remain separate checks. See [browser evidence and limits](docs/browser-checks.md).
+
+`test:recovery` exercises real catch/skip transitions in Chrome and WebKit, then injects the UI clock/lease/assignment projection to check deadline and daily-reset recovery without an overnight wait. Earlier local words remain copyable without replacing the active draft; expired envelopes and other identities are excluded. Short-viewport checks are not physical-keyboard evidence. The module suite separately verifies real server-time expiry and reassignment. See [draft recovery](docs/draft-recovery.md).
+
+`test:coldstart` disables all starter fallback in an AI-off sandbox and exercises the two-identity flow at phone/desktop sizes in Chrome and WebKit. A writer can leave a published beginning drifting; a later peer can finish it and return the shared postcard after that original round closes. Closing still counts toward the daily limit. See [empty-sea recovery](docs/coldstart.md).
+
+The [note-opening comparison](docs/note-opening.md) covers image delays, a complete mesh/CSS opening and stable visible controls. `npm run test:paper-fallbacks` exercises rendering failures and dynamic reduced motion; `DRIFT_BENCHMARK_LABEL=after npm run benchmark:paper` records the controlled timing diagnostic, separate from production page metrics.
 
 `npm run demo:rehearse` discovers and exercises the recording flow in a disposable local sandbox. After it passes, `npm run demo:record` records two isolated browser identities and assembles a 1280×720 MP4 in the task’s `outputs/` folder. Chrome, Playwright’s FFmpeg helper (`npx playwright install ffmpeg`) and a system `ffmpeg` are required. The video is visibly labeled as synthetic sandbox participation with model checks off. It is a product demonstration, not live AI or attendee evidence. The recorded checkpoint and its provenance are in `docs/evidence/local-sandbox-demo.mp4` and `demo-run.json`. See `docs/deployment.md` for the real release handoff.
 
@@ -81,6 +92,8 @@ An hourly private maintenance schedule enforces seven days for submitted request
 
 See `docs/competition.md` for the track plan and evidence gaps. The product targets a playful first interaction for first-time event attendees; this remains a hypothesis. Screenshots, automated test identities and starter content must never be represented as real pilot participation.
 
+The coach now requests short, everyday guidance using the actual theme and speaker. [The coaching checkpoint](docs/coach-evaluation.md) records nine real contexts, the strict word-count failures and final receiver revalidation. Seven of nine final-prompt hints were judged useful by Codex; two were generic. These are agent judgments, not human labels. The original moderation evidence is unchanged.
+
 The October 21 illustrated prototype and earlier planning documents informed direction. This implementation was started during the event on October 24, 2026. The older prototype’s code and scripted demo are not used as evidence of live functionality.
 
 ## Optional hello
@@ -94,6 +107,8 @@ Cloudflare static hosting is deployed and actual HTTPS headers were verified. Th
 The sample starter arrays in `packages/game-rules/index.ts` are development fixtures, not verified human contributions. Production team inventory is a separate reviewed bundle, initially empty. Prepare a Mana Bottle Kitchen export with at least twenty human-written, reviewed, unique lines per each of seven prompts, then run `npm run starters:check -- /path/to/export.json`. After content review/moderation, `--install` installs a complete human-team bundle in source only. Review the diff, deploy, and explicitly opt in with `DRIFT_STARTERS_HUMAN_WRITTEN=true`. An environment flag alone cannot relabel development examples as human. Draft exports never install. Structural validation catches word/character counts, duplicate prompt IDs, Unicode/case-equivalent lines and obvious contact patterns; it cannot prove authorship or replace moderation. Samples remain tagged in stored cards and exports even if server settings later change. If production has neither a peer bottle nor approved starters, it preserves the setup and offers an honest retry instead.
 
 ## Owner operations
+
+`npm run ops:activity` reads private UTC-day counts for committed stories and deduplicated author open/export/share reports. No unique-visitor tracking is added; client reports are best effort and do not prove recipient delivery or social benefit. Daily totals expire after thirty days. See [activity meanings and boundaries](docs/activity.md).
 
 Claude calls now reserve estimated USD before dispatch and reconcile observed token usage before accepting model output. Unknown billing keeps its hold for owner review. The initial application budget is $10, separate from the 1,000-dispatch cap; it is not the provider account balance. `npm run ops:usage -- --calls` reads named owner diagnostics through the existing CLI login. `npm run cost:report` reprices saved evaluation usage without new calls. See [budget behavior and limitations](docs/ai-budget.md).
 

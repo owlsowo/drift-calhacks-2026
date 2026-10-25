@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-10-25T00:56:30.363Z",
+  "sourceCommit": "6fd7247e7c1678851a01f293174dac235b72e518",
+  "sourceHashes": {
+    "apps/web/src/PaperNote.tsx": "efe91f6073aa76bc37c3f4215dc7dc8f52e5f02235fa3fb193722d35405fac2c",
+    "apps/web/src/PaperSurface.tsx": "6e1c60881d2dcc3f68210bb6bb3b79110d3c52dfbd0b69a8e2dbc413ee7b3b08",
+    "apps/web/src/surface.ts": "18fa1a7bcabde1b03dee42c8a0bd601e7c46b76ea0dfedb2bb40af2b7f0dac96",
+    "apps/web/src/shore.css": "0ae27b429bf600b574486972c0aaade6dc9b4a01399b65551e18fd72889377b8"
+  },
+  "viewport": [
+    390,
+    844
+  ],
+  "engine": "Actual desktop Chrome, touch viewport",
+  "mode": "Isolated Vite development harness; AI off, synthetic input, texture delay injected. Animation scheduling diagnostic, not production Web Vitals, field FPS or a physical-phone benchmark.",
+  "cases": [
+    {
+      "textureDelayMs": 0,
+      "openMs": 1952,
+      "meshFrames": 116,
+      "firstMeshProgress": 0,
+      "lastMeshProgress": 1,
+      "meshVisibleMs": 1914,
+      "seaAntialias": false
+    },
+    {
+      "textureDelayMs": 650,
+      "openMs": 2107,
+      "meshFrames": 0,
+      "firstMeshProgress": null,
+      "lastMeshProgress": null,
+      "meshVisibleMs": 0,
+      "seaAntialias": false
+    },
+    {
+      "textureDelayMs": 2500,
+      "openMs": 2109,
+      "meshFrames": 0,
+      "firstMeshProgress": null,
+      "lastMeshProgress": null,
+      "meshVisibleMs": 0,
+      "seaAntialias": false
+    }
+  ],
+  "errors": []
+}

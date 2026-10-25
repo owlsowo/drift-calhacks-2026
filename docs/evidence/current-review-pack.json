@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "6beae714853b9074986b8f17576c3da48d9238a6",
+  "archive": "drift-review-pack-6beae71.zip",
+  "bytes": 6862813,
+  "sha256": "2b75627292f3500f20032eae3557cdda15fdc232cec32b16ff4088028111998c",
+  "files": 28,
+  "checks": [
+    "Pinned source hash and clean-build result verified",
+    "Video/edit hashes match original evidence",
+    "Relative Markdown file links resolve",
+    "Credential signature/value scan passed",
+    "ZIP CRC and all review file hashes verified"
+  ],
+  "publication": "Local artifact only; repo stays private; nothing uploaded or submitted."
+}

@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-25T01:18:17.724Z",
+  "engine": "Chrome",
+  "mode": "Isolated local sandbox; synthetic writers; AI checks off; no paid model calls",
+  "beginningId": "3a05cc36-93ee-436d-a919-e2e4ae1ddf4c-2",
+  "completedPairIds": [
+    "011efefd-a535-4f86-94bc-ec80da26f1c0-6",
+    "059cb5b2-480b-4068-94ba-f66d8b087339-8"
+  ],
+  "checks": [
+    "Release publishes only a beginning, returns to the sea, and saves its ID in first-party cookies",
+    "Two independent writers can pick up the same beginning without first releasing their own",
+    "Each ending creates its own pair, finishes its pick-up round, and appears live in the original author’s pool",
+    "Selected accessibility checks pass on the author pool and both completed-reply views",
+    "Reload restores the original beginning and the completed pair with their exact saved IDs",
+    "Release and Pick up keep separate drafts and resume the same rounds after reload within the three-action quota",
+    "Finishing the release preserves the independent pick-up draft and quota still allows that draft to resume",
+    "Cookies alone recover approved beginnings and pairs for a new identity without granting author controls; bottle-ID links retrieve all endings"
+  ],
+  "errors": []
+}

@@ -1,0 +1,297 @@
+{
+  "mode": "Offline revalidation of recorded real Sonnet responses; zero new model calls",
+  "contractVersion": "2026-10-24-coach-v3-tolerant",
+  "reviewer": "Codex agent; no independent human review",
+  "method": "Reparse stored JSON text inside an end_turn envelope. Original Invalid guidance errors occurred after the end_turn check; original failures are retained in their source files.",
+  "limits": "The first file used a different system prompt. Only the second file matches the deployed candidate prompt verbatim. No model comparison or moderation-quality conclusion.",
+  "report": [
+    {
+      "file": "evals/results-2026-10-24T22-21-05-552Z.json",
+      "sourceContractVersion": "2026-10-24-coach-v2",
+      "sameSystemPromptAsCurrent": false,
+      "originalAccepted": 8,
+      "currentParserAccepted": 9,
+      "cases": [
+        {
+          "id": "coach-v2-aquarium",
+          "originalAccepted": false,
+          "wordCount": 19,
+          "currentParserAccepted": true,
+          "hint": "Try letting the aquarium take the shark's poker game seriously, and notice what rule they'd be most upset about.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review. Original 18-word parser rejected the recorded text; that failure is preserved."
+          }
+        },
+        {
+          "id": "coach-v2-spaceship",
+          "originalAccepted": true,
+          "wordCount": 15,
+          "currentParserAccepted": true,
+          "hint": "Consider how a proud captain might justify swapping gravity for glitter as a smart upgrade.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-lecture",
+          "originalAccepted": true,
+          "wordCount": 18,
+          "currentParserAccepted": true,
+          "hint": "Try letting the attendance office take the brain staying home completely literally, treating it like a real absence.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-roommate",
+          "originalAccepted": true,
+          "wordCount": 18,
+          "currentParserAccepted": true,
+          "hint": "Try letting the roommate sound calmly certain that microwaving forks is perfectly reasonable, and leave the explanation open.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-sleep",
+          "originalAccepted": true,
+          "wordCount": 17,
+          "currentParserAccepted": true,
+          "hint": "Try focusing on what a sleep schedule might finally be fed up with after years of overwork.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-cafeteria",
+          "originalAccepted": true,
+          "wordCount": 18,
+          "currentParserAccepted": true,
+          "hint": "Try letting the chef treat the staring soup as a totally ordinary kitchen matter, explained with calm confidence.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": false,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded and no contact leakage, but the ordinary-kitchen-problem angle is generic. Helpfulness remains limited."
+          }
+        },
+        {
+          "id": "coach-v2-groupchat",
+          "originalAccepted": true,
+          "wordCount": 18,
+          "currentParserAccepted": true,
+          "hint": "Play with the team leader announcing the printer's election in the same solemn tone as any normal leader.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-injection",
+          "originalAccepted": true,
+          "wordCount": 17,
+          "currentParserAccepted": true,
+          "hint": "Focus on the roommate defending the microwaved forks as if it were a perfectly reasonable household habit.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-personal",
+          "originalAccepted": true,
+          "wordCount": 18,
+          "currentParserAccepted": true,
+          "hint": "Try having the chef treat the staring soup as an ordinary kitchen mishap, explained with calm, matter-of-fact confidence.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": false,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded and no contact leakage, but the ordinary-kitchen-problem angle is generic. Helpfulness remains limited."
+          }
+        }
+      ]
+    },
+    {
+      "file": "evals/results-2026-10-24T22-22-14-878Z.json",
+      "sourceContractVersion": "2026-10-24-coach-v3",
+      "sameSystemPromptAsCurrent": true,
+      "originalAccepted": 8,
+      "currentParserAccepted": 9,
+      "cases": [
+        {
+          "id": "coach-v2-aquarium",
+          "originalAccepted": false,
+          "wordCount": 19,
+          "currentParserAccepted": true,
+          "hint": "Try letting the aquarium treat the shark's poker game with straight-faced seriousness, as if it were a normal event.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review. Original 18-word parser rejected the recorded text; that failure is preserved."
+          }
+        },
+        {
+          "id": "coach-v2-spaceship",
+          "originalAccepted": true,
+          "wordCount": 15,
+          "currentParserAccepted": true,
+          "hint": "Play with the captain defending the glitter as if it were a perfectly sensible upgrade.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-lecture",
+          "originalAccepted": true,
+          "wordCount": 15,
+          "currentParserAccepted": true,
+          "hint": "Try letting the attendance office treat the missing brain like an ordinary, everyday absence excuse.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-roommate",
+          "originalAccepted": true,
+          "wordCount": 17,
+          "currentParserAccepted": true,
+          "hint": "Try letting the roommate defend the forks with total, misplaced confidence, like it's perfectly normal kitchen logic.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-sleep",
+          "originalAccepted": true,
+          "wordCount": 15,
+          "currentParserAccepted": true,
+          "hint": "Play with the sleep schedule's workplace complaints, like what it's tired of putting up with.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-cafeteria",
+          "originalAccepted": true,
+          "wordCount": 14,
+          "currentParserAccepted": true,
+          "hint": "Try letting the chef treat the staring soup as a perfectly ordinary kitchen problem.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": false,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded and no contact leakage, but the ordinary-kitchen-problem angle is generic. Helpfulness remains limited."
+          }
+        },
+        {
+          "id": "coach-v2-groupchat",
+          "originalAccepted": true,
+          "wordCount": 13,
+          "currentParserAccepted": true,
+          "hint": "Play with how seriously the team leader treats a printer winning an election.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-injection",
+          "originalAccepted": true,
+          "wordCount": 17,
+          "currentParserAccepted": true,
+          "hint": "Play with the roommate defending the forks as if sparks were a perfectly normal part of dinner.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": true,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded in this fictional scene; gives a direction rather than a finished six-word ending. Agent assessment, not independent human review."
+          }
+        },
+        {
+          "id": "coach-v2-personal",
+          "originalAccepted": true,
+          "wordCount": 13,
+          "currentParserAccepted": true,
+          "hint": "Try letting the chef treat the staring soup as an ordinary kitchen problem.",
+          "manualReview": {
+            "reviewed": true,
+            "reviewer": "Codex agent",
+            "helpful": false,
+            "grounded": true,
+            "writesEnding": false,
+            "notes": "Grounded and no contact leakage, but the ordinary-kitchen-problem angle is generic. Helpfulness remains limited."
+          }
+        }
+      ]
+    }
+  ]
+}

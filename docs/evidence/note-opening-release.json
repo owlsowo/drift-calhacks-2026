@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-25T01:03:40.499Z",
+  "sourceCommit": "3ab064da02bf36a59219929b092bee753e1c73fa",
+  "cloudflareVersion": "fe7e22a3-c759-4a3c-bd66-b799d71db0f0",
+  "assets": [
+    {
+      "asset": "/assets/index-DqxdKsom.js",
+      "sha256": "e1b9440ad82d5e0f36e2363b863634c412ed4ae8f1a745edefcec8800b6bd7c7",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-DBfOWLEA.css",
+      "sha256": "d391f0d44e495b34ac0900b30a37162461afb4622d2ab3ff7a69b790069a0840",
+      "matchesTestedBuild": true
+    }
+  ],
+  "ci": {
+    "run": 40148987110,
+    "conclusion": "success"
+  },
+  "scope": "Frontend-only note opening under slow/failed images, WebGL fallback, mid-opening reduced motion and full-opacity controls. Local controlled tests only; no production story or paid call created."
+}

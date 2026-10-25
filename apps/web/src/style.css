@@ -835,6 +835,15 @@ a {
 .empty-state h1 {
   margin-top: 20px;
 }
+.sea-world .closed-round {
+  padding: 28px clamp(20px, 4vw, 42px);
+  color: #183e40;
+  border-radius: 4px;
+  background:
+    linear-gradient(#f5eedbdb, #f5eedbdb),
+    url('/assets/paper-texture.jpg') center/cover;
+  box-shadow: 0 12px 35px #082a3d44;
+}
 .reveal-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -928,6 +937,20 @@ a {
   line-height: 1.7;
   margin: 0;
   max-width: 310px;
+}
+.pass-it-on {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.pass-it-on p {
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 4px;
 }
 .back-link {
   margin-top: 12px;
@@ -1848,6 +1871,49 @@ a {
 }
 .quota-recovery button {
   font-size: 10px;
+  min-height: 44px;
+}
+.earlier-drafts {
+  width: 100%;
+  margin-top: 28px;
+  padding: 16px 20px;
+  border: 1px solid #b9c4af;
+  border-radius: 4px;
+  background: #edf0e2;
+  color: #23484a;
+  text-align: left;
+}
+.earlier-drafts > summary {
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 44px;
+  line-height: 44px;
+}
+.earlier-drafts > p {
+  max-width: none;
+  margin: 10px 0 18px;
+  color: #46615c;
+  font-size: 12px;
+}
+.earlier-draft {
+  border-top: 1px solid #c5cebc;
+  padding: 14px 0;
+}
+.earlier-draft time,
+.earlier-drafts > small {
+  color: #48625b;
+  font-size: 11px;
+}
+.earlier-draft blockquote {
+  margin: 10px 0;
+  font:
+    400 23px/1.5 'Fraunces',
+    serif;
+  overflow-wrap: anywhere;
+}
+.earlier-draft .text-button {
+  color: #23484a;
+  min-height: 44px;
 }
 
 .hello-panel {
@@ -1985,8 +2051,13 @@ a {
     order: 7;
     margin-top: 20px;
   }
-  .reveal-copy > .back-link {
+  .reveal-copy > .pass-it-on {
     order: 8;
+    margin-top: 0;
+    margin-bottom: 12px;
+  }
+  .reveal-copy > .back-link {
+    order: 9;
   }
 }
 
@@ -2003,5 +2074,102 @@ a {
     min-height: 36px;
     display: flex;
     align-items: center;
+  }
+}
+
+/* A new live return stays separate from the draft being written. */
+.returned-notice {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px max(20px, calc((100% - 1120px) / 2));
+  border-bottom: 1px solid #b8c9b2;
+  color: #193e41;
+  background: #e6eddb;
+  font-size: 13px;
+}
+.returned-notice > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+}
+.returned-notice svg {
+  flex-shrink: 0;
+}
+.returned-notice > .text-button {
+  flex-shrink: 0;
+  color: #193e41;
+  font-weight: 600;
+  min-height: 44px;
+}
+.returned-notice > .icon-button {
+  color: #193e41;
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .returned-notice {
+    display: grid;
+    grid-template-columns: 1fr 44px;
+    gap: 0 8px;
+    padding: 10px 18px;
+  }
+  .returned-notice > .text-button {
+    justify-self: start;
+    grid-row: 2;
+  }
+  .returned-notice > .icon-button {
+    grid-column: 2;
+    grid-row: 1 / 3;
+  }
+}
+/* Six word-sized marks, rather than letter guesses: one small daily ritual. */
+.word-feedback {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 11px 12px;
+  font-variant-numeric: tabular-nums;
+}
+.word-feedback .word-dots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-column: 1 / -1;
+  gap: 7px;
+  width: 100%;
+  margin: 0;
+}
+.word-feedback .word-dots > span {
+  width: auto;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #8a9a8b;
+  border-radius: 3px;
+  background: #fffdf633;
+  color: #586951;
+  font:
+    500 12px 'DM Sans',
+    sans-serif;
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: ease-out;
+}
+.word-feedback .word-dots > span.filled {
+  background: #dce6d7;
+  border-color: #607e60;
+  color: #244a3e;
+  box-shadow: inset 0 -2px 0 #48674918;
+  font-size: 17px;
+}
+.word-feedback .word-dots.over > span.filled {
+  background: #eeded1;
+  border-color: #ac7150;
+  color: #7c3c25;
+}
+@media (prefers-reduced-motion: reduce) {
+  .word-feedback .word-dots > span {
+    transition: none;
   }
 }

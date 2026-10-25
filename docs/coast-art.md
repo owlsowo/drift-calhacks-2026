@@ -1,3 +1,7 @@
+# Historical branch artwork — excluded from the integrated runtime
+
+The generated images documented below were proposed in PR #1, then removed before integration because the owner had explicitly requested no AI-generated images. These prompts document the discarded iteration, not the current site's assets. Runtime replacements use the existing licensed photographs, original SVG lighthouse and CSS desk grain; see asset-sources.md.
+
 # Coast background artwork
 
 Generated on 2026-10-24 with the built-in `image_gen` tool. These are original environmental backgrounds inspired by the quiet mood of the team's old WeChat bottle-game reference. No original WeChat screenshot pixels are included. There are no baked-in interface controls, bottles, words, or logos.

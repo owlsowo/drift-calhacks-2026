@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-24T23:27:36.174Z",
+  "sourceCommit": "5043061ff2cb6bea1e586d46c7237c3d8de5bfbe",
+  "cloudflareVersion": "fe60dd10-2525-4389-b2ff-bc15a4c5ef56",
+  "assets": [
+    {
+      "asset": "/assets/index-jcKLohhY.js",
+      "sha256": "7a84fe7316378d261c912694afa8e13301da783dfc230db3c58e4b0a38a664ff",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-BKiTgXpo.css",
+      "sha256": "71b1b56c06b9b095465f298900202d576a034f88f7aa8e6d8a5b170fc1f9b2cb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend-only daily identity and word-count polish. No backend migration, paid calls or new test stories. Local WebKit/Chrome checks use synthetic inputs; no physical-phone or attendee claim."
+}
