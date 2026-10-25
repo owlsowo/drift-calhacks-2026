@@ -8,6 +8,7 @@ if (
   ![
     'gate-layout',
     'daily-clarity',
+    'type-layout',
     'shelf-render',
     'shore-motion',
     'qr-invitation',
@@ -106,6 +107,7 @@ try {
     }
   }
   const sceneFiles = {
+    'type-layout': 'type-layout-ui.mjs',
     'shelf-render': 'shelf-render-check.mjs',
     'shore-motion': 'shore-motion-ui.mjs',
     'qr-invitation': 'qr-invitation-ui.mjs',
