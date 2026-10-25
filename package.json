@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/scene-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts",
     "starters:check": "tsx scripts/check-starters.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
@@ -47,7 +47,14 @@
     "demo:rehearse": "node scripts/test-room.mjs demo --rehearse",
     "demo:record": "node scripts/test-room.mjs demo",
     "test:migration": "node --import tsx scripts/letter-migration.mjs",
-    "test:shore-script-retry": "node scripts/test-room.mjs shore-script-retry"
+    "test:shore-script-retry": "node scripts/test-room.mjs shore-script-retry",
+    "eval:scenes": "tsx scripts/eval-scenes.ts",
+    "test:scenes": "node scripts/test-room.mjs scenes",
+    "test:scene-flow": "node scripts/test-room.mjs scene-flow",
+    "test:scene-results": "node scripts/test-room.mjs scene-results",
+    "test:scene-asset-failures": "node scripts/test-room.mjs scene-asset-failures",
+    "test:scene-migration": "node --import tsx scripts/scene-migration.mjs",
+    "test:upgrade-check": "node scripts/upgrade-check-fixture.mjs"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",

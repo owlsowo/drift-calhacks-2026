@@ -7,6 +7,10 @@ const mode = process.argv[2] || 'ui';
 if (
   ![
     'gate-layout',
+    'scenes',
+    'scene-flow',
+    'scene-results',
+    'scene-asset-failures',
     'shore-script-retry',
     'invite',
     'withdrawal',
@@ -96,8 +100,15 @@ try {
       await new Promise((r) => setTimeout(r, 50));
     }
   }
+  const sceneFiles = {
+    scenes: 'scenes-ui.mjs',
+    'scene-flow': 'scene-flow-ui.mjs',
+    'scene-results': 'scene-results-ui.mjs',
+    'scene-asset-failures': 'scene-asset-failures.mjs',
+  };
   const file =
-    mode === 'shore-script-retry'
+    sceneFiles[mode] ??
+    (mode === 'shore-script-retry'
       ? 'shore-script-retry.mjs'
       : mode === 'navigation'
         ? 'navigation-ui.mjs'
@@ -149,7 +160,7 @@ try {
                                                       ? 'content-states.mjs'
                                                       : mode === 'demo'
                                                         ? 'demo-flow.mjs'
-                                                        : 'live-invariants.ts';
+                                                        : 'live-invariants.ts');
   const runner = mode === 'live' ? ['--import', 'tsx', `scripts/${file}`] : [`scripts/${file}`];
   const child = spawn(process.execPath, [...runner, ...process.argv.slice(3)], {
     cwd: root,
