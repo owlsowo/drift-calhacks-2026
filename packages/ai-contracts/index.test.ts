@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { HINT_MAX_WORDS, HINT_MIN_WORDS, modelRequest, parseModelResponse } from './index';
+import {
+  HINT_MAX_WORDS,
+  HINT_MIN_WORDS,
+  modelRequest,
+  parseModelResponse,
+  freshIdea,
+  ideaKey,
+} from './index';
 
 const envelope = (value: unknown, stop_reason = 'end_turn') => ({
   stop_reason,
@@ -89,4 +96,23 @@ test('guidance accepts both word-count boundaries and leaves six-word endings ou
       envelope({ kind: 'nudge', hint: 'Try making the shark demand overtime.' }),
     ),
   );
+});
+
+test('repeated ideas get a different writing direction without supplying an ending', () => {
+  const previous = 'Try giving the aquarium a very ordinary office problem.';
+  const different = 'Consider what the character would rather be doing right now.';
+  assert.equal(freshIdea(previous, ''), previous);
+  assert.equal(freshIdea(different, previous), different);
+  const replacement = freshIdea(
+    'TRY giving the aquarium a very ordinary office problem!',
+    previous,
+  );
+  assert.notEqual(ideaKey(replacement), ideaKey(previous));
+  assert.equal(
+    parseModelResponse('nudge', envelope({ kind: 'nudge', hint: replacement })).hint,
+    replacement,
+  );
+  const next = freshIdea(replacement.toUpperCase(), replacement);
+  assert.notEqual(ideaKey(next), ideaKey(replacement));
+  assert.equal(parseModelResponse('nudge', envelope({ kind: 'nudge', hint: next })).hint, next);
 });

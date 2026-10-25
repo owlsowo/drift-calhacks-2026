@@ -1227,23 +1227,27 @@ function App() {
                             remaining <= 0
                           }
                           onClick={() =>
-                            run('Finding a hint…', async () => {
+                            run('Finding an idea…', async () => {
                               await withinDeadline(
                                 game.paid('nudge', active.id, draft),
-                                'Your hint could not be confirmed. Your draft is saved. Try Hint again to check the same request.',
+                                'Your idea could not be confirmed. Your draft is saved. Try again to check the same request.',
                                 30000,
                               );
                             })
                           }
                         >
                           <Sparkles size={16} />
-                          {busy === 'Finding a hint…' ? 'Finding a hint…' : 'Hint'}
+                          {busy === 'Finding an idea…'
+                            ? 'Finding an idea…'
+                            : active.hint
+                              ? 'Another idea?'
+                              : 'Need an idea?'}
                           <span>{2 - active.nudges} left</span>
                         </button>
                         {active.hint && !assignmentUnavailable && (
                           <aside className="nudge" aria-live="polite">
                             <span className="eyebrow">
-                              <Sparkles size={12} /> AI hint
+                              <Sparkles size={12} /> AI idea
                             </span>
                             <p>{active.hint}</p>
                             <small>Your ending is still yours.</small>
@@ -2184,11 +2188,11 @@ function App() {
             also keeps track of which replies you have yet to open.
           </p>
           <p>
-            In the live game, Claude checks your submitted words and story context for safety.
-            Optional Hints give direction without filling your note. After a reply is accepted,
-            Claude also uses the pair to arrange a shared illustration from a small art library;
-            both story lines stay unchanged. Checks can miss things; use Report to flag a postcard.
-            Starter content is always labeled.
+            In the live game, Claude checks your submitted words and story context for safety. “Need
+            an idea?” offers a direction when you’re stuck. After a reply is accepted, Claude also
+            uses the pair to arrange a shared illustration from a small art library; both story
+            lines stay unchanged. Checks can miss things; use Report to flag a postcard. Starter
+            content is always labeled.
           </p>
           <p>
             Public upvote totals are visible to everyone. Your selection is tied to this browser’s

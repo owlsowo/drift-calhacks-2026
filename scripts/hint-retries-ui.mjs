@@ -28,6 +28,15 @@ const good = {
   message: '',
   hint: 'Consider how the character might misunderstand a perfectly ordinary rule.',
 };
+async function openBottle(p) {
+  await p.locator('.bottle-ritual--arrived').waitFor();
+  if (await p.locator('[data-bottle-choice]').count()) {
+    await p.locator('[data-bottle-choice]').first().click();
+    await p.locator('[data-pickup-step="open"].bottle-ritual--arrived').waitFor();
+  }
+  await p.getByRole('button', { name: 'Open bottle', exact: true }).click();
+  await p.getByRole('textbox', { name: 'Your six-word ending', exact: true }).waitFor();
+}
 page.on('pageerror', (e) => errors.push(e.message));
 await page.exposeFunction('testHintTransport', (args) => {
   calls.push(args);
@@ -223,7 +232,7 @@ try {
   await page
     .getByRole('button', { name: 'Pick up a bottle. Write an ending', exact: true })
     .click();
-  await page.getByRole('button', { name: 'Open bottle', exact: true }).click();
+  await openBottle(page);
   await page
     .getByRole('textbox', { name: 'Your six-word ending', exact: true })
     .fill('Our lawyers would like another hand.');
@@ -251,7 +260,7 @@ try {
   await page
     .getByRole('button', { name: 'Pick up a bottle. Write an ending', exact: true })
     .click();
-  await page.getByRole('button', { name: 'Open bottle', exact: true }).click();
+  await openBottle(page);
   await page
     .getByRole('textbox', { name: 'Your six-word ending', exact: true })
     .fill('The shark has requested legal counsel.');
@@ -274,7 +283,10 @@ try {
     'Navigating away while a reply is pending keeps the chosen view when its real commit arrives; the exact completed pair remains in My bottles',
   );
 
-  const hintContext = await browser.newContext({ reducedMotion: 'reduce' }),
+  const hintContext = await browser.newContext({
+      reducedMotion: 'reduce',
+      viewport: { width: 390, height: 844 },
+    }),
     H = await hintContext.newPage();
   H.on('pageerror', (e) => errors.push(e.message));
   await H.goto(origin);
@@ -283,13 +295,21 @@ try {
     const { game } = await import('/src/game.ts'),
       { DbConnection } = await import('/src/module_bindings/index.ts');
     const snapshot = game.snapshot;
-    let previous, decorated;
+    let previous,
+      decorated,
+      idea = '';
     // UI-only fixture: the local backend still has no provider key and receives no nudge call.
     game.snapshot = () => {
       const next = snapshot();
       if (next !== previous) {
         previous = next;
-        decorated = { ...next, service: next.service && { ...next.service, aiReady: true } };
+        decorated = {
+          ...next,
+          service: next.service && { ...next.service, aiReady: true },
+          rounds: next.rounds.map((round) =>
+            idea && round.stage === 'reply' ? { ...round, hint: idea, nudges: 1 } : round,
+          ),
+        };
       }
       return decorated;
     };
@@ -306,6 +326,9 @@ try {
               return new Promise((resolve) => {
                 window.releaseHint = resolve;
               });
+            idea = 'Consider another interpretation of the rules.';
+            previous = undefined;
+            void game.refresh();
             return Promise.resolve({
               ok: true,
               message: '',
@@ -320,15 +343,16 @@ try {
   });
   await waitForGameConnection(H);
   await H.getByRole('button', { name: 'Pick up a bottle. Write an ending', exact: true }).click();
-  await H.getByRole('button', { name: 'Open bottle', exact: true }).click();
+  await openBottle(H);
   await H.getByRole('textbox', { name: 'Your six-word ending', exact: true }).fill(
     'My unfinished little ending',
   );
   await H.clock.install();
+  assert.match(await H.locator('.nudge-button').innerText(), /Need an idea\?/);
   await H.locator('.nudge-button').click();
   await H.waitForFunction(() => window.hintAttempts.length === 1);
   await H.clock.fastForward(31000);
-  await H.getByRole('alert').filter({ hasText: 'Your hint could not be confirmed' }).waitFor();
+  await H.getByRole('alert').filter({ hasText: 'Your idea could not be confirmed' }).waitFor();
   assert.equal(await H.locator('.nudge-button').isEnabled(), true);
   assert.equal(
     await H.getByRole('textbox', { name: 'Your six-word ending', exact: true }).inputValue(),
@@ -337,6 +361,18 @@ try {
   await H.locator('.nudge-button').click();
   await H.waitForFunction(() => window.hintAttempts.length === 2);
   assert.equal(await H.evaluate(() => window.hintAttempts[0] === window.hintAttempts[1]), true);
+  await H.getByRole('button', { name: /Another idea\?/ }).waitFor();
+  assert.equal(
+    await H.locator('.nudge p').innerText(),
+    'Consider another interpretation of the rules.',
+  );
+  const ideaButton = await H.locator('.nudge-button').boundingBox();
+  assert.ok(ideaButton && ideaButton.x >= 0 && ideaButton.x + ideaButton.width <= 390);
+  await H.screenshot({
+    path: new URL(`../../outputs/drift-need-an-idea-${engine.toLowerCase()}.png`, import.meta.url)
+      .pathname,
+    fullPage: true,
+  });
   await H.evaluate(() =>
     window.releaseHint({
       ok: true,
@@ -345,7 +381,7 @@ try {
     }),
   );
   pass(
-    'A never-resolving Hint restores controls after its deadline, preserves the draft and reuses the original ID on an explicit retry',
+    'Need an idea? restores controls after a timeout, preserves the draft and retry ID, then becomes Another idea? after confirmation',
   );
   await hintContext.close();
   assert.deepEqual(errors, []);

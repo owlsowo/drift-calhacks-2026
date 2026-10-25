@@ -398,6 +398,52 @@ describe('authoritative game state', () => {
     expect(active(A).skips).toBe(1);
     expect(active(A).stage).toBe('catch');
   });
+  it('replaces expired bottles without repeating daily assignments, including legacy rounds', () => {
+    start(B);
+    setup(B);
+    start(C);
+    setup(C, 'The octopus stole my lunch again.');
+    tx(A, (c) => module.start_catching(c, {}));
+    const first = claim(A).id;
+    const deadline = claim(A).leaseMs;
+    // Existing assignments from before this upgrade did not record seen keys.
+    const legacy = { ...active(A), excluded: '[]' };
+    tx(owner, (c) => c.db.round.id.update(legacy));
+    tx(A, (c) => module.pick_up_beginning(c, { beginningId: first }));
+    expect(claim(A).id).toBe(first);
+    expect(claim(A).leaseMs).toBe(deadline);
+    h.clock.advance(TimeDuration.fromMillis(600001));
+    catchBottle(A);
+    expect(claim(A).id).not.toBe(first);
+    const second = claim(A).id;
+    const roundId = active(A).id;
+    tx(A, (c) => module.abandon_round(c, { roundId }));
+    env.DRIFT_DEV_STARTERS = 'false';
+    expect(() => tx(A, (c) => module.start_catching(c, {}))).toThrow(/No bottles are available/);
+    expect(() => tx(A, (c) => module.pick_up_beginning(c, { beginningId: first }))).toThrow(
+      /already passed/,
+    );
+    expect(() => tx(A, (c) => module.pick_up_beginning(c, { beginningId: second }))).toThrow(
+      /already passed/,
+    );
+  });
+  it('does not replace a skipped bottle with the same words under another ID', () => {
+    start(B);
+    setup(B);
+    start(C);
+    setup(C, 'I TAUGHT THE OCTOPUS INSIDER TRADING!');
+    tx(A, (c) => module.start_catching(c, {}));
+    const first = claim(A).id;
+    const duplicate = [...h.db.bottle.iter()].find((b) => b.id !== first)!;
+    skip(A);
+    env.DRIFT_DEV_STARTERS = 'false';
+    expect(() => catchBottle(A)).toThrow(/No bottles are available/);
+    expect(() => tx(A, (c) => module.pick_up_beginning(c, { beginningId: duplicate.id }))).toThrow(
+      /already passed/,
+    );
+    expect(active(A).stage).toBe('catch');
+    expect(active(A).skips).toBe(1);
+  });
   it('restricts hide and pause to authorized callers', () => {
     start(A);
     setup(A);
@@ -650,6 +696,35 @@ describe('two-phase model boundary', () => {
     expect(active(A).hint).toBe('');
     expect(active(A).nudges).toBe(1);
   });
+  it('gives a fresh second idea, passes the earlier direction to Claude and preserves replay limits', () => {
+    start(A);
+    setup(A);
+    catchBottle(A);
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const previous = 'Try giving the aquarium a very ordinary office problem.';
+    let calls = 0;
+    const ctx = modelCtx(A, (_test, _request, body) => {
+      const input = JSON.parse(JSON.parse(new TextDecoder().decode(body)).messages[0].content);
+      expect(input.previous_hint).toBe(calls ? previous : '');
+      calls++;
+      return modelResponse({
+        kind: 'nudge',
+        hint: calls === 1 ? previous : previous.toUpperCase(),
+      });
+    });
+    const roundId = active(A).id;
+    const first = module.request_nudge(ctx, { roundId, requestId: crypto.randomUUID(), text: '' });
+    const args = { roundId, requestId: crypto.randomUUID(), text: '' };
+    const second = module.request_nudge(ctx, args);
+    expect(first).toMatchObject({ ok: true, hint: previous });
+    expect(second.ok).toBe(true);
+    expect(second.hint.toLowerCase()).not.toBe(previous.toLowerCase());
+    expect(active(A).hint).toBe(second.hint);
+    expect(module.request_nudge(ctx, args)).toEqual(second);
+    expect(module.request_nudge(ctx, { ...args, requestId: crypto.randomUUID() }).ok).toBe(false);
+    expect(active(A).nudges).toBe(2);
+    expect(calls).toBe(2);
+  });
   it('never replays an earlier bottle hint after skip, while same-assignment retry stays idempotent', () => {
     start(A);
     setup(A);
@@ -680,7 +755,7 @@ describe('two-phase model boundary', () => {
     expect(active(A).hint).toBe('');
     expect(calls).toBe(1);
   });
-  it('rejects old hints when an expired beginning is rebound with a new lease version', () => {
+  it('rejects old hints when an expired assignment is replaced with an unseen beginning', () => {
     start(A);
     setup(A);
     catchBottle(B);
@@ -698,7 +773,7 @@ describe('two-phase model boundary', () => {
     const original = { ...active(B) };
     h.clock.advance(TimeDuration.fromMillis(600001));
     catchBottle(B);
-    expect(active(B).assignmentId).toBe(original.assignmentId);
+    expect(active(B).assignmentId).not.toBe(original.assignmentId);
     expect(active(B).version).toBeGreaterThan(original.version);
     expect(module.request_nudge(ctx, args)).toMatchObject({
       ok: false,

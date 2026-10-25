@@ -1,4 +1,9 @@
-import { messages, modelRequest, parseModelResponse } from '../../packages/ai-contracts/index';
+import {
+  messages,
+  modelRequest,
+  parseModelResponse,
+  freshIdea,
+} from '../../packages/ai-contracts/index';
 import {
   getScenePack,
   sceneModelRequest,
@@ -1122,7 +1127,7 @@ function paidAction(
     if (count >= (operation === 'nudge' ? 2 : 3))
       fail(
         operation === 'nudge'
-          ? 'You’ve used both nudges. Your own ending is the good part.'
+          ? 'You’ve used both ideas for this turn.'
           : 'You’ve used this round’s three checks. Your draft is saved.',
       );
     if (!tx.env.ANTHROPIC_API_KEY && !(operation !== 'nudge' && tx.env.DRIFT_DEV_MODE === 'true'))
@@ -1140,7 +1145,7 @@ function paidAction(
             instructions: { setup: prompt.setup, reply: prompt.reply },
             setup: operation === 'setup' ? text : b!.text,
             ...(operation === 'reply' ? { reply: text } : {}),
-            ...(operation === 'nudge' ? { draft: text } : {}),
+            ...(operation === 'nudge' ? { draft: text, previous_hint: r.hint } : {}),
           },
           kind === 'nudge' ? tx.env.NUDGE_MODEL : tx.env.MODERATION_MODEL,
         )
@@ -1239,8 +1244,9 @@ function paidAction(
       return value;
     }
     if (operation === 'nudge') {
-      saveRound(tx, { ...current, inFlight: '', busyUntil: 0, hint: checked.hint });
-      const value = result(true, '', checked.hint);
+      const hint = freshIdea(checked.hint, current.hint);
+      saveRound(tx, { ...current, inFlight: '', busyUntil: 0, hint });
+      const value = result(true, '', hint);
       finishRequest(tx, qid, value);
       return value;
     }
@@ -1365,18 +1371,45 @@ export const request_nudge = db.procedure(paidArgs, response, (ctx, args) =>
 
 function excludedBeginnings(ctx: Tx, r: Round) {
   const excluded = new Set(JSON.parse(r.excluded) as string[]);
-  // Skips and reports persist across the identity's rounds for this day.
-  for (const previous of ctx.db.round.owner.filter(ctx.sender))
-    if (previous.day === r.day) for (const id of JSON.parse(previous.excluded)) excluded.add(id);
+  // Seen beginnings persist across skips, expiry and the identity's daily rounds.
+  // Recover assignments made before seen keys were recorded at bind time too.
+  for (const previous of ctx.db.round.owner.filter(ctx.sender)) {
+    if (previous.day !== r.day) continue;
+    for (const id of JSON.parse(previous.excluded)) excluded.add(id);
+    const bottle = ctx.db.bottle.id.find(previous.assignmentId);
+    if (bottle) rememberBeginning(excluded, bottle);
+  }
+  for (const id of [...excluded]) {
+    const bottle = ctx.db.bottle.id.find(id);
+    if (bottle) excluded.add(beginningTextKey(bottle.text));
+  }
   return excluded;
 }
+function beginningTextKey(text: string) {
+  return (
+    'text:' +
+    text
+      .normalize('NFKC')
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .trim()
+  );
+}
+function rememberBeginning(excluded: Set<string>, bottle: Bottle) {
+  excluded.add(bottle.id);
+  if (bottle.seeded) excluded.add('seed:' + bottle.seedIndex);
+}
 function bindBeginning(ctx: Tx, r: Round, found: Bottle) {
+  const excluded = excludedBeginnings(ctx, r);
+  rememberBeginning(excluded, found);
   saveRound(ctx, {
     ...r,
     stage: 'reply',
     assignmentId: found.id,
     leaseMs: now(ctx) + LEASE_MS,
     version: r.version + 1,
+    // Store only identifiers; text comparisons are derived from retained bottles.
+    excluded: JSON.stringify([...excluded].filter((key) => !key.startsWith('text:'))),
     hint: '',
     inFlight: '',
     busyUntil: 0,
@@ -1393,7 +1426,8 @@ function assign(ctx: Tx, r: Round) {
       b.owner &&
       !same(b.owner, ctx.sender) &&
       !alreadyReplied(ctx, b.id) &&
-      !excluded.has(b.id),
+      !excluded.has(b.id) &&
+      !excluded.has(beginningTextKey(b.text)),
   );
   let found = candidates.length
     ? candidates[ctx.random.integerInRange(0, candidates.length - 1)]
@@ -1410,7 +1444,7 @@ function assign(ctx: Tx, r: Round) {
     const prompt = promptForDay(r.day);
     const available = (humanWritten ? approved : prompt.starters)
       .map((text, index) => ({ text, index }))
-      .filter((s) => !excluded.has('seed:' + s.index));
+      .filter((s) => !excluded.has('seed:' + s.index) && !excluded.has(beginningTextKey(s.text)));
     if (!available.length)
       fail('No bottles are available just now. Your setup is safe; try again later.');
     const seed = available[ctx.random.integerInRange(0, available.length - 1)];
@@ -1457,7 +1491,10 @@ export const pick_up_beginning = db.reducer({ beginningId: t.string() }, (ctx, {
   if (r.stage === 'reply' && r.leaseMs > now(ctx))
     fail('Your other bottle is still open. Finish it before opening this invitation.');
   const excluded = excludedBeginnings(ctx, r);
-  if (excluded.has(b.seeded ? 'seed:' + b.seedIndex : b.id))
+  if (
+    excluded.has(b.seeded ? 'seed:' + b.seedIndex : b.id) ||
+    excluded.has(beginningTextKey(b.text))
+  )
     fail('You’ve already passed this beginning. Pick up another one.');
   bindBeginning(ctx, r, b);
 });
@@ -1478,7 +1515,7 @@ function release(ctx: Tx, r: Round, reported: boolean) {
   if (!reported && r.skips >= 1) fail('You’ve used your skip for this round.');
   const excluded = new Set<string>(JSON.parse(r.excluded));
   if (b) {
-    excluded.add(b.seeded ? 'seed:' + b.seedIndex : b.id);
+    rememberBeginning(excluded, b);
   }
   saveRound(ctx, {
     ...r,
