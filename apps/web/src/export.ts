@@ -1,4 +1,5 @@
 import type { Card } from '../../../packages/game-rules/index';
+import { storyPrompt } from './story-context';
 import { submissionTime } from './submission-time';
 import type { SceneSpec } from '../../../packages/scene-contracts/index';
 import { prepareScene, drawScene } from './scene-renderer';
@@ -8,8 +9,10 @@ const provenance = (card: Card) =>
       ? 'Beginning by the Drift team.'
       : 'Sample beginning.'
     : '';
-export const cardText = (card: Card) =>
-  `${card.setup}\n${card.reply}${provenance(card) ? `\n\n${provenance(card)}` : ''}`;
+export const cardText = (card: Card) => {
+  const prompt = storyPrompt(card.promptId);
+  return `Original prompt: ${prompt?.setup ?? 'Unavailable'}\nBeginning: ${card.setup}\n\nHow to respond: ${prompt?.reply ?? 'Unavailable'}\nEnding: ${card.reply}${provenance(card) ? `\n\n${provenance(card)}` : ''}`;
+};
 export const cardUrl = (c: Card) =>
   `${location.origin}${location.pathname}?card=${encodeURIComponent(c.id)}`;
 function wrap(ctx: CanvasRenderingContext2D, text: string, width: number) {
@@ -95,7 +98,7 @@ async function renderPostcard(card: Card, scene?: SceneSpec) {
   const handwriting = hasHandwriting ? 'Kalam' : 'Georgia, serif';
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
-  canvas.height = 1350;
+  canvas.height = 1650;
   const c = canvas.getContext('2d');
   if (!c) throw Error('Couldn’t create your image. Try copying the text instead.');
   if (hasPaper) c.drawImage(paper, 0, 0, canvas.width, canvas.height);
@@ -113,7 +116,7 @@ async function renderPostcard(card: Card, scene?: SceneSpec) {
   c.fillRect(0, 0, canvas.width, canvas.height);
 
   if (illustration) c.drawImage(illustration, 90, 150);
-  const foldY = illustration ? 985 : 675;
+  const foldY = illustration ? 1125 : 825;
   const fold = c.createLinearGradient(0, foldY - 17, 0, foldY + 17);
   fold.addColorStop(0, 'rgba(38,51,66,0)');
   fold.addColorStop(0.46, 'rgba(38,51,66,.055)');
@@ -125,11 +128,24 @@ async function renderPostcard(card: Card, scene?: SceneSpec) {
 
   c.fillStyle = '#263342';
   c.textBaseline = 'middle';
+  const prompt = storyPrompt(card.promptId);
   const parts = [
-    { text: card.setup, center: illustration ? 870 : 390 },
-    { text: card.reply, center: illustration ? 1095 : 920 },
+    {
+      text: card.setup,
+      label: `Original prompt: ${prompt?.setup ?? 'Unavailable'}`,
+      top: illustration ? 790 : 250,
+      center: illustration ? 1000 : 540,
+    },
+    {
+      text: card.reply,
+      label: `How to respond: ${prompt?.reply ?? 'Unavailable'}`,
+      top: illustration ? 1160 : 900,
+      center: illustration ? 1370 : 1190,
+    },
   ];
   for (const part of parts) {
+    c.font = '400 28px Arial, sans-serif';
+    wrap(c, part.label, 880).forEach((line, i) => c.fillText(line, 100, part.top + i * 36));
     let size = illustration ? 58 : 70;
     let lines: string[] = [];
     do {
@@ -161,8 +177,10 @@ async function renderPostcard(card: Card, scene?: SceneSpec) {
     100,
   );
   c.textAlign = 'left';
-  c.fillText(submissionTime(card.createdMs), 100, 1220);
-  c.fillText(location.host, 100, 1270);
+  c.fillText(submissionTime(card.createdMs), 100, 1500);
+  c.fillText(location.host, 100, 1550);
+  c.font = '400 22px Arial, sans-serif';
+  if (provenance(card)) c.fillText(provenance(card), 100, 1460, 880);
   c.font = '400 16px Arial, sans-serif';
   c.fillText(
     (illustration ? 'AI composition · ' : '') +
@@ -170,7 +188,7 @@ async function renderPostcard(card: Card, scene?: SceneSpec) {
         ? 'Paper photo: D Sharon Pruitt · CC BY 2.0 · ' + location.host + '/credits.html'
         : 'Drift · ' + location.host),
     100,
-    1310,
+    1610,
     880,
   );
   const blob = await new Promise<Blob>((resolve, reject) => {

@@ -1,6 +1,11 @@
 export function createOcean(canvas: HTMLCanvasElement, options?: {
   paused?: boolean;
+  timeOfDay?: 'day' | 'night';
   signal?: AbortSignal;
   onReady?: () => void;
   onError?: (error: unknown) => void;
-}): Promise<{ setPaused: (paused: boolean) => void; destroy: () => void }>;
+}): Promise<{
+  setPaused: (paused: boolean) => void;
+  setTimeOfDay: (period: 'day' | 'night') => void;
+  destroy: () => void;
+}>;

@@ -192,6 +192,10 @@ fn sampleTrans(r: f32, mu: f32) -> vec3f {
 }
 
 fn sunIlluminance() -> vec3f {
+  if (F.camFwd.w > 0.5) {
+    // Neutral sunlight keeps the afternoon water blue/teal rather than moonlit gold.
+    return sampleTrans(camR(), F.sunDir.y) * vec3f(1.0, 0.97, 0.89) * F.sunDir.w;
+  }
   return sampleTrans(camR(), F.sunDir.y) * vec3f(1.0, 0.82, 0.52) * F.sunDir.w;
 }
 
@@ -223,6 +227,17 @@ fn skyViewUV(dir: vec3f) -> vec2f {
 }
 
 fn skyAtmo(dir: vec3f) -> vec3f {
+  if (F.camFwd.w > 0.5) {
+    // A clear maritime sky: soft aerosol haze at the horizon and cooler overhead.
+    // The computed atmosphere adds the directional scattering around the real sun;
+    // this radiance also fills the reflection cube and lights the water/foam.
+    // HDR values are calibrated through AgX to the approved daylight artwork:
+    // clear blue overhead, pale blue haze at the horizon (not a gray exposure lift).
+    let h = pow(clamp(dir.y / 0.30, 0.0, 1.0), 0.64);
+    let daylight = mix(vec3f(0.52, 1.96, 5.60), vec3f(0.001, 0.40, 2.0), h);
+    let physical = textureSampleLevel(skyLUT, sampC, skyViewUV(dir), 0.0).rgb;
+    return daylight + physical * 0.12;
+  }
   // Blue-hour art direction; this same radiance lights the reflection cube.
   let h = pow(clamp(dir.y / 0.45, 0.0, 1.0), 0.72);
   let twilight = mix(vec3f(0.058, 0.069, 0.148), vec3f(0.0010, 0.0090, 0.072), h);
@@ -386,6 +401,13 @@ fn cloudLayers(dir: vec3f, pixAng: f32, aa: vec2f, sunT: ptr<function, f32>) -> 
 fn sunDisk(dir: vec3f) -> vec3f {
   let c = dot(dir, F.sunDir.xyz);
   let ang = sqrt(max(2.0 * (1.0 - c), 0.0));
+  if (F.camFwd.w > 0.5) {
+    let radius = 0.0085;
+    let pix = F.screen.w * 2.0 * length(F.camUp.xyz) * 0.75;
+    let edge = 1.0 - smoothstep(radius - pix, radius + pix, ang);
+    let halo = exp(-ang * ang / 0.0014) * 0.30;
+    return vec3f(18.0, 17.5, 16.0) * edge + vec3f(1.0, 0.94, 0.82) * halo;
+  }
   let radius = 0.0145;
   let pix = F.screen.w * 2.0 * length(F.camUp.xyz) * 0.75;
   let edge = 1.0 - smoothstep(radius - pix, radius + pix, ang);

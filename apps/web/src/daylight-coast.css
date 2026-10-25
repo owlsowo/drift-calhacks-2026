@@ -1,0 +1,57 @@
+/* Day is the same shore in sunlight, with the same objects and open water. */
+.sea-world[data-time-of-day='day'] {
+  background: #4381c7;
+}
+.ocean-world[data-time-of-day='day'] {
+  background: #c2e1fb;
+}
+.ocean-world[data-time-of-day='day'] .ocean-photograph {
+  background-color: #4381c7;
+  background-image: url('/assets/coast-day-wide.webp');
+}
+
+/* Daylight cutout: keep y=239…539, enclosing its opaque y=242…538 bounds.
+   The waterline keeps the same five-pixel immersion as the night coast. */
+.ocean-world.fft-ocean[data-time-of-day='day'] .fft-headland {
+  aspect-ratio: 7.24;
+  filter: none;
+}
+.ocean-world.fft-ocean[data-time-of-day='day'] .fft-headland img {
+  top: -79.6667%;
+}
+
+.sea-world[data-time-of-day='day'] .site-header {
+  background: #dbe9efed;
+  color: #244350;
+}
+.sea-world[data-time-of-day='day'] .wordmark,
+.sea-world[data-time-of-day='day'] .shore-back,
+.sea-world[data-time-of-day='day'] .icon-button.help,
+.sea-world[data-time-of-day='day'] .site-header nav button {
+  color: #244350;
+  text-shadow: none;
+}
+.sea-world[data-time-of-day='day'] .preview-mark {
+  color: #486472;
+}
+.sea-world[data-time-of-day='day'] .icon-button.help:hover {
+  background: #2443500d;
+}
+.sea-world[data-time-of-day='day'] .daily-tide::before {
+  background: radial-gradient(ellipse, #11374c9c 0%, #11374c5c 58%, transparent 76%);
+}
+.sea-world[data-time-of-day='day'] .shore-dock::before {
+  border-top-color: #bda17d;
+  background:
+    linear-gradient(180deg, #f8e2b51a 0%, #3a271518 100%),
+    repeating-linear-gradient(2deg, #77573f 0px, #846347 3px, #654b39 5px, #805b43 8px);
+  box-shadow:
+    0 -5px 22px #17354a40,
+    inset 0 2px 2px #e4d1a340;
+}
+
+@media (max-width: 700px) {
+  .ocean-world[data-time-of-day='day'] .ocean-photograph {
+    background-image: url('/assets/coast-day-mobile.webp');
+  }
+}

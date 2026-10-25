@@ -17,6 +17,9 @@ const button = (page, name) => page.getByRole('button', { name, exact: true });
 async function ready(context) {
   const page = await context.newPage();
   page.on('pageerror', (e) => errors.push(e.message));
+  // This historical art regression deliberately exercises the approved night scene.
+  // Separate coast-time checks cover the viewer-local day/night selection.
+  await page.clock.setFixedTime(new Date('2026-10-24T22:00:00'));
   await page.goto(origin);
   await waitForGameConnection(page);
   return page;
