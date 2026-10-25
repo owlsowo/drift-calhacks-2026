@@ -1,9 +1,9 @@
 {
-  "sourceCommit": "8b9833408e9971d6e1f0561e2fb1b7b34560ce7d",
-  "archive": "drift-review-pack-8b98334.zip",
-  "bytes": 6501633,
-  "sha256": "14d56c92aad79ca4f565eb1b348bd6cdf50aa3724cf3e6ae7edba36e0aafd57b",
-  "files": 24,
+  "sourceCommit": "6beae714853b9074986b8f17576c3da48d9238a6",
+  "archive": "drift-review-pack-6beae71.zip",
+  "bytes": 6862813,
+  "sha256": "2b75627292f3500f20032eae3557cdda15fdc232cec32b16ff4088028111998c",
+  "files": 28,
   "checks": [
     "Pinned source hash and clean-build result verified",
     "Video/edit hashes match original evidence",

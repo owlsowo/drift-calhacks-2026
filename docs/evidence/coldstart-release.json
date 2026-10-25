@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-10-25T00:20:56.732Z",
+  "sourceCommit": "6beae714853b9074986b8f17576c3da48d9238a6",
+  "cloudflareVersion": "799bb04c-e43b-4826-a558-85f3fe170d5c",
+  "assets": [
+    {
+      "asset": "/assets/index-DTRSY7hX.js",
+      "sha256": "0474decdf34c3c1b548010a1961aa4ed43d936cb62a11bdd472db62b3cfc2edb",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-D6xaydzj.css",
+      "sha256": "da207cc5effc276e9bd04eb4a9fb4e4fca914f6646664cc6b08bd18fa0f06faf",
+      "matchesTestedBuild": true
+    }
+  ],
+  "backend": "Published optional sandbox-starter setting; no database-table migration plan or data deletion. Production publish forces development mode off.",
+  "scope": "Leave/keep recovery and honest empty-sea copy. Twelve actual local Chrome/WebKit checks with two synthetic identities, AI off and no starter fallback. No production test story, paid call or attendee claim."
+}
