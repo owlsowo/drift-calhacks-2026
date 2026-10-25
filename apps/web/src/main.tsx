@@ -20,6 +20,7 @@ import {
   LoaderCircle,
   Mail,
   RotateCcw,
+  QrCode,
   Share2,
   Shuffle,
   Sparkles,
@@ -35,6 +36,8 @@ import './style.css';
 import { HelloPanel } from './HelloPanel';
 import { friendlyError } from './errors';
 import { Postcard } from './Postcard';
+import { QrInvitation } from './QrInvitation';
+import { bottleLink } from './bottle-link';
 import { usePostcardScene } from './usePostcardScene';
 import { Shore } from './Shore';
 import { Ocean } from './Ocean';
@@ -306,12 +309,13 @@ function App() {
   const selectedBeginningId = route.view === 'beginning' ? route.beginningId : '';
   const [openedCardId, setOpenedCardId] = useState('');
   const [withdrawalId, setWithdrawalId] = useState('');
+  const [qrBeginningId, setQrBeginningId] = useState('');
   const navigation = useRef({ view, playingRoundId, selectedBeginningId });
   navigation.current = { view, playingRoundId, selectedBeginningId };
   const [bottleLookup, setBottleLookup] = useState('');
-  const [modal, setModal] = useState<'how' | 'report' | 'hide' | 'withdraw' | 'privacy' | null>(
-    null,
-  );
+  const [modal, setModal] = useState<
+    'how' | 'report' | 'hide' | 'withdraw' | 'privacy' | 'qr' | null
+  >(null);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
@@ -802,7 +806,7 @@ function App() {
   }
   async function copyInvitation(id: string) {
     await run('Copying invitation…', async () => {
-      await copyText(`${location.origin}${location.pathname}?bottle=${encodeURIComponent(id)}`);
+      await copyText(bottleLink(id));
       setToast('Bottle link copied');
     });
   }
@@ -1671,6 +1675,16 @@ function App() {
                     </details>
                   </PaperNote>
                   <div className="invitation-actions">
+                    <button
+                      className="text-button qr-open"
+                      onClick={(event) => {
+                        event.currentTarget.focus();
+                        setQrBeginningId(beginning.id);
+                        setModal('qr');
+                      }}
+                    >
+                      <QrCode size={17} aria-hidden="true" /> Show QR code
+                    </button>
                     {s.connected &&
                       s.service?.botRequired &&
                       !gateReady &&
@@ -1834,6 +1848,20 @@ function App() {
           <Check size={17} />
           {toast}
         </div>
+      )}
+      {modal === 'qr' && beginning && beginning.id === qrBeginningId && (
+        <Modal title="Pass this bottle along" onClose={() => setModal(null)}>
+          <QrInvitation url={bottleLink(beginning.id)} />
+          <div className="modal-actions">
+            <button
+              className="button primary"
+              disabled={!!busy}
+              onClick={() => void copyInvitation(beginning.id)}
+            >
+              <Copy size={15} aria-hidden="true" /> Copy bottle link
+            </button>
+          </div>
+        </Modal>
       )}
       {modal === 'how' && (
         <Modal title="How to play" onClose={() => setModal(null)}>

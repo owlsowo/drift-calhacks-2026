@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/scene-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/scene-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts scripts/bottle-link.test.ts",
     "starters:check": "tsx scripts/check-starters.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
@@ -56,13 +56,15 @@
     "test:scene-migration": "node --import tsx scripts/scene-migration.mjs",
     "test:upgrade-check": "node scripts/upgrade-check-fixture.mjs",
     "test:daily-clarity": "node scripts/test-room.mjs daily-clarity",
-    "test:shared-landing": "node scripts/test-room.mjs shared-landing"
+    "test:shared-landing": "node scripts/test-room.mjs shared-landing",
+    "test:qr-invitation": "node scripts/test-room.mjs qr-invitation"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/fraunces": "^5.2.8",
     "@fontsource/kalam": "^5.3.0",
     "lucide-react": "^0.577.0",
+    "qrcode-generator": "2.0.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "spacetimedb": "2.13.0"
@@ -74,6 +76,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "latest",
+    "jsqr": "1.4.0",
     "prettier": "^3.9.10",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
