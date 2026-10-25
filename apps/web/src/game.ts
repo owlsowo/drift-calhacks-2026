@@ -2,6 +2,13 @@ import './csp-serialization';
 import { DbConnection } from './module_bindings';
 import { encodeDraft, decodeDraft } from './drafts';
 import type { CardAction } from '../../../packages/activity/index';
+import {
+  emptyBook,
+  loadBottleBook,
+  mergeBook,
+  saveBottleBook,
+  type BottleBook,
+} from './bottle-book';
 import type {
   Round,
   Assignment,
@@ -11,6 +18,7 @@ import type {
   ServiceInfo,
   HelloAvailability,
   ReportedCard,
+  Beginning,
 } from './module_bindings/types';
 export type Snapshot = {
   connected: boolean;
@@ -24,6 +32,9 @@ export type Snapshot = {
   ownership: OwnedCard[];
   outgoing: Outgoing[];
   cards: Postcard[];
+  beginnings: Beginning[];
+  book: BottleBook;
+  bookStored: boolean;
   hellos: HelloAvailability[];
   reported: ReportedCard[];
   service?: ServiceInfo;
@@ -41,6 +52,9 @@ const blank: Snapshot = {
   ownership: [],
   outgoing: [],
   cards: [],
+  beginnings: [],
+  book: emptyBook(),
+  bookStored: true,
   hellos: [],
   reported: [],
 };
@@ -53,6 +67,8 @@ const database = import.meta.env.VITE_SPACETIMEDB_DATABASE || 'drift-local';
 const host =
   import.meta.env.VITE_SPACETIMEDB_HOST || `${location.protocol}//${location.hostname}:3000`;
 const tokenKey = `drift:${host}:${database}:identity`;
+const bookScope = `${host}:${database}`;
+state = { ...state, book: loadBottleBook(bookScope) };
 const memory = new Map<string, string>();
 function storageUnavailable() {
   if (state.storageAvailable) emit({ storageAvailable: false });
@@ -128,12 +144,23 @@ function emit(patch: Partial<Snapshot> = {}) {
       ownership: [...connection.db.myCards.iter()],
       outgoing: [...connection.db.myOutgoing.iter()],
       cards: [...connection.db.postcard.iter()],
+      beginnings: [...connection.db.beginning.iter()],
       hellos: [...connection.db.myHello.iter()],
       reported: [...connection.db.myReportedCards.iter()],
       service: [...connection.db.serviceStatus.iter()][0],
       today: [...connection.db.today.iter()][0],
     };
   } else state = { ...state, ...patch };
+  const book = mergeBook(mergeBook(state.book, loadBottleBook(bookScope)), {
+    beginningIds: state.outgoing.map((beginning) => beginning.id),
+    pairIds: state.ownership.filter((item) => item.role === 'reply').map((item) => item.id),
+  });
+  if (
+    JSON.stringify(book) !== JSON.stringify(state.book) ||
+    (!state.bookStored && state.connected)
+  ) {
+    state = { ...state, book, bookStored: saveBottleBook(bookScope, book) };
+  }
   for (const listener of listeners) listener();
 }
 function schedule() {
@@ -171,6 +198,7 @@ function connect() {
         conn.db.myCards,
         conn.db.myOutgoing,
         conn.db.postcard,
+        conn.db.beginning,
         conn.db.serviceStatus,
         conn.db.today,
         conn.db.myHello,
@@ -196,6 +224,7 @@ function connect() {
           'SELECT * FROM my_cards',
           'SELECT * FROM my_outgoing',
           'SELECT * FROM postcard',
+          'SELECT * FROM beginning',
           'SELECT * FROM service_status',
           'SELECT * FROM today',
           'SELECT * FROM my_hello',
@@ -228,6 +257,34 @@ function connect() {
       }),
     )
     .build();
+}
+function waitForRound(kind: 'write' | 'catch'): Promise<string> {
+  const find = () =>
+    state.rounds.find((round) =>
+      kind === 'write'
+        ? round.stage === 'write' && round.day === state.today?.day
+        : (round.stage === 'catch' && round.day === state.today?.day) ||
+          (round.stage === 'reply' &&
+            (round.day === state.today?.day || round.leaseMs > Date.now() + state.clockOffsetMs)),
+    )?.id;
+  const existing = find();
+  if (existing) return Promise.resolve(existing);
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      listeners.delete(check);
+      reject(Error('Your bottle is taking a moment. Try the same action again.'));
+    }, 10000);
+    const check = () => {
+      const id = find();
+      if (id) {
+        clearTimeout(timer);
+        listeners.delete(check);
+        resolve(id);
+      }
+    };
+    listeners.add(check);
+    check();
+  });
 }
 export const game = {
   async cardAction(cardId: string, action: CardAction) {
@@ -268,10 +325,12 @@ export const game = {
   async start() {
     if (!connection?.isActive) throw Error('Connect before starting your story.');
     await connection.reducers.startRound({});
+    return waitForRound('write');
   },
   async startCatching() {
     if (!connection?.isActive) throw Error('Connect before catching a bottle.');
     await connection.reducers.startCatching({});
+    return waitForRound('catch');
   },
   async verifyGate(token: string) {
     if (!connection?.isActive) throw Error('Reconnect before verifying your shore check.');

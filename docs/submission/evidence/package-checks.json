@@ -1,0 +1,62 @@
+{
+  "checkedAt": "2026-10-24T14:35:43.595570-07:00",
+  "implementationBaseline": "ef6849229833a951d5eda5c1e0295c955081f27c",
+  "buildChecks": [
+    {
+      "command": "npm run build",
+      "result": "pass",
+      "runDuringPreparation": true
+    },
+    {
+      "command": "npm run check:server",
+      "result": "pass",
+      "runDuringPreparation": true
+    },
+    {
+      "command": "npm run check:scripts",
+      "result": "pass",
+      "runDuringPreparation": true
+    }
+  ],
+  "localMarkdownTargetsChecked": 41,
+  "missingLocalTargets": [],
+  "gallery": [
+    {
+      "file": "gallery/01-drift-thumbnail.png",
+      "width": 1500,
+      "height": 1000,
+      "bytes": 173496
+    },
+    {
+      "file": "gallery/02-the-daily-prompt.png",
+      "width": 1500,
+      "height": 1000,
+      "bytes": 522507
+    },
+    {
+      "file": "gallery/03-the-human-contribution.png",
+      "width": 1500,
+      "height": 1000,
+      "bytes": 308892
+    },
+    {
+      "file": "gallery/04-one-shared-result.png",
+      "width": 1500,
+      "height": 1000,
+      "bytes": 587931
+    },
+    {
+      "file": "gallery/05-the-shared-state.png",
+      "width": 1500,
+      "height": 1000,
+      "bytes": 138941
+    }
+  ],
+  "pdf": {
+    "pages": 4,
+    "textExtraction": "expected content present; no replacement glyphs",
+    "visualInspection": "All four pages inspected after heading repair; final cover re-inspected after removing clipped header."
+  },
+  "galleryVisualInspection": "All five final PNGs inspected; corrected overlapping image frames before delivery.",
+  "archivePolicy": "Video, environment files, credentials, application source, and temporary renders excluded. Evidence and synthetic source captures intentionally included."
+}

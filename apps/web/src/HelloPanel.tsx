@@ -55,43 +55,33 @@ export function HelloPanel({
     ? Math.max(0, Math.min(10, Math.ceil((invitation.expiresMs - time) / 60000)))
     : 0;
   return (
-    <aside className="hello-panel" aria-label="Optional mutual hello">
-      <span className="eyebrow">
-        <Hand size={13} /> A FIRST LITTLE HELLO
-      </span>
+    <aside className="hello-panel" aria-label="Meet your co-writer">
       {expired ? (
         <>
-          <h2>The moment’s drifted on.</h2>
-          <p>
-            This invitation lasted ten minutes after the postcard was made. You still have your
-            story.
-          </p>
+          <h2>Invitation expired</h2>
+          <p>Invitations close ten minutes after a postcard is completed.</p>
         </>
       ) : mutual ? (
         <>
-          <h2>You’re both up for a hello.</h2>
+          <h2>You both want to meet</h2>
           <p className="meeting-spot">
             <MapPin size={16} />
             {details.spot}
           </p>
-          <p>Recognize each other with these two words:</p>
+          <p>Use these words to recognize each other:</p>
           <div className="recognition-phrase">{details.phrase}</div>
           <small>
-            Private to you two. {minutes} minute{minutes === 1 ? '' : 's'} left. Meeting is always
-            optional.
+            Only you two can see this. {minutes} minute{minutes === 1 ? '' : 's'} left. You can
+            cancel below.
           </small>
         </>
       ) : (
         <>
-          <h2>
-            {invitation?.optedIn
-              ? 'Your little invitation is waiting.'
-              : 'Maybe this is your first hello.'}
-          </h2>
+          <h2>{invitation?.optedIn ? 'Waiting for your co-writer' : 'Meet your co-writer?'}</h2>
           <p>
             {invitation?.optedIn
-              ? 'Your choice stays private unless you both opt in. If you do, a public meeting spot and two recognition words appear here.'
-              : 'Open to saying hi to your co-writer? A public meeting spot appears only if you both choose to. No names or contact details are shared.'}
+              ? 'If they also agree, you’ll both see a public meeting spot and words to recognize each other. Your invitation stays private until then.'
+              : 'If you both agree, you’ll see a public meeting spot and words to recognize each other. No names or contact details are shared.'}
           </p>
           <small>
             {minutes} minute{minutes === 1 ? '' : 's'} left to choose.
@@ -111,7 +101,7 @@ export function HelloPanel({
           ) : (
             <Hand size={15} />
           )}
-          {invitation?.optedIn ? 'Withdraw my invitation' : 'I’m open to saying hi'}
+          {invitation?.optedIn ? 'Cancel invitation' : 'I’d like to meet'}
         </button>
       )}
       {error && (

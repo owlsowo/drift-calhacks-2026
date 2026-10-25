@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts",
     "starters:check": "tsx scripts/check-starters.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
@@ -16,6 +16,7 @@
     "test:ui": "node scripts/test-room.mjs ui",
     "test:shore": "node scripts/test-room.mjs shore",
     "test:catch-first": "node scripts/test-room.mjs catch-first",
+    "test:letters": "node scripts/test-room.mjs letters",
     "test:empty": "node scripts/test-room.mjs empty",
     "test:webkit": "node scripts/test-room.mjs webkit",
     "test:recovery": "node scripts/test-room.mjs recovery",
@@ -36,6 +37,7 @@
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/fraunces": "^5.2.8",
+    "@fontsource/kalam": "^5.3.0",
     "lucide-react": "^0.577.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",

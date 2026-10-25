@@ -36,7 +36,7 @@ for (const [engine, launcher] of [
       const page = await context.newPage();
       page.on('pageerror', (e) => errors.push(e.message));
       await page.goto(origin);
-      await page.getByRole('button', { name: 'Pick up a bottle', exact: true }).click();
+      await page.getByRole('button', { name: 'Pick up a bottle. Write an ending', exact: true }).click();
       await page.getByRole('button', { name: 'Open bottle', exact: false }).click();
       if (fault === 'context-loss' || fault === 'reduce-mid-opening') {
         await page.locator('.paper-unfolding.has-paper-mesh').waitFor();
@@ -54,7 +54,7 @@ for (const [engine, launcher] of [
       assert.equal(await page.locator('.paper-surface').count(), 0);
       await page.getByRole('textbox').fill('Our lawyers would like another hand.');
       assert.equal(
-        await page.getByRole('button', { name: 'Seal our postcard', exact: true }).isEnabled(),
+        await page.getByRole('button', { name: 'Send reply', exact: true }).isEnabled(),
         true,
       );
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));

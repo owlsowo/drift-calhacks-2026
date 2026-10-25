@@ -1,3 +1,5 @@
+> The timing/bundle comparison below is pinned to the original `3ab064d` release. PR #1 integration retains the bounded opening and reruns its fault cases, but changes the surrounding UI and bundle; those original size/timing figures are historical, not new integrated-build measurements.
+
 # Complete note opening under slow images
 
 The note's animation clock previously started before its photograph loaded. In the controlled 650 ms delay case, the first mesh frame was already 35.5% unfolded, and the parent opened the controls before the mesh reached its final frame.

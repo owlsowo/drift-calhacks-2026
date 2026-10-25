@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
@@ -19,13 +26,8 @@ import {
   Waves,
   X,
 } from 'lucide-react';
-import '@fontsource/dm-sans/400.css';
-import '@fontsource/dm-sans/500.css';
-import '@fontsource/dm-sans/600.css';
-import '@fontsource/dm-sans/700.css';
-import '@fontsource/fraunces/400.css';
-import '@fontsource/fraunces/500.css';
-import { game, persist, saved } from './game';
+import '@fontsource/kalam/latin-400.css';
+import { game, persist, saved, type Snapshot } from './game';
 import { words, dayOf, type Prompt, type Card } from '../../../packages/game-rules/index';
 import { savePng, shareCard, cardText, copyText } from './export';
 import './style.css';
@@ -36,6 +38,8 @@ import { Ocean } from './Ocean';
 import { PaperNote } from './PaperNote';
 import { ShoreGate } from './ShoreGate';
 import { EarlierDrafts } from './EarlierDrafts';
+import { BottleRitual, type BottleRitualKind } from './BottleRitual';
+import './natural.css';
 
 function Bottle({ small = false }: { small?: boolean }) {
   return (
@@ -103,68 +107,26 @@ function Bottle({ small = false }: { small?: boolean }) {
     </svg>
   );
 }
-function Postcard({
-  card,
-  example = false,
-  role = 'public',
-}: {
-  card: Card;
-  example?: boolean;
-  role?: string;
-}) {
+function Postcard({ card }: { card: Card }) {
   return (
-    <article
-      className={`postcard ${example ? 'example-card' : ''}`}
-      aria-label={example ? 'Example postcard' : 'Your completed postcard'}
-      data-card-id={card.id}
-    >
-      <div className="postcard-top">
-        <span className="eyebrow">{example ? 'A LITTLE EXAMPLE' : 'A LITTLE STORY, TOGETHER'}</span>
-        <div className="postmark" aria-hidden="true">
-          <span>DRIFT</span>
-          <Waves size={23} />
-          <small>
-            {example
-              ? 'NO. 01'
-              : new Date(card.createdMs).toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                })}
-          </small>
-        </div>
-      </div>
+    <article className="postcard" aria-label="Your completed postcard" data-card-id={card.id}>
+      <time className="letter-date" dateTime={new Date(card.createdMs).toISOString()}>
+        {new Date(card.createdMs).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })}
+      </time>
+      {card.seeded && (
+        <small className="starter-source">
+          {card.starterKind === 'team' ? 'Beginning by the Drift team' : 'Sample beginning'}
+        </small>
+      )}
       <div className="card-half setup-half">
-        <span className="eyebrow">
-          01 /{' '}
-          {card.seeded
-            ? card.starterKind === 'team'
-              ? 'THE DRIFT TEAM’S SETUP'
-              : 'A SAMPLE STARTER'
-            : role === 'setup'
-              ? 'YOUR SETUP'
-              : 'A STRANGER’S SETUP'}
-        </span>
         <p>{card.setup}</p>
       </div>
-      <div className="perforation" />
+      <div className="letter-fold" aria-hidden="true" />
       <div className="card-half">
-        <span className="eyebrow">
-          02 /{' '}
-          {role === 'reply'
-            ? 'YOUR ENDING'
-            : role === 'setup'
-              ? 'A STRANGER’S ENDING'
-              : 'ANOTHER HUMAN’S ENDING'}
-        </span>
         <p>{card.reply}</p>
-      </div>
-      <div className="postcard-bottom">
-        <span>
-          {card.seeded && card.starterKind !== 'team'
-            ? 'A SAMPLE BEGINNING. YOUR ENDING.'
-            : 'TWO PEOPLE. TWELVE WORDS.'}
-        </span>
-        <span className="card-wave">∿∿∿</span>
       </div>
     </article>
   );
@@ -211,10 +173,61 @@ function Modal({
     </dialog>
   );
 }
+function waitForGame<T>(read: (state: Snapshot) => T | undefined, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let unsubscribe = () => {};
+    const finish = () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
+    const check = () => {
+      if (settled) return;
+      const value = read(game.snapshot());
+      if (value !== undefined) {
+        settled = true;
+        finish();
+        resolve(value);
+      }
+    };
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      finish();
+      reject(Error(message));
+    }, 10000);
+    unsubscribe = game.subscribe(check);
+    if (settled) unsubscribe();
+    else check();
+  });
+}
+
+function assignedBottle(state: Snapshot, roundId: string) {
+  const round = state.rounds.find((item) => item.id === roundId);
+  if (!round || round.stage !== 'reply' || round.leaseMs <= Date.now() + state.clockOffsetMs)
+    return;
+  return state.assignments.find(
+    (item) => item.roundId === roundId && item.id === round.assignmentId,
+  );
+}
+
+function withinDeadline<T>(operation: Promise<T>, message: string, milliseconds = 15000) {
+  let timer: ReturnType<typeof setTimeout>;
+  return Promise.race([
+    operation,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(Error(message)), milliseconds);
+    }),
+  ]).finally(() => clearTimeout(timer));
+}
+
 function App() {
   const s = useSyncExternalStore(game.subscribe, game.snapshot);
-  const [view, setView] = useState<'today' | 'play' | 'collection' | 'card'>('today');
+  const [view, setView] = useState<'today' | 'play' | 'collection' | 'card' | 'beginning'>('today');
   const [selected, setSelected] = useState('');
+  const [playingRoundId, setPlayingRoundId] = useState('');
+  const [selectedBeginningId, setSelectedBeginningId] = useState('');
+  const [bottleLookup, setBottleLookup] = useState('');
   const [modal, setModal] = useState<'how' | 'report' | 'hide' | 'privacy' | null>(null);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
@@ -226,25 +239,64 @@ function App() {
   const [gateReady, setGateReady] = useState(false);
   const [returnedNotice, setReturnedNotice] = useState('');
   const seenReturns = useRef<{ identity: string; ids: Set<string> } | null>(null);
+  const [ritual, setRitual] = useState<{
+    kind: BottleRitualKind;
+    phase: 'waiting' | 'moving';
+  } | null>(null);
+  const ritualDone = useRef<((opened: boolean) => void) | null>(null);
+  const actionRunning = useRef(false);
+  const releasingRound = useRef('');
   const heading = useRef<HTMLHeadingElement>(null);
   const nowDay = dayOf(clock);
-  const active = s.rounds.find(
-    (r) => r.stage !== 'done' && (r.day === nowDay || (r.stage === 'reply' && r.leaseMs > clock)),
+  const writeRound = s.rounds.find((round) => round.stage === 'write' && round.day === nowDay);
+  const catchRound = s.rounds.find(
+    (round) =>
+      (round.stage === 'catch' && round.day === nowDay) ||
+      (round.stage === 'reply' && (round.day === nowDay || round.leaseMs > clock)),
   );
+  const active =
+    view === 'play' ? s.rounds.find((round) => round.id === playingRoundId) : undefined;
   const prompt =
     active && view === 'play'
       ? (JSON.parse(active.promptJson) as Prompt)
       : s.today
         ? (JSON.parse(s.today.promptJson) as Prompt)
         : undefined;
-  const assignment = s.assignments.find((a) => a.roundId === active?.id);
-  const mine = s.ownership
-    .filter((o) => !o.hidden)
-    .flatMap((o) => {
-      const card = s.cards.find((c) => c.id === o.id);
-      return card ? [{ card, role: o.role }] : [];
+  const assignment = s.assignments.find(
+    (a) => a.roundId === active?.id && a.id === active.assignmentId,
+  );
+  const released = s.book.beginningIds
+    .flatMap((id) => {
+      const beginning = s.beginnings.find((item) => item.id === id);
+      return beginning
+        ? [
+            {
+              ...beginning,
+              endings: s.cards.filter(
+                (pair) =>
+                  pair.beginningId === id && !s.reported.some((report) => report.id === pair.id),
+              ),
+            },
+          ]
+        : [];
     })
-    .sort((a, b) => b.card.createdMs - a.card.createdMs);
+    .sort((a, b) => b.createdMs - a.createdMs);
+  const completed = s.book.pairIds
+    .flatMap((id) => {
+      const pair = s.cards.find(
+        (item) => item.id === id && !s.reported.some((report) => report.id === id),
+      );
+      return pair ? [pair] : [];
+    })
+    .sort((a, b) => b.createdMs - a.createdMs);
+  const beginning = s.beginnings.find((item) => item.id === selectedBeginningId);
+  const endings = s.cards
+    .filter(
+      (pair) =>
+        pair.beginningId === selectedBeginningId &&
+        !s.reported.some((report) => report.id === pair.id),
+    )
+    .sort((a, b) => b.createdMs - a.createdMs);
   const card = s.cards.find((c) => c.id === selected && !s.reported.some((r) => r.id === c.id));
   const ownership = s.ownership.find((o) => o.id === selected);
   const cardId = card?.id;
@@ -258,16 +310,16 @@ function App() {
   const draft = draftState.key === currentDraftKey ? draftState.text : '';
   const count = words(draft).length;
   const dailyRounds = s.rounds.filter((r) => r.day === nowDay).length;
-  // The server-finalized card marker awards one daily stamp, even if a card is later hidden.
-  const stampedToday = s.rounds.some((r) => r.day === nowDay && !!r.cardId);
-  const stampedDays = new Set(s.rounds.filter((r) => !!r.cardId).map((r) => r.day)).size;
-  const waiting = s.outgoing.filter((o) => !o.cardId && o.day === nowDay);
-  const returnedToday = mine.filter(
-    (o) => o.role === 'setup' && dayOf(o.card.createdMs) === nowDay,
-  ).length;
-  const outgoingReturned =
-    !!active?.setupId && s.outgoing.some((o) => o.id === active.setupId && !!o.cardId);
-  const returnedCard = mine.find((o) => o.role === 'setup' && o.card.id === returnedNotice)?.card;
+  const returnedToday = released.reduce(
+    (total, letter) =>
+      total + letter.endings.filter((pair) => dayOf(pair.createdMs) === nowDay).length,
+    0,
+  );
+  const returnedCard = s.cards.find(
+    (item) =>
+      item.id === returnedNotice &&
+      s.ownership.some((owner) => owner.id === item.id && owner.role === 'setup' && !owner.hidden),
+  );
   useEffect(() => {
     if (!s.connected || !s.identity) return;
     const returned = s.ownership
@@ -299,7 +351,8 @@ function App() {
     const t = setInterval(update, 1000);
     return () => clearInterval(t);
   }, [s.clockOffsetMs]);
-  useEffect(() => {
+  // Restore before paint so switching between independent drafts never exposes an empty input.
+  useLayoutEffect(() => {
     setDraft({ key: currentDraftKey, text: currentDraftKey ? saved(currentDraftKey) : '' });
     setError('');
   }, [currentDraftKey]);
@@ -313,18 +366,39 @@ function App() {
     if (id) {
       setSelected(id);
       setView('card');
+    } else {
+      const bottleId = new URLSearchParams(location.search).get('bottle');
+      if (bottleId) {
+        setSelectedBeginningId(bottleId);
+        setView('beginning');
+      }
     }
   }, []);
   useEffect(() => {
-    heading.current?.focus();
-  }, [view, active?.stage]);
+    if (ritual) return;
+    heading.current?.focus({ preventScroll: true });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [view, active?.stage, !!ritual]);
+  useEffect(() => () => ritualDone.current?.(false), []);
+  function finishRitual(opened: boolean) {
+    const resolve = ritualDone.current;
+    ritualDone.current = null;
+    resolve?.(opened);
+  }
+  function playRitual(kind: BottleRitualKind) {
+    return new Promise<boolean>((resolve) => {
+      ritualDone.current = resolve;
+      setRitual({ kind, phase: 'moving' });
+    });
+  }
   const changeDraft = (value: string) => {
     const limited = [...value].slice(0, 160).join('');
     setDraft({ key: currentDraftKey, text: limited });
     if (currentDraftKey) persist(currentDraftKey, limited);
   };
   const run = async (label: string, fn: () => Promise<unknown>) => {
-    if (busy) return;
+    if (actionRunning.current) return;
+    actionRunning.current = true;
     setBusy(label);
     setError('');
     try {
@@ -333,12 +407,14 @@ function App() {
       if (e instanceof Error && e.message.startsWith('Your shore check')) setGateReady(false);
       setError(friendlyError(e));
     } finally {
+      actionRunning.current = false;
+      setRitual(null);
       setBusy('');
     }
   };
   async function begin() {
     await run('Opening your bottle…', async () => {
-      await game.start();
+      setPlayingRoundId(await game.start());
       setReveal('');
       setView('play');
     });
@@ -349,30 +425,83 @@ function App() {
       setToast('Draft copied');
     });
   }
-  async function leaveRound() {
-    if (!active) return;
-    await run('Leaving this round…', async () => {
-      await game.abandon(active.id);
-      setView('today');
-      setToast(
-        outgoingReturned
-          ? 'Your postcard is kept in your collection.'
-          : 'Your beginning is still drifting.',
-      );
-    });
-  }
   async function beginCatch() {
     await run('Finding a bottle…', async () => {
-      await game.startCatching();
-      setReveal('');
-      setView('play');
+      await pickUp();
     });
+  }
+  async function pickUp(roundId?: string, skip = false) {
+    setRitual({ kind: 'pickup', phase: 'waiting' });
+    const id =
+      roundId ??
+      (await withinDeadline(
+        game.startCatching(),
+        'Your bottle is taking a moment. Try picking up again.',
+      ));
+    const priorVersion = game.snapshot().rounds.find((item) => item.id === id)?.version ?? -1;
+    if (skip)
+      await withinDeadline(game.skip(id), 'Your bottle is taking a moment. Try picking up again.');
+    if (skip || !assignedBottle(game.snapshot(), id))
+      await withinDeadline(game.claim(id), 'Your bottle is taking a moment. Try picking up again.');
+    await waitForGame((state) => {
+      if (skip && (state.rounds.find((item) => item.id === id)?.version ?? -1) <= priorVersion)
+        return;
+      return assignedBottle(state, id);
+    }, 'Your bottle is taking a moment. Try picking up again.');
+    const opened = await playRitual('pickup');
+    if (!opened) {
+      setView('today');
+      return;
+    }
+    // The bottle may have been left in the light until its lease expired.
+    if (!assignedBottle(game.snapshot(), id))
+      throw Error('Your bottle expired. Pick up another one.');
+    setPlayingRoundId(id);
+    setReveal('');
+    setView('play');
+  }
+  async function releaseToSea() {
+    await playRitual('release');
+    setView('today');
+    setPlayingRoundId('');
+    setError('');
+    setToast('Bottle released');
   }
   async function submit() {
     if (!active) return;
+    const roundId = active.id;
+    const stage = active.stage;
+    const text = draft;
     await run(
-      active.stage === 'write' ? 'Checking your six words…' : 'Sealing your postcard…',
+      stage === 'write' ? 'Checking your six words…' : 'Sealing your postcard…',
       async () => {
+        if (stage === 'write') {
+          releasingRound.current = roundId;
+          setRitual({ kind: 'release', phase: 'waiting' });
+          try {
+            try {
+              await withinDeadline(
+                game.paid('setup', roundId, text),
+                'Your release could not be confirmed. Your draft is saved. Reconnect and check My bottles before trying again.',
+                30000,
+              );
+            } catch (error) {
+              const committed = game.snapshot().rounds.find((item) => item.id === roundId);
+              if (committed?.stage !== 'done' || !committed.setupId) throw error;
+            }
+            await waitForGame(
+              (state) =>
+                state.rounds.find(
+                  (item) => item.id === roundId && item.stage === 'done' && !!item.setupId,
+                ),
+              'Your release is taking a moment. Your draft is saved.',
+            );
+            await releaseToSea();
+          } finally {
+            releasingRound.current = '';
+          }
+          return;
+        }
         if (active.stage === 'reply') setReveal('pending:' + active.id);
         try {
           await game.paid(active.stage === 'write' ? 'setup' : 'reply', active.id, draft);
@@ -396,9 +525,6 @@ function App() {
           } else {
             setReveal('pending:' + active.id);
           }
-        } else if (active.cardId) {
-          setView('today');
-          setToast('Your bottle is out at sea.');
         }
       },
     );
@@ -413,11 +539,26 @@ function App() {
       setError('');
     }
   }, [s.rounds, reveal, view]);
+  useEffect(() => {
+    if (view === 'play' && active?.stage === 'done' && active.setupId && !active.cardId) {
+      if (releasingRound.current === active.id || actionRunning.current) return;
+      // A late commit after an uncertain response still gets exactly one throw.
+      releasingRound.current = active.id;
+      void run('Releasing…', releaseToSea).finally(() => {
+        releasingRound.current = '';
+      });
+    }
+  }, [view, active?.stage, active?.setupId, active?.cardId, busy]);
   const controlsDisabled = !!busy || !s.connected || (!!s.service?.botRequired && !gateReady);
   const reset = new Date((nowDay + 1) * 86400000).toLocaleTimeString([], {
     hour: 'numeric',
     minute: '2-digit',
   });
+  function showBeginning(id: string) {
+    setSelectedBeginningId(id);
+    setView('beginning');
+    setError('');
+  }
   function showCard(id: string) {
     setReturnedNotice((current) => (current === id ? '' : current));
     setSelected(id);
@@ -430,10 +571,10 @@ function App() {
         Skip to the game
       </a>
       <div
-        className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}`}
+        className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}${ritual ? ' has-bottle-ritual' : ''}`}
       >
         <Ocean paused={seaPaused} />
-        <header className="site-header">
+        <header className="site-header" inert={!!ritual}>
           <button
             className="wordmark"
             onClick={() => {
@@ -442,22 +583,28 @@ function App() {
             }}
             aria-label="Drift home"
           >
-            drift<span>∿</span>
+            drift
           </button>
-          <nav aria-label="Main navigation">
-            <button
-              className={view === 'today' || view === 'play' ? 'nav-active' : ''}
-              onClick={() => setView(active ? 'play' : 'today')}
+          {s.service?.sandbox && (
+            <span
+              className="preview-mark"
+              title={s.service.aiReady ? 'Local preview' : 'Local preview. Message checks are off.'}
             >
-              Today’s bottle
-            </button>
+              Preview
+            </span>
+          )}
+          {view !== 'today' && (
             <button
-              className={view === 'collection' ? 'nav-active' : ''}
-              onClick={() => setView('collection')}
+              className="shore-back"
+              onClick={() => {
+                setView(view === 'card' || view === 'beginning' ? 'collection' : 'today');
+                setError('');
+              }}
             >
-              My postcards {mine.length > 0 && <span className="nav-count">{mine.length}</span>}
+              <ChevronLeft size={16} />{' '}
+              {view === 'card' || view === 'beginning' ? 'Back to bottles' : 'Back to the sea'}
             </button>
-          </nav>
+          )}
           <button
             className="icon-button help"
             onClick={() => setModal('how')}
@@ -466,22 +613,14 @@ function App() {
             <HelpCircle size={21} />
           </button>
         </header>
-        {s.service?.sandbox && (
-          <div className="sandbox-banner">
-            LOCAL SANDBOX <span>•</span>{' '}
-            {s.service.aiReady
-              ? 'Claude checks configured'
-              : 'AI checks are off. Sample fixtures are labeled.'}
-          </div>
-        )}
-        {!s.storageAvailable && (
+        {(!s.storageAvailable || !s.bookStored) && (
           <div className="connection-banner" role="status">
-            This browser can’t save progress. Keep this tab open; refreshing may lose your words.
+            This browser can’t save all your bottle IDs or progress. Keep this tab open.
           </div>
         )}
         {s.connected && s.service?.paused && (
           <div className="connection-banner" role="status">
-            The tide is taking a short break. You can keep writing and save existing postcards.
+            Submissions are paused. You can keep writing and save existing replies.
           </div>
         )}
         {!s.connected && (
@@ -515,33 +654,35 @@ function App() {
             </button>
           </aside>
         )}
-        <main id="main" className={`main view-${view}`}>
+        <main id="main" className={`main view-${view}`} inert={!!ritual}>
           {view === 'today' && (
             <Shore
               mode="home"
-              hasOutgoing={!!active?.setupId}
-              outgoingReturned={outgoingReturned}
-              onLeave={active?.stage === 'catch' ? leaveRound : undefined}
-              day={s.today?.day}
-              stamped={stampedToday}
+              restingMessage={
+                !writeRound && !catchRound && dailyRounds >= 3
+                  ? `Today’s limit reached. Try again at ${reset}.`
+                  : undefined
+              }
               prompt={prompt}
-              disabled={
-                controlsDisabled || !prompt || (!active && dailyRounds >= 3) || !!s.service?.paused
+              disabled={controlsDisabled || !prompt || !!s.service?.paused}
+              writeDisabled={
+                controlsDisabled ||
+                !prompt ||
+                (!writeRound && dailyRounds >= 3) ||
+                !!s.service?.paused
+              }
+              pickDisabled={
+                controlsDisabled ||
+                !prompt ||
+                (!catchRound && dailyRounds >= 3) ||
+                !!s.service?.paused
               }
               busy={busy}
-              actionLabel={
-                active
-                  ? 'Pick up where you left off'
-                  : dailyRounds >= 3
-                    ? 'All three stories are tucked away'
-                    : stampedToday
-                      ? 'Write another little story'
-                      : 'Write my six words'
-              }
+              actionLabel={writeRound ? 'Continue your beginning' : 'Write a beginning'}
               onAction={beginCatch}
               onWrite={begin}
               onCollection={() => setView('collection')}
-              count={mine.length}
+              count={released.length + completed.length}
               returnedCount={returnedToday}
               empty={emptyTide}
               headingRef={heading}
@@ -549,72 +690,19 @@ function App() {
           )}
           {view === 'play' && prompt && (
             <section className={`play-layout ${active?.stage === 'catch' ? 'shore-play' : ''}`}>
-              <div className="play-margin">
-                <span className="eyebrow">TODAY’S LITTLE ADVENTURE</span>
-                <h2>{prompt.title}</h2>
-                <p>{prompt.scene}</p>
-                {active && (
-                  <ol className="steps">
-                    {active && !active.setupId && (active.stage === 'reply' || active.cardId) ? (
-                      <>
-                        <li className="complete">
-                          <span>
-                            <Check size={15} />
-                          </span>
-                          Their beginning
-                        </li>
-                        <li className={active.stage === 'reply' ? 'current' : 'complete'}>
-                          <span>2</span>Your six-word ending
-                        </li>
-                        <li className={active.stage === 'write' ? 'current' : ''}>
-                          <span>3</span>Pass a bottle on
-                        </li>
-                      </>
-                    ) : (
-                      <>
-                        <li className={active?.stage === 'write' ? 'current' : 'complete'}>
-                          <span>{active?.stage === 'write' ? '1' : <Check size={15} />}</span>Your
-                          six words
-                        </li>
-                        <li
-                          className={
-                            active?.stage === 'catch' || active?.stage === 'reply' ? 'current' : ''
-                          }
-                        >
-                          <span>2</span>Their story, your ending
-                        </li>
-                        <li>
-                          <span>3</span>A postcard, together
-                        </li>
-                      </>
-                    )}
-                  </ol>
-                )}
-                <div className="margin-note">
-                  <Waves size={24} />
-                  <p>
-                    A little weird is welcome.
-                    <br />A little imperfect, too.
-                  </p>
-                </div>
-              </div>
               <div className="writing-desk">
                 {!active ? (
                   <div className="empty-state closed-round">
                     <Mail size={38} />
                     <h1 ref={heading} tabIndex={-1}>
-                      A fresh tide.
+                      This round has ended.
                     </h1>
                     <p>
                       This prompt has closed, or your round is finished. Your saved words stay on
                       this browser.
                     </p>
-                    <button
-                      className="button primary"
-                      disabled={controlsDisabled}
-                      onClick={beginCatch}
-                    >
-                      Catch today’s bottle <ArrowRight size={18} />
+                    <button className="button primary" disabled={controlsDisabled} onClick={begin}>
+                      Write a beginning <ArrowRight size={18} />
                     </button>
                     <EarlierDrafts
                       identity={s.identity}
@@ -628,48 +716,36 @@ function App() {
                 ) : active.stage === 'catch' ? (
                   <Shore
                     mode="catch"
-                    day={active.day}
-                    hasOutgoing={!!active.setupId}
-                    outgoingReturned={outgoingReturned}
-                    onLeave={leaveRound}
                     prompt={prompt}
-                    disabled={controlsDisabled}
+                    disabled={controlsDisabled || !!s.service?.paused}
+                    writeDisabled={
+                      controlsDisabled || (!writeRound && dailyRounds >= 3) || !!s.service?.paused
+                    }
                     busy={busy}
                     actionLabel="Catch a bottle"
-                    onAction={() => run('Finding a bottle…', () => game.claim(active.id))}
+                    onAction={() => run('Finding a bottle…', () => pickUp(active.id))}
                     onWrite={begin}
                     onCollection={() => setView('collection')}
-                    count={mine.length}
+                    count={released.length + completed.length}
                     returnedCount={returnedToday}
                     empty={emptyTide}
                     headingRef={heading}
                   />
                 ) : (
-                  <PaperNote key={currentDraftKey} closed={active.stage === 'reply' && !draft}>
-                    <div className="desk-heading">
-                      <span className="eyebrow">
-                        {active.stage === 'write'
-                          ? '01 / START SOMETHING SMALL'
-                          : '02 / MAKE IT YOURS'}
-                      </span>
-                      <span className="draft-saved">
-                        <Check size={13} />{' '}
-                        {s.storageAvailable ? 'Draft saved here' : 'Kept in this tab'}
-                      </span>
-                    </div>
+                  <PaperNote key={currentDraftKey}>
                     <h1 ref={heading} tabIndex={-1}>
                       {active.stage === 'write' ? prompt.setup : prompt.reply}
                     </h1>
                     {active.stage === 'reply' && assignment && (
                       <div className="caught-note">
                         <div>
-                          <span className="eyebrow">
-                            {assignment.seeded
-                              ? assignment.starterKind === 'team'
-                                ? 'WRITTEN BY THE DRIFT TEAM'
-                                : 'SAMPLE STARTER · DEVELOPMENT FIXTURE'
-                              : 'WRITTEN BY ANOTHER WRITER'}
-                          </span>
+                          {assignment.seeded && (
+                            <span className="eyebrow">
+                              {assignment.starterKind === 'team'
+                                ? 'Beginning by the Drift team'
+                                : 'Sample beginning'}
+                            </span>
+                          )}
                           <span className={`lease ${remaining < 60 ? 'urgent' : ''}`}>
                             {remaining > 0
                               ? `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')} left`
@@ -680,43 +756,33 @@ function App() {
                       </div>
                     )}
                     <label className="sr-only" htmlFor="six-words">
-                      {active.stage === 'write' ? 'Your six-word setup' : 'Your six-word ending'}
+                      {active.stage === 'write'
+                        ? 'Your six-word beginning'
+                        : 'Your six-word ending'}
                     </label>
                     <textarea
                       id="six-words"
                       className="story-input"
                       value={draft}
                       onChange={(e) => changeDraft(e.target.value)}
-                      placeholder={
-                        active.stage === 'write'
-                          ? 'A very small beginning…'
-                          : 'Your unexpected ending…'
-                      }
-                      rows={4}
+                      placeholder={active.stage === 'write' ? 'Write six words…' : 'Your reply…'}
+                      rows={2}
                       aria-describedby="word-help"
                       spellCheck
                       autoComplete="off"
                     />
                     <div className="word-feedback" id="word-help">
-                      <div className={`word-dots ${count > 6 ? 'over' : ''}`} aria-hidden="true">
-                        {Array.from({ length: 6 }, (_, i) => (
-                          <span key={i} className={i < count ? 'filled' : ''}>
-                            {i < count ? '✓' : String(i + 1).padStart(2, '0')}
-                          </span>
-                        ))}
-                      </div>
-                      <span className={count === 6 ? 'count-done' : count > 6 ? 'count-over' : ''}>
-                        {count === 6 ? (
-                          <>
-                            <Check size={14} /> Six words. Just right.
-                          </>
-                        ) : (
-                          `${count} / 6 words`
-                        )}
-                      </span>
-                      <span className="character-count">{[...draft].length}/160</span>
+                      <span className={count > 6 ? 'count-over' : ''}>{count}/6 words</span>
+                      {draft && (
+                        <span className="draft-saved">
+                          {s.storageAvailable ? 'Saved' : 'Unsaved'}
+                        </span>
+                      )}
+                      {[...draft].length > 130 && (
+                        <span className="character-count">{[...draft].length}/160</span>
+                      )}
                     </div>
-                    {active.stage === 'reply' && (
+                    {active.stage === 'reply' && s.service?.aiReady && (
                       <div className="nudge-area">
                         <button
                           className="nudge-button"
@@ -727,24 +793,21 @@ function App() {
                             remaining <= 0
                           }
                           onClick={() =>
-                            run('Finding a little spark…', async () => {
+                            run('Finding a hint…', async () => {
                               await game.paid('nudge', active.id, draft);
                             })
                           }
                         >
                           <Sparkles size={16} />
-                          {busy === 'Finding a little spark…'
-                            ? 'Finding a little spark…'
-                            : 'A little nudge'}
+                          {busy === 'Finding a hint…' ? 'Finding a hint…' : 'Hint'}
                           <span>{2 - active.nudges} left</span>
                         </button>
                         {active.hint && (
                           <aside className="nudge" aria-live="polite">
                             <span className="eyebrow">
-                              <Sparkles size={12} /> AI GUIDANCE
+                              <Sparkles size={12} /> AI hint
                             </span>
                             <p>{active.hint}</p>
-                            <small>The ending is still yours.</small>
                           </aside>
                         )}
                       </div>
@@ -816,7 +879,7 @@ function App() {
                           </>
                         ) : (
                           <>
-                            {active.stage === 'write' ? 'Toss my bottle' : 'Seal our postcard'}
+                            {active.stage === 'write' ? 'Release' : 'Send reply'}
                             <ArrowRight size={18} />
                           </>
                         )}
@@ -827,7 +890,7 @@ function App() {
                             <button
                               disabled={controlsDisabled || active.skips >= 1}
                               onClick={() =>
-                                run('Letting this one drift…', () => game.skip(active.id))
+                                run('Finding another bottle…', () => pickUp(active.id, true))
                               }
                             >
                               <Shuffle size={15} />
@@ -837,7 +900,7 @@ function App() {
                             <button
                               disabled={controlsDisabled || !!checksExhausted}
                               onClick={() =>
-                                run('Finding a fresh bottle…', () => game.claim(active.id))
+                                run('Finding a fresh bottle…', () => pickUp(active.id))
                               }
                             >
                               <RotateCcw size={15} />
@@ -852,8 +915,8 @@ function App() {
                       )}
                     </div>
                     <p className="privacy-note">
-                      Your words may appear on a public share card. Leave out personal details.{' '}
-                      <button onClick={() => setModal('privacy')}>How this works</button>
+                      This may be shared. Leave out personal details.{' '}
+                      <button onClick={() => setModal('privacy')}>Privacy</button>
                     </p>
                     <details className="word-rules">
                       <summary>What counts as a word?</summary>
@@ -868,46 +931,18 @@ function App() {
             </section>
           )}
           {view === 'card' && (
-            <section className="reveal-layout">
+            <section className={`reveal-layout ${card ? 'has-postcard' : ''}`}>
               <div className="reveal-copy">
-                <span className="eyebrow">
-                  {card ? 'SOMETHING GOOD WASHED ASHORE' : 'A NOTE FROM THE SHORE'}
-                </span>
-                <h1 ref={heading} tabIndex={-1}>
-                  {card ? (
-                    card.seeded && card.starterKind !== 'team' ? (
-                      <>
-                        A little beginning.
-                        <br /> <em>A new ending.</em>
-                      </>
-                    ) : ownership ? (
-                      <>
-                        Well, look what
-                        <br /> <em>we made.</em>
-                      </>
-                    ) : (
-                      <>
-                        Two strangers.
-                        <br /> <em>One little story.</em>
-                      </>
-                    )
-                  ) : !s.connected ? (
-                    'A postcard is washing ashore.'
-                  ) : (
-                    'This postcard has drifted on.'
-                  )}
+                <h1 ref={heading} tabIndex={-1} className={card ? 'sr-only' : ''}>
+                  {card ? 'Saved reply' : s.connected ? 'Reply unavailable' : 'Opening reply…'}
                 </h1>
-                <p>
-                  {card
-                    ? card.seeded && card.starterKind !== 'team'
-                      ? 'A development sample, finished with your own six words.'
-                      : ownership
-                        ? 'Two little lines. One story that belongs to both of you.'
-                        : 'Six words from each writer. A tiny collaboration, shared with you.'
-                    : !s.connected
-                      ? 'Opening this postcard. Your connection needs a moment.'
-                      : 'It may have been hidden by an author, or the link may be incomplete.'}
-                </p>
+                {!card && (
+                  <p>
+                    {s.connected
+                      ? 'The link may be incomplete, or an author may have hidden this reply.'
+                      : 'Waiting for a connection.'}
+                  </p>
+                )}
                 {card && (
                   <>
                     <div className="share-actions">
@@ -931,7 +966,7 @@ function App() {
                         disabled={!!busy}
                       >
                         <Share2 size={17} />
-                        {ownership ? 'Share our story' : 'Pass this story on'}
+                        Share
                       </button>
                       <button
                         className="button secondary"
@@ -958,7 +993,7 @@ function App() {
                         }
                       >
                         <Copy size={15} />
-                        Copy the words
+                        Copy text
                       </button>
                     </div>
                     {
@@ -966,7 +1001,7 @@ function App() {
                         {ownership && (
                           <button onClick={() => setModal('hide')}>
                             <Trash2 size={14} />
-                            Hide this postcard
+                            Hide
                           </button>
                         )}
                         <button onClick={() => setModal('report')}>
@@ -983,132 +1018,99 @@ function App() {
                         time={clock}
                       />
                     )}
-                    <div className="return-note">
-                      <Mail size={19} />
-                      <p>
-                        {waiting.length
-                          ? 'Your own bottle is still out there. If someone finishes it, it’ll arrive in My postcards.'
-                          : 'Every story is better with another human.'}
-                      </p>
-                    </div>
-                    {active?.stage === 'write' && active.cardId === card.id && (
-                      <div className="pass-it-on">
-                        <p>Want to leave six words for the next person?</p>
-                        <button
-                          className="button primary"
-                          onClick={begin}
-                          disabled={controlsDisabled}
-                        >
-                          Toss my own bottle <ArrowRight size={17} />
-                        </button>
-                        <button
-                          className="text-button"
-                          disabled={controlsDisabled}
-                          onClick={() =>
-                            run('Keeping your postcard…', async () => {
-                              await game.abandon(active.id);
-                              setView('today');
-                            })
-                          }
-                        >
-                          Keep this story. Maybe later.
-                        </button>
-                      </div>
-                    )}
                   </>
                 )}
-                <button className="text-button back-link" onClick={() => setView('today')}>
-                  {card ? (
-                    <>
-                      <ArrowRight size={16} />
-                      Back to the shore
-                    </>
-                  ) : (
-                    <>
-                      <ChevronLeft size={16} />
-                      Back to today
-                    </>
-                  )}
-                </button>
               </div>
               {card && (
                 <div className="reveal-art">
                   <PaperNote key={card.id} postcard onOpen={recordOpen}>
-                    <Postcard card={card} role={ownership?.role ?? 'public'} />
+                    <Postcard card={card} />
                   </PaperNote>
-                  <div className="human-seal">
-                    <span>✓</span>{' '}
-                    {card.seeded
-                      ? card.starterKind === 'team'
-                        ? 'A team-written beginning. A human ending.'
-                        : 'A sample beginning. A writer’s ending.'
-                      : 'Made by two humans. Kept by both.'}
-                  </div>
-                  {ownership?.role === 'reply' && (
-                    <div className="stamp-receipt">
-                      <Check size={12} /> Today’s stamp is yours. One per day, however many stories.
-                    </div>
-                  )}
                 </div>
               )}
             </section>
           )}
           {view === 'collection' && (
-            <section className="collection">
+            <section className="collection bottle-shelf">
               <div className="collection-heading">
-                <div>
-                  <span className="eyebrow">LITTLE THINGS WORTH KEEPING</span>
-                  <h1 ref={heading} tabIndex={-1}>
-                    Your stretch of shore.
-                  </h1>
-                </div>
-                <span className="collection-total">
-                  {mine.length} {mine.length === 1 ? 'postcard' : 'postcards'}
-                  {stampedDays > 0 && (
-                    <small>
-                      {stampedDays} daily {stampedDays === 1 ? 'stamp' : 'stamps'}
-                    </small>
-                  )}
-                </span>
+                <h1 ref={heading} tabIndex={-1}>
+                  My bottles
+                </h1>
+                <span className="collection-total">Saved on this browser</span>
               </div>
-              {mine.length === 0 && (
+              {released.length === 0 && completed.length === 0 && (
                 <div className="collection-empty">
                   <Bottle />
-                  <h2>A little empty. For now.</h2>
-                  <p>Finish a stranger’s story and your first postcard will land here.</p>
+                  <h2>No saved bottles yet.</h2>
+                  <p>Release a beginning, or pick up someone else’s.</p>
                   <button className="button primary" onClick={begin} disabled={controlsDisabled}>
-                    Make a little story <ArrowRight size={18} />
+                    Write a beginning
                   </button>
                 </div>
               )}
-              <div className="collection-grid">
-                {mine.map(({ card, role }) => (
-                  <button
-                    className="collection-card"
-                    key={card.id}
-                    onClick={() => showCard(card.id)}
-                  >
-                    <Postcard card={card} role={role} />
-                    <span>
-                      {role === 'setup' ? 'Your bottle came back' : 'You wrote the ending'}
-                      <ArrowUpRight size={17} />
-                    </span>
-                  </button>
-                ))}
-              </div>
-              {waiting.length > 0 && (
-                <section className="waiting-section">
-                  <h2>Still out at sea</h2>
-                  <p>These beginnings are waiting for an ending. A reply isn’t guaranteed.</p>
-                  {waiting.map((o) => (
-                    <div className="waiting-line" key={o.id}>
-                      <Mail size={19} />
-                      <span>{o.text}</span>
-                      <span className="eyebrow">DRIFTING</span>
-                    </div>
-                  ))}
+              {released.length > 0 && (
+                <section className="shelf-section">
+                  <h2>Your beginnings</h2>
+                  <div className="beginning-list">
+                    {released.map((letter) => (
+                      <button
+                        key={letter.id}
+                        className="beginning-preview"
+                        onClick={() => showBeginning(letter.id)}
+                      >
+                        <span>{letter.text}</span>
+                        <small>
+                          {letter.endings.length}{' '}
+                          {letter.endings.length === 1 ? 'ending' : 'endings'}
+                        </small>
+                        <ChevronLeft size={16} className="letter-forward" />
+                      </button>
+                    ))}
+                  </div>
                 </section>
               )}
+              {completed.length > 0 && (
+                <section className="shelf-section">
+                  <h2>Your replies</h2>
+                  <div className="collection-grid">
+                    {completed.map((pair) => (
+                      <button
+                        className="collection-card"
+                        key={pair.id}
+                        onClick={() => showCard(pair.id)}
+                      >
+                        <Postcard card={pair} />
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              )}
+              <details className="bottle-lookup">
+                <summary>Open a bottle by ID</summary>
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    if (/^[a-zA-Z0-9_-]{1,128}$/.test(bottleLookup.trim()))
+                      showBeginning(bottleLookup.trim());
+                  }}
+                >
+                  <label className="sr-only" htmlFor="bottle-id">
+                    Beginning bottle ID
+                  </label>
+                  <input
+                    id="bottle-id"
+                    value={bottleLookup}
+                    onChange={(event) => setBottleLookup(event.target.value)}
+                    maxLength={128}
+                    placeholder="Bottle ID"
+                    required
+                    pattern="[a-zA-Z0-9_-]+"
+                  />
+                  <button className="button secondary" type="submit">
+                    Open bottle
+                  </button>
+                </form>
+              </details>
               <EarlierDrafts
                 identity={s.identity}
                 rounds={s.rounds}
@@ -1117,6 +1119,83 @@ function App() {
                 busy={!!busy}
                 onCopy={(text) => void copyDraft(text)}
               />
+            </section>
+          )}
+          {view === 'beginning' && (
+            <section className="bottle-page">
+              <h1 ref={heading} tabIndex={-1} className={beginning ? 'sr-only' : ''}>
+                {beginning ? 'Your bottle' : s.connected ? 'Bottle unavailable' : 'Opening bottle…'}
+              </h1>
+              {beginning ? (
+                <>
+                  <PaperNote>
+                    <p className="letter-text">{beginning.text}</p>
+                    <details className="bottle-receipt">
+                      <summary>Bottle ID</summary>
+                      <code>{beginning.id}</code>
+                      <div className="letter-address">
+                        <button
+                          className="text-button"
+                          onClick={() =>
+                            run('Copying bottle ID…', async () => {
+                              await copyText(beginning.id);
+                              setToast('Bottle ID copied');
+                            })
+                          }
+                        >
+                          <Copy size={14} />
+                          Copy bottle ID
+                        </button>
+                        <button
+                          className="text-button"
+                          onClick={() =>
+                            run('Copying bottle link…', async () => {
+                              await copyText(
+                                `${location.origin}${location.pathname}?bottle=${encodeURIComponent(beginning.id)}`,
+                              );
+                              setToast('Bottle link copied');
+                            })
+                          }
+                        >
+                          Copy bottle link
+                        </button>
+                      </div>
+                    </details>
+                  </PaperNote>
+                  <div className="endings-heading">
+                    <h2>
+                      {endings.length} {endings.length === 1 ? 'reply' : 'replies'}
+                    </h2>
+                  </div>
+                  {endings.length === 0 ? (
+                    <p className="shelf-note">No replies yet.</p>
+                  ) : (
+                    <div className="ending-list">
+                      {endings.map((pair) => (
+                        <button
+                          className="ending-preview"
+                          key={pair.id}
+                          onClick={() => showCard(pair.id)}
+                        >
+                          <span>{pair.reply}</span>
+                          <small>
+                            {new Date(pair.createdMs).toLocaleDateString([], {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </small>
+                          <ArrowUpRight size={16} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="shelf-note">
+                  The ID may be incomplete, or the bottle may have been removed. Your saved pairs
+                  are still in My bottles.
+                </p>
+              )}
             </section>
           )}
           {error &&
@@ -1132,11 +1211,44 @@ function App() {
               </div>
             )}
         </main>
-        <footer className="site-footer">
-          <span>A small moment of together.</span>
-          <span>
-            Fresh tide at {reset} <span className="footer-dot">·</span>{' '}
-            <button onClick={() => setModal('privacy')}>Privacy & care</button>{' '}
+        {ritual && (
+          <BottleRitual
+            kind={ritual.kind}
+            phase={ritual.phase}
+            onComplete={() => finishRitual(true)}
+            onCancel={() => finishRitual(false)}
+          />
+        )}
+      </div>
+      {toast && !ritual && (
+        <div className="toast" role="status">
+          <Check size={17} />
+          {toast}
+        </div>
+      )}
+      {modal === 'how' && (
+        <Modal title="How to play" onClose={() => setModal(null)}>
+          <ol className="how-list">
+            <li>
+              <strong>Release.</strong> Write a six-word beginning for today’s prompt.
+            </li>
+            <li>
+              <strong>Pick up.</strong> Add a six-word ending to someone’s beginning.
+            </li>
+            <li>
+              <strong>My bottles.</strong> Read replies to your beginnings and revisit the pairs you
+              finished.
+            </li>
+          </ol>
+          <p>Up to three bottles a day. One skip per reply.</p>
+          {s.service?.sandbox && !s.service.aiReady && (
+            <p>This is a local preview. Message checks and AI hints are off.</p>
+          )}
+          <button className="button primary" onClick={() => setModal(null)}>
+            Back to the sea
+          </button>
+          <div className="shore-settings">
+            <button onClick={() => setModal('privacy')}>Privacy</button>
             <a href="/credits.html" target="_blank" rel="noreferrer">
               Image credits
             </a>
@@ -1146,65 +1258,36 @@ function App() {
               aria-pressed={seaPaused}
               onClick={() => setSeaPaused(!seaPaused)}
             >
-              <Waves size={13} />
-              {seaPaused ? 'Resume sea' : 'Pause sea'}
+              <Waves size={14} /> {seaPaused ? 'Resume sea motion' : 'Pause sea motion'}
             </button>
-          </span>
-        </footer>
-      </div>
-      {toast && (
-        <div className="toast" role="status">
-          <Check size={17} />
-          {toast}
-        </div>
-      )}
-      {modal === 'how' && (
-        <Modal title="A little story, together." onClose={() => setModal(null)}>
-          <ol className="how-list">
-            <li>
-              <strong>Catch a beginning.</strong> Shake the bottle or choose “Pick up a bottle” to
-              open someone’s six words over the sea.
-            </li>
-            <li>
-              <strong>Add your six-word ending.</strong> You both keep the finished postcard. Save
-              it or share it, then leave another beginning if you feel like it.
-            </li>
-            <li>
-              <strong>Keep the bottle drifting.</strong> “Write my six words” lets you start
-              instead. When the sea is quiet, leave a beginning or try catching again later. A
-              return isn’t guaranteed; samples are labeled in the sandbox.
-            </li>
-          </ol>
-          <p>
-            Up to three rounds a day. One skip each round.{' '}
-            {s.service?.sandbox
-              ? 'Sample starters are for development.'
-              : 'Both creative lines are human-written.'}
-          </p>
-          <button className="button primary" onClick={() => setModal(null)}>
-            I’m in <ArrowRight size={18} />
-          </button>
+            <small>A fresh prompt arrives at {reset}.</small>
+          </div>
         </Modal>
       )}
       {modal === 'privacy' && (
-        <Modal title="A little care goes a long way." onClose={() => setModal(null)}>
+        <Modal title="Privacy" onClose={() => setModal(null)}>
           <p>
-            Your submitted words are checked before another writer receives them. Completed
-            postcards are anonymous and public through share links.
+            {s.service?.sandbox && !s.service.aiReady
+              ? 'Message checks are off in this local preview.'
+              : 'Your submitted words are checked before another writer receives them.'}{' '}
+            Released beginnings and completed replies are anonymous and public. A beginning can
+            receive endings from several writers; each pair has its own share link.
           </p>
           <p>
-            Leave out names, contact details, and identifying information. Your draft stays in this
-            browser; your session token restores your progress here. Clearing browser storage can
-            lose that access.
+            Leave out names, contact details, and identifying information. First-party cookies save
+            the IDs of your beginnings and completed pairs for thirty days. They contain no message
+            text. Your drafts and anonymous session token stay in this browser. Cookies let you
+            reopen the public letters by ID; author-only actions still require your session token.
+            Clearing browser data can lose that access.
           </p>
           <p>
             Either author can hide a postcard. That removes its share page, but cannot retract saved
             images or screenshots. Reports are private.
           </p>
           <p>
-            Unpublished submissions are retained for seven days; cards and reports for thirty days.
-            Hourly cleanup removes expired data and hidden-card author mappings. Saved browser
-            drafts expire seven days after their latest edit.
+            Unpublished submissions are retained for seven days; published beginnings, pairs, and
+            reports for thirty days. Hourly cleanup removes expired data and hidden-card author
+            mappings. Saved browser drafts expire seven days after their latest edit.
           </p>
           <p>
             Usage and cost records contain no story text or identity. Individual records expire
@@ -1222,7 +1305,7 @@ function App() {
         </Modal>
       )}
       {modal === 'hide' && card && (
-        <Modal title="Let this postcard drift away?" onClose={() => setModal(null)}>
+        <Modal title="Hide this reply?" onClose={() => setModal(null)}>
           <p>
             This removes it from both authors’ collections and its public share link. Saved images
             and screenshots can still exist.
@@ -1249,7 +1332,7 @@ function App() {
         </Modal>
       )}
       {modal === 'report' && (
-        <Modal title="Help keep the shore kind." onClose={() => setModal(null)}>
+        <Modal title="Report" onClose={() => setModal(null)}>
           <p>
             Your report is private.{' '}
             {view === 'card' && !ownership
@@ -1291,4 +1374,6 @@ function App() {
     </>
   );
 }
-createRoot(document.getElementById('root')!).render(<App />);
+const appRoot = import.meta.hot?.data.driftRoot ?? createRoot(document.getElementById('root')!);
+if (import.meta.hot) import.meta.hot.data.driftRoot = appRoot;
+appRoot.render(<App />);

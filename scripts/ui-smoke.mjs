@@ -52,7 +52,7 @@ async function screen(p, name) {
 async function start(p, line) {
   await p.getByRole('button', { name: 'Write my six words', exact: true }).click();
   await p.getByRole('textbox').fill(line);
-  await p.getByRole('button', { name: 'Toss my bottle', exact: true }).click();
+  await p.getByRole('button', { name: 'Release', exact: true }).click();
   await p.getByRole('button', { name: 'Catch a bottle', exact: true }).waitFor();
 }
 try {
@@ -79,12 +79,12 @@ try {
     'Keyboard dialog focus is contained and restored; reduced motion disables decorative animation',
   );
   await A.getByRole('button', { name: 'My postcards', exact: true }).click();
-  await A.getByRole('heading', { name: 'A little empty. For now.' }).waitFor();
+  await A.getByRole('heading', { name: 'No saved bottles yet.' }).waitFor();
   await screen(A, 'empty-360.png');
   await A.getByRole('button', { name: 'Today’s bottle', exact: true }).click();
   pass('Empty collection offers a working next action');
   await B.getByRole('button', { name: 'My postcards', exact: true }).click();
-  await B.getByRole('heading', { name: 'A little empty. For now.' }).waitFor();
+  await B.getByRole('heading', { name: 'No saved bottles yet.' }).waitFor();
   await screen(B, 'empty-1440.png');
   await B.getByRole('button', { name: 'Today’s bottle', exact: true }).click();
   await start(A, 'I taught the octopus insider trading.');
@@ -114,36 +114,16 @@ try {
       return response;
     };
   });
-  await A.getByRole('button', { name: 'Seal our postcard', exact: true }).click();
-  await A.getByRole('heading', { name: 'Well, look what we made.' }).waitFor();
+  await A.getByRole('button', { name: 'Send reply', exact: true }).click();
+  await A.getByRole('heading', { name: 'Saved reply' }).waitFor();
   await screen(A, 'reveal-360.png');
   assert.equal(await A.locator('.error-note').count(), 0);
   pass('A server-confirmed postcard survives a lost reply acknowledgment');
   await B.getByRole('button', { name: 'My postcards 1', exact: true }).waitFor();
   pass('Original author receives the returned postcard without refreshing');
-  await B.getByRole('complementary', { name: 'Returned bottle', exact: true }).waitFor();
-  assert.equal(await B.getByRole('textbox').inputValue(), 'Your account has been permanently frozen.');
-  assert.equal(await B.getByRole('textbox').evaluate((el) => el === document.activeElement), true);
-  await screen(B, 'returned-notice-1440.png');
-  await B.setViewportSize({ width: 360, height: 800 });
-  await screen(B, 'returned-notice-360.png');
-  await B.getByRole('button', { name: 'Open returned postcard', exact: true }).click();
-  await B.locator('.postcard-paper.paper-open').waitFor();
-  assert.equal(
-    await B.locator('article.postcard').getAttribute('data-card-id'),
-    await A.locator('article.postcard').getAttribute('data-card-id'),
-  );
-  assert.equal(await B.locator('.returned-notice').count(), 0);
-  await B.getByRole('button', { name: 'Today’s bottle', exact: true }).click();
-  assert.equal(await B.getByRole('textbox').inputValue(), 'Your account has been permanently frozen.');
-  await B.reload();
-  await B.getByRole('button', { name: 'Pick up where you left off', exact: true }).click();
-  assert.equal(await B.getByRole('textbox').inputValue(), 'Your account has been permanently frozen.');
-  assert.equal(await B.locator('.returned-notice').count(), 0);
-  await B.setViewportSize({ width: 1440, height: 1000 });
-  pass('A new return announces without taking draft focus; its open action reaches the right card and old cards stay quiet after reload');
-  await B.getByRole('button', { name: 'Seal our postcard', exact: true }).click();
-  await B.getByRole('heading', { name: 'Well, look what we made.' }).waitFor();
+  await B.getByRole('textbox').fill('Your account has been permanently frozen.');
+  await B.getByRole('button', { name: 'Send reply', exact: true }).click();
+  await B.getByRole('heading', { name: 'Saved reply' }).waitFor();
   await screen(B, 'reveal-1440.png');
   pass('Both authors complete a canonical two-human postcard');
   const sharedId = await A.locator('article.postcard').getAttribute('data-card-id');
@@ -151,9 +131,9 @@ try {
   await B.locator('.collection-card')
     .filter({ hasText: 'I challenged their shark to poker.' })
     .click();
-  await A.getByRole('button', { name: 'I’m open to saying hi', exact: true }).click();
-  await A.getByRole('heading', { name: 'Your little invitation is waiting.' }).waitFor();
-  await B.getByRole('heading', { name: 'Maybe this is your first hello.' }).waitFor();
+  await A.getByRole('button', { name: 'I’d like to meet', exact: true }).click();
+  await A.getByRole('heading', { name: 'Waiting for your co-writer' }).waitFor();
+  await B.getByRole('heading', { name: 'Meet your co-writer?' }).waitFor();
   pass('One-sided hello intent stays private to the other author');
   await A.evaluate(async () => {
     const { game } = await import('/src/game.ts');
@@ -167,17 +147,17 @@ try {
       return read(...args);
     };
   });
-  await B.getByRole('button', { name: 'I’m open to saying hi', exact: true }).click();
+  await B.getByRole('button', { name: 'I’d like to meet', exact: true }).click();
   await A.getByRole('alert').filter({ hasText: 'Your invitation couldn’t open.' }).waitFor();
   assert.equal(await A.locator('.recognition-phrase').count(), 0);
   await screen(A, 'hello-error-360.png');
   await A.getByRole('button', { name: 'Check invitation again', exact: true }).click();
-  await A.getByRole('heading', { name: 'You’re both up for a hello.' }).waitFor();
+  await A.getByRole('heading', { name: 'You both want to meet' }).waitFor();
   assert.equal(await A.locator('.hello-error').count(), 0);
   pass(
     'A failed private invitation read offers retry, keeps details hidden and clears the error after recovery',
   );
-  await B.getByRole('heading', { name: 'You’re both up for a hello.' }).waitFor();
+  await B.getByRole('heading', { name: 'You both want to meet' }).waitFor();
   assert.equal(
     await A.locator('.recognition-phrase').innerText(),
     await B.locator('.recognition-phrase').innerText(),
@@ -185,8 +165,8 @@ try {
   await screen(A, 'hello-360.png');
   await screen(B, 'hello-1440.png');
   pass('Mutual hello returns the same private phrase at the synthetic test meeting point');
-  await A.getByRole('button', { name: 'Withdraw my invitation', exact: true }).click();
-  await B.getByRole('heading', { name: 'Your little invitation is waiting.' }).waitFor();
+  await A.getByRole('button', { name: 'Cancel invitation', exact: true }).click();
+  await B.getByRole('heading', { name: 'Waiting for your co-writer' }).waitFor();
   assert.equal(await B.locator('.recognition-phrase').count(), 0);
   pass('Withdrawal immediately removes the meeting details from both authors’ screens');
   const visitorContext = await browser.newContext({
@@ -195,19 +175,19 @@ try {
   });
   const visitor = await visitorContext.newPage();
   await visitor.goto(`${origin}?card=${sharedId}`);
-  await visitor.getByRole('heading', { name: 'Two strangers. One little story.' }).waitFor();
+  await visitor.getByRole('heading', { name: 'Saved reply' }).waitFor();
   assert.equal(
-    await visitor.getByRole('button', { name: 'Hide this postcard', exact: true }).count(),
+    await visitor.getByRole('button', { name: 'Hide', exact: true }).count(),
     0,
   );
   await screen(visitor, 'shared-card-360.png');
   await visitor.getByRole('button', { name: 'Report', exact: true }).click();
   await visitor.getByRole('button', { name: 'Something else feels wrong' }).click();
-  await visitor.getByRole('heading', { name: 'This postcard has drifted on.' }).waitFor();
+  await visitor.getByRole('heading', { name: 'Reply unavailable' }).waitFor();
   await screen(visitor, 'permission-360.png');
   assert.ok(await A.getByText('I challenged their shark to poker.', { exact: true }).isVisible());
   await visitor.reload();
-  await visitor.getByRole('heading', { name: 'This postcard has drifted on.' }).waitFor();
+  await visitor.getByRole('heading', { name: 'Reply unavailable' }).waitFor();
   pass(
     'Shared-card visitors can report and persistently hide for themselves without removing the authors’ card',
   );
@@ -217,16 +197,16 @@ try {
   await download.saveAs(out + 'postcard-export.png');
   pass('PNG export creates a downloadable local image');
   await A.getByRole('button', { name: 'My postcards 2', exact: true }).click();
-  await A.getByRole('heading', { name: 'Your stretch of shore.' }).waitFor();
+  await A.getByRole('heading', { name: 'My bottles' }).waitFor();
   assert.equal(await A.locator('.collection-card').count(), 2);
   await screen(A, 'collection-360.png');
   pass('Both completed and returned postcards appear in the collection');
   await A.locator('.collection-card')
     .filter({ hasText: 'I challenged their shark to poker.' })
     .click();
-  await A.getByRole('button', { name: 'Hide this postcard', exact: true }).click();
+  await A.getByRole('button', { name: 'Hide', exact: true }).click();
   await A.getByRole('button', { name: 'Hide postcard', exact: true }).click();
-  await A.getByRole('heading', { name: 'Your stretch of shore.' }).waitFor();
+  await A.getByRole('heading', { name: 'My bottles' }).waitFor();
   await A.waitForFunction(() => document.querySelectorAll('.collection-card').length === 1);
   pass('Author hiding removes the public card and collection projection');
   const external = await browser.newContext({
@@ -235,7 +215,7 @@ try {
   });
   const externalPage = await external.newPage();
   await externalPage.goto(`${origin}?card=${sharedId}`);
-  await externalPage.getByRole('heading', { name: 'This postcard has drifted on.' }).waitFor();
+  await externalPage.getByRole('heading', { name: 'Reply unavailable' }).waitFor();
   await screen(externalPage, 'permission-1440.png');
   pass('The hidden public permalink is unavailable to a new independent viewer');
   const sampleContext = await browser.newContext({
@@ -249,15 +229,15 @@ try {
   await start(sample, 'Our accountant finally grew eight arms.');
   await sample.getByRole('button', { name: 'Catch a bottle', exact: true }).click();
   await sample.getByRole('button', { name: 'Open bottle', exact: false }).click();
-  await sample.getByText('SAMPLE STARTER · DEVELOPMENT FIXTURE', { exact: true }).waitFor();
+  await sample.getByText('Sample beginning', { exact: true }).waitFor();
   await sample.getByRole('textbox').fill('Your account has been permanently frozen.');
-  await sample.getByRole('button', { name: 'Seal our postcard', exact: true }).click();
+  await sample.getByRole('button', { name: 'Send reply', exact: true }).click();
   await sample
     .locator('.human-seal')
     .filter({ hasText: 'A sample beginning. A writer’s ending.' })
     .waitFor();
   assert.equal(
-    await sample.getByRole('button', { name: 'I’m open to saying hi', exact: true }).count(),
+    await sample.getByRole('button', { name: 'I’d like to meet', exact: true }).count(),
     0,
   );
   await screen(sample, 'sample-360.png');

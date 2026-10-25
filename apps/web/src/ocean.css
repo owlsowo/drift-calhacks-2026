@@ -1,0 +1,21 @@
+/* The fixed camera projects the mean water plane to 40% of the viewport. */
+.ocean-world.fft-ocean .fft-surface {
+  display: block;
+  opacity: 0;
+  transition: none;
+}
+.ocean-world.fft-ocean.ocean-ready .fft-surface {
+  opacity: 1;
+}
+
+/* Original SVG lighthouse; no generated coastal image is distributed. */
+.ocean-world.fft-ocean .fft-headland {
+  position: absolute;
+  top: auto;
+  bottom: calc(60% - 5px);
+  right: 5%;
+  width: clamp(40px, 6vw, 95px);
+  height: auto;
+  aspect-ratio: 5 / 6;
+  filter: brightness(0.87);
+}

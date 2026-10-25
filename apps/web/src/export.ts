@@ -1,6 +1,12 @@
 import type { Card } from '../../../packages/game-rules/index';
-export const cardText = (c: Card) =>
-  `${c.setup}\n${c.reply}\n\n${c.seeded && c.starterKind !== 'team' ? 'Sample starter + a writer’s ending. Drift. Development fixture.' : `Two people. Twelve words. Drift.${c.seeded ? ' Setup written by the Drift team.' : ''}`}`;
+const provenance = (card: Card) =>
+  card.seeded
+    ? card.starterKind === 'team'
+      ? 'Beginning by the Drift team.'
+      : 'Sample beginning.'
+    : '';
+export const cardText = (card: Card) =>
+  `${card.setup}\n${card.reply}${provenance(card) ? `\n\n${provenance(card)}` : ''}`;
 export const cardUrl = (c: Card) =>
   `${location.origin}${location.pathname}?card=${encodeURIComponent(c.id)}`;
 function wrap(ctx: CanvasRenderingContext2D, text: string, width: number) {
@@ -33,94 +39,78 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, width: number) {
   return lines;
 }
 export async function postcardPng(card: Card): Promise<Blob> {
+  const paper = new Image();
+  paper.decoding = 'async';
+  const paperReady = new Promise<void>((resolve, reject) => {
+    paper.onload = () => resolve();
+    paper.onerror = () =>
+      reject(Error('Couldn’t create your image. Try copying the text instead.'));
+    paper.src = new URL('/assets/paper-texture.jpg', location.origin).href;
+  });
+  await Promise.all([document.fonts.load('400 70px Kalam'), paperReady]);
   await document.fonts.ready;
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
   canvas.height = 1350;
   const c = canvas.getContext('2d')!;
-  c.fillStyle = '#f6f0e4';
-  c.fillRect(0, 0, 1080, 1350);
-  c.fillStyle = '#173e40';
-  c.font = '500 66px Fraunces';
-  c.fillText('drift', 76, 121);
-  c.font = '500 19px "DM Sans"';
-  c.fillText('A LITTLE STORY, TOGETHER.', 76, 161);
-  c.save();
-  c.translate(913, 123);
-  c.rotate(0.15);
-  c.strokeStyle = '#6b856c';
-  c.lineWidth = 1.7;
-  c.beginPath();
-  c.arc(0, 0, 62, 0, Math.PI * 2);
-  c.stroke();
-  c.font = '500 18px "DM Sans"';
-  c.textAlign = 'center';
-  c.fillText('DRIFT', 0, -17);
-  c.font = '400 30px Fraunces';
-  c.fillText('∿∿∿', 0, 13);
-  c.font = '500 11px "DM Sans"';
-  c.fillText('WRITTEN TOGETHER', 0, 35);
-  c.restore();
-  c.strokeStyle = '#a3afa4';
-  c.lineWidth = 2;
-  c.strokeRect(76, 222, 928, 894);
-  c.fillStyle = '#e2e9df';
-  c.fillRect(77, 223, 926, 445);
-  c.fillStyle = '#173e40';
+  c.drawImage(paper, 0, 0, canvas.width, canvas.height);
+  c.fillStyle = 'rgba(242,235,217,.86)';
+  c.fillRect(0, 0, canvas.width, canvas.height);
+  const edgeShade = c.createLinearGradient(0, 0, canvas.width, canvas.height);
+  edgeShade.addColorStop(0, 'rgba(255,255,255,.04)');
+  edgeShade.addColorStop(0.5, 'rgba(36,47,61,0)');
+  edgeShade.addColorStop(1, 'rgba(36,47,61,.05)');
+  c.fillStyle = edgeShade;
+  c.fillRect(0, 0, canvas.width, canvas.height);
+
+  const fold = c.createLinearGradient(0, 658, 0, 692);
+  fold.addColorStop(0, 'rgba(38,51,66,0)');
+  fold.addColorStop(0.46, 'rgba(38,51,66,.055)');
+  fold.addColorStop(0.5, 'rgba(38,51,66,.10)');
+  fold.addColorStop(0.54, 'rgba(255,255,255,.25)');
+  fold.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = fold;
+  c.fillRect(0, 658, canvas.width, 34);
+
+  c.fillStyle = '#263342';
+  c.textBaseline = 'middle';
   const parts = [
-    {
-      text: card.setup,
-      label: card.seeded
-        ? card.starterKind === 'team'
-          ? '01 / THE DRIFT TEAM’S SETUP'
-          : '01 / SAMPLE STARTER — DEVELOPMENT FIXTURE'
-        : '01 / A STRANGER’S SETUP',
-      y: 288,
-    },
-    { text: card.reply, label: '02 / ANOTHER HUMAN’S ENDING', y: 740 },
+    { text: card.setup, center: 390 },
+    { text: card.reply, center: 920 },
   ];
   for (const part of parts) {
-    c.font = '600 18px "DM Sans"';
-    c.fillText(part.label, 123, part.y);
-    let size = 62;
+    let size = 70;
     let lines: string[] = [];
     do {
-      c.font = `500 ${size}px Fraunces`;
-      lines = wrap(c, part.text, 830);
-      if (lines.length * size * 1.25 < 285 && lines.every((l) => c.measureText(l).width <= 830))
+      c.font = `400 ${size}px Kalam`;
+      lines = wrap(c, part.text, 880);
+      if (
+        (lines.length * size * 1.4 <= 380 && lines.every((l) => c.measureText(l).width <= 880)) ||
+        size === 20
+      )
         break;
       size -= 2;
-    } while (size > 20);
-    lines.forEach((line, i) => c.fillText(line, 123, part.y + 87 + i * size * 1.25));
+    } while (size >= 20);
+    const leading = size * 1.4;
+    const firstLine = part.center - ((lines.length - 1) * leading) / 2;
+    lines.forEach((line, i) => c.fillText(line, 100, firstLine + i * leading));
   }
-  c.save();
-  c.setLineDash([9, 10]);
-  c.strokeStyle = '#91a397';
-  c.beginPath();
-  c.moveTo(77, 669);
-  c.lineTo(1003, 669);
-  c.stroke();
-  c.restore();
-  c.fillStyle = '#173e40';
-  c.font = '500 28px Fraunces';
-  c.fillText(
-    card.seeded && card.starterKind !== 'team'
-      ? 'A sample beginning. A writer’s ending.'
-      : 'Neither of us could have written this alone.',
-    76,
-    1200,
-  );
-  c.font = '400 19px "DM Sans"';
-  c.fillText(location.host, 76, 1251);
+
+  c.fillStyle = 'rgba(38,51,66,.65)';
+  c.font = '400 21px Georgia, serif';
+  c.textAlign = 'right';
   c.fillText(
     new Date(card.createdMs).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
     }),
-    800,
-    1251,
+    980,
+    100,
   );
+  c.textAlign = 'left';
+  if (provenance(card)) c.fillText(provenance(card), 100, 1220);
+  c.fillText(location.host, 100, 1270);
   return new Promise((resolve, reject) =>
     canvas.toBlob(
       (blob) =>
@@ -148,11 +138,11 @@ export async function shareCard(card: Card) {
       const file = new File([blob], `drift-${card.id.slice(0, 8)}.png`, { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] }))
         await navigator.share({
-          title: 'A little story, together',
+          title: 'Drift',
           text: cardText(card) + '\n' + url,
           files: [file],
         });
-      else await navigator.share({ title: 'A little story, together', text: cardText(card), url });
+      else await navigator.share({ title: 'Drift', text: cardText(card), url });
       return 'Shared';
     } catch (error) {
       if ((error as Error).name === 'AbortError') throw error;
@@ -163,11 +153,19 @@ export async function shareCard(card: Card) {
 }
 export async function copyText(text: string) {
   if (navigator.clipboard?.writeText) {
+    let deadline: ReturnType<typeof setTimeout> | undefined;
     try {
-      await navigator.clipboard.writeText(text);
+      await Promise.race([
+        navigator.clipboard.writeText(text),
+        new Promise<never>((_, reject) => {
+          deadline = setTimeout(() => reject(Error('Clipboard permission did not respond.')), 1200);
+        }),
+      ]);
       return;
     } catch {
       /* Try the browser's user-gesture fallback. */
+    } finally {
+      clearTimeout(deadline);
     }
   }
   const input = document.createElement('textarea');

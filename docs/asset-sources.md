@@ -11,3 +11,7 @@ The interface uses human-made photographs and original web geometry. No AI-gener
 The paper ball remains available under its original share-alike license. The site’s Image credits page carries attribution and license links alongside the distributed assets.
 
 Interface references: [the owner's supplied WeChat video](https://www.bilibili.com/video/BV1PW411x7n4/), [classic WeChat screenshots](https://www.freedomwall.net/technews/revolutionize-your-mobile-messaging-and-calling-experience-with-wechat/), and [QQ Mail bottle imagery](https://www.woshipm.com/it/5063202.html). These inform the sea, distant lighthouse, bottom dock and note-opening ritual. No Tencent screenshot or video is distributed in the application. Bottle, lighthouse, dock and folding geometry are original SVG/CSS components.
+
+## Quiet-coast integration
+
+The interface also uses the locally bundled MIT-licensed Noniv WebGPU ocean renderer and Kalam Regular under the SIL Open Font License. The water is a code-rendered simulation; unsupported devices use the existing credited sea photograph. The lighthouse is the original SVG, letter/export surfaces use the existing photographed paper, and the desk grain is CSS. AI-generated coast/wood/paper images proposed in PR #1 were removed from the runtime to preserve the owner's no-generated-images requirement. Historical branch screenshots and design notes may depict that discarded asset iteration.

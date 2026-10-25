@@ -128,6 +128,7 @@ export function promptForDay(day: number) {
 export type Prompt = (typeof PROMPTS)[number];
 export type Card = {
   id: string;
+  beginningId?: string;
   promptId: string;
   setup: string;
   reply: string;

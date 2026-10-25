@@ -1,6 +1,6 @@
-# How Drift completes one shared postcard
+# How Drift grows a pool of shared endings
 
-The meaningful technical problem is preserving one shared outcome while two guest writers, expiring claims and an external model interact. A successful model response alone cannot publish a card.
+The meaningful technical problem is keeping each ending tied to its beginning while multiple guest writers, independent expiring response assignments and an external model interact. A successful model response alone cannot publish a card.
 
 ```mermaid
 sequenceDiagram
@@ -28,11 +28,11 @@ sequenceDiagram
 
 ## Three boundaries worth explaining to a judge
 
-**Exclusive catch.** The server owns assignment, version and absolute expiry. Two clients cannot simply mark the same bottle as theirs. Self-assignment, exclusions and consumed bottles are checked on the server. A model request does not extend the lease.
+**Independent response assignments.** The server owns each response round’s beginning ID, version and absolute expiry. Several writers can answer one beginning at the same time. Self-replies and a second reply from the same identity are excluded. A model request does not extend the lease; a result must still match that caller’s response assignment.
 
 **External check.** A short transaction persists immutable pending work and increments usage before the external request. Claude runs outside transaction callbacks. A second transaction checks that the result still belongs to the same live work. A late answer cannot overwrite a reassignment, hidden story or newer request. A request ID cannot be reused with different text.
 
-**One publication.** The canonical postcard, both authors’ ownership and round completion finalize together. The original writer’s browser receives the result through subscriptions. AI guidance follows a separate path and cannot produce a postcard or replace the participant’s draft.
+**One publication per response.** Each canonical postcard includes its beginningId; both authors’ ownership and that response round’s completion finalize together. The beginning remains in the daily pool, and the original writer receives every ending through subscriptions. AI guidance follows a separate path and cannot produce a postcard or replace the participant’s draft.
 
 **Metering.** A separate private ledger reserves estimated USD in the same transaction as the request/attempt. Valid provider usage settles before output parsing, so a rejected or late result still records cost. Ambiguous billing retains its reservation. Owner diagnostics show retained server latency, usage and estimates without participant text or identity. A private transactional counter also disambiguates server IDs when UUID entropy repeats under simultaneous starts.
 
@@ -40,7 +40,7 @@ sequenceDiagram
 
 | Data | Access |
 |---|---|
-| Approved anonymous postcard text and provenance | Public projection; either author can remove it |
+| Approved anonymous beginning and postcard text/provenance | Public projection; either author can remove it |
 | Unapproved text, assignments, requests, counters, reports, identity mapping | Private tables; caller views expose only permitted progress |
 | Reported public card | A visitor may hide it for themselves; cannot delete the authors’ publication |
 | Hello opt-in | Author-only caller view; unilateral choice stays private |
@@ -49,7 +49,9 @@ sequenceDiagram
 
 ## Evidence and limits
 
-- `spacetimedb/tests/game.test.ts`: 51 harness checks include expiry, rollover, model failures/races, ownership, replay, quotas, reports, hello privacy, budget reservations/reconciliation and forced ID collisions.
+Current pool mechanics and local manual browser checks are recorded in `letter-pools-review.md`. Older network and browser artifacts below describe earlier exclusive-pair behavior and must not be treated as verification of the revised pool flow.
+
+- `spacetimedb/tests/game.test.ts`: 55 harness checks include independent routes, shared beginnings/multiple endings, expiry, rollover, model failures/races, ownership, replay, quotas, reports, hello privacy, budget reservations/reconciliation and forced ID collisions.
 - `docs/evidence/live-invariants.json`: actual local network checks for concurrent catches, shared-identity tabs, inaccessible private tables and duplicate publication.
 - `docs/evidence/ui-smoke.json`: actual synthetic browser interaction, reload recovery, live return, download and hide/report behavior.
 - `docs/evidence/content-states.json`: loading, pause, offline/reconnect and blocked-storage behavior at two viewport sizes.

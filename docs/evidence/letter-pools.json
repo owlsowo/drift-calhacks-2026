@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-10-25T01:12:41.443Z",
+  "mode": "Isolated local sandbox; synthetic writers; AI checks off; no paid model calls",
+  "beginningId": "34670ccc-a644-4f2a-a53c-15508363002a-2",
+  "completedPairIds": [
+    "852def60-c927-4f6b-a021-cd7dc5c23df2-6",
+    "d952f737-ea10-4674-a85a-5536c1f55e6b-8"
+  ],
+  "checks": [
+    "Release publishes only a beginning, returns to the sea, and saves its ID in first-party cookies",
+    "Two independent writers can pick up the same beginning without first releasing their own",
+    "Each ending creates its own pair, finishes its pick-up round, and appears live in the original author’s pool",
+    "Reload restores the original beginning and the completed pair with their exact saved IDs",
+    "Release and Pick up keep separate drafts and resume the same rounds after reload within the three-action quota",
+    "Finishing the release preserves the independent pick-up draft and quota still allows that draft to resume",
+    "Cookies alone recover approved beginnings and pairs for a new identity without granting author controls; bottle-ID links retrieve all endings"
+  ],
+  "errors": []
+}

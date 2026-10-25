@@ -6,7 +6,7 @@ The review uses the ECC security-review skill and actual module/browser checks. 
 
 SpacetimeDB issues an anonymous guest identity. A reconnect token is stored locally because the direct browser SDK needs it to reconnect without a separate auth proxy. This is a bounded guest-session tradeoff; it is not an HttpOnly-cookie architecture. React renders escaped plain text, no participant HTML is accepted, fonts are bundled, and production static headers provide a restrictive CSP. Clearing storage can lose progress and create a different identity. One-human-one-account enforcement is not claimed.
 
-All raw gameplay/ownership/report/request/hello tables are private. Caller-scoped views enforce ownership in the server. Approved public postcard projections contain no identity mapping or recognition phrases. Guessing a round ID does not grant write access. Other viewers can privately report and hide a share card for themselves; this cannot remove publication for everyone. Only actual authors may hide a card globally, and only the database owner may pause or purge.
+All raw gameplay/ownership/report/request/hello tables are private. Caller-scoped views enforce ownership in the server. Approved public beginning and postcard projections contain no identity mapping or recognition phrases. Guessing a round ID does not grant write access. Other viewers can privately report and hide a share card for themselves; this cannot remove publication for everyone. Only actual authors may hide a card globally, and only the database owner may pause or purge.
 
 ## Model calls
 
@@ -32,3 +32,9 @@ The production build runs on hosted Maincloud and Cloudflare HTTPS. Actual stati
 - Production dependency audit: zero reported advisories at the recorded check. Audits cover known advisories only.
 
 Public deployment and the recorded hosted checks are established. No external penetration test or actual attendee validation is claimed.
+
+## Beginning pools and browser ID shelf
+
+Release and Pick up use separate private response rounds. Several identities may answer one approved beginning; each identity may answer it once. A per-round version, assignment and deadline bind each moderation result. The public beginning ID and postcard.beginningId connect the approved texts without publishing identity mappings.
+
+First-party cookies retain only the browser's beginning IDs and completed-pair IDs, scoped to the backend/database and split under individual cookie limits. These IDs grant public reading only. Hide/report ownership decisions still use the private session identity; copying ID cookies to another browser does not grant author-only actions.

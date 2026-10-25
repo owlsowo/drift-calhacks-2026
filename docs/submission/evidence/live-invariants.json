@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-24T11:00:48.954Z",
+  "database": "local sandbox",
+  "participants": "synthetic test identities",
+  "checks": [
+    "Ten simultaneous catches produce ten exclusive assignments, with no self-assignment",
+    "Two concurrent tabs sharing an identity resume exactly one active round",
+    "The running server rejects guest subscriptions to every private table",
+    "A guest cannot invoke the owner pause control",
+    "A guessed round identifier does not confer ownership",
+    "Concurrent duplicate reply requests produce one canonical postcard"
+  ]
+}
