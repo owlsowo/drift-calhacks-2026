@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-25T05:33:46.688Z",
+  "sourceCommit": "5aad5fc4d744f6ecc5bfbd66c9d05448184036a8",
+  "cloudflareVersion": "975fe423-12c1-42f6-b70a-3f2987b9d812",
+  "assets": [
+    {
+      "asset": "/assets/index-BWy9CnDZ.js",
+      "sha256": "a85a151d7985e1be54d12f23b26a3a974af1ba2ee1ede69312c2709fd108b2d8",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-e07yVpbN.css",
+      "sha256": "39ff193442352c3144b8c93069e60904b845b9ad03b3234ec0c96259b29eb4a5",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Frontend-only release. Thirteen daily clarity and five shared-reader cases per Chrome/WebKit; ten Chrome navigation and eleven Chrome letter checks. Build and script types pass. No backend update or new provider call. Full-quality ocean unchanged; physical phones unverified.",
+  "ci": {
+    "run": 40165921550,
+    "conclusion": "success"
+  }
+}
