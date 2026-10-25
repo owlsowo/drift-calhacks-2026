@@ -765,3 +765,20 @@ input:focus-visible {
 .sea-world {
   display: flow-root;
 }
+
+/* The paper records the two contributions, while creative words keep their own space. */
+.sea-world .postcard .contribution-note {
+  margin: 5px 32px 12px;
+  color: #4d5966;
+  font: 400 12px/1.5 var(--letter-ui);
+}
+.sea-world .collection-card .contribution-note {
+  margin-inline: 23px;
+  font-size: 11px;
+}
+.sea-world .nudge small {
+  display: block;
+  margin-top: 8px;
+  color: #4d5966;
+  font-size: 11px;
+}

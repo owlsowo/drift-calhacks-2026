@@ -1,20 +1,22 @@
 {
-  "checkedAt": "2026-10-25T01:18:09.244Z",
+  "checkedAt": "2026-10-25T01:45:24.602Z",
   "engine": "WebKit",
   "mode": "Isolated local sandbox; synthetic writers; AI checks off; no paid model calls",
-  "beginningId": "99a00d6a-0f15-427c-8ca8-3e372d2780f2-2",
+  "beginningId": "48b776d8-e788-4cfb-9f1b-567879167179-2",
   "completedPairIds": [
-    "cb9412c0-25ba-4078-a760-1b2723e81bb3-6",
-    "b741bc1f-d3ac-4e87-8b7c-3ab8cf7ededa-8"
+    "b865219b-1eb7-4635-8613-c1f870762780-6",
+    "68b2134d-985d-4fe1-bdda-92659f3c7f0c-8"
   ],
   "checks": [
     "Release publishes only a beginning, returns to the sea, and saves its ID in first-party cookies",
     "Two independent writers can pick up the same beginning without first releasing their own",
     "Each ending creates its own pair, finishes its pick-up round, and appears live in the original author’s pool",
+    "The actual PNG export downloads at 1080×1350 while Copy text keeps only the two creative lines for a peer story",
     "Selected accessibility checks pass on the author pool and both completed-reply views",
     "Reload restores the original beginning and the completed pair with their exact saved IDs",
     "Release and Pick up keep separate drafts and resume the same rounds after reload within the three-action quota",
     "Finishing the release preserves the independent pick-up draft and quota still allows that draft to resume",
+    "Contribution labels use private ownership for each author and stay neutral when only public bookmark cookies are recovered",
     "Cookies alone recover approved beginnings and pairs for a new identity without granting author controls; bottle-ID links retrieve all endings"
   ],
   "errors": []
