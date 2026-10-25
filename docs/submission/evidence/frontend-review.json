@@ -1,0 +1,179 @@
+{
+  "contract": "docs/design-contract.md",
+  "targetViewports": [
+    "360x800",
+    "1440x1000",
+    "390x844"
+  ],
+  "accessibility": {
+    "status": "pass",
+    "evidence": "Updated ui-smoke.json records zero automated WCAG A/AA violations across home, empty collection, reply, reveal, hello, shared/hidden cards, collection and sample reveal. accessibility.json checks the writing form and help dialog at both primary viewports. Keyboard focus containment/restoration and reduced motion pass; shore-interactions.json checks keyboard Enter, pointer shaking and synthetic mobile permission denial/grant. No physical-phone or assistive-technology user study. Updated motion checks compare actual sea pixels before/after pause, verify reduced-motion stillness and a synthetic hidden-tab event, and exercise the no-WebGL CSS fallback. The paper opens as one connected mesh; keyboard focus transfers from Open bottle to the readable heading. catch-first.json checks the new optional contribution flow at 360 and 1440 pixels with zero automated WCAG violations."
+  },
+  "responsive": {
+    "status": "pass",
+    "evidence": "All browser capture helpers assert document width <= viewport. Rendered 360x800 and 1440x1000 home, crumpled/open paper, reveal and errors inspected for wrapping, contrast and order. Simulated touch phone 390x844 shows the motion control above the dock without overlap."
+  },
+  "contentStates": {
+    "loading": {
+      "status": "pass",
+      "evidence": "content-states.json: held real WebSocket handshake at both target viewports; unavailable actions stay disabled."
+    },
+    "empty": {
+      "status": "pass",
+      "evidence": "empty-360.png and empty-1440.png: new identity collection offers a working return to the writing flow."
+    },
+    "error": {
+      "status": "pass",
+      "evidence": "error-360x800.png and error-1440x1000.png: authoritative owner pause rejects a valid submission; draft remains. Offline captures separately show editable text with disabled submission. Blocked-storage captures name the loss-of-reload guarantee while the draft and request metadata remain usable in the current tab. shore-catch-error.png shows a failed synthetic catch as a visible shore alert; a subsequent deliberate shake succeeds."
+    },
+    "partial": {
+      "status": "pass",
+      "evidence": "reveal-360.png: completed incoming postcard is usable while own outgoing setup is still waiting; live-return assertion later observes its arrival without refresh."
+    },
+    "success": {
+      "status": "pass",
+      "evidence": "reveal-360.png and reveal-1440.png: real database-confirmed postcard, download and collection. Lost reply acknowledgment still reveals the server-confirmed card."
+    },
+    "permission": {
+      "status": "pass",
+      "evidence": "shared-card-360.png shows no author hide control for a visitor; permission-360.png shows caller-only hiding after report; permission-1440.png shows unavailable permalink after actual author hiding. Private-table and owner-action checks in live-invariants.json. Phone-motion denial leaves drag/buttons usable; grant requires an explicit tap. Synthetic events before opt-in do not activate. See shore-interactions.json and phone-motion-denied.png. Physical sensor behavior remains untested."
+    }
+  },
+  "renderedEvidence": [
+    {
+      "viewport": "360x800",
+      "artifact": "home-360.png",
+      "observation": "Real moonlit-sea photograph, distant lighthouse and three-object dock frame a draggable bottle. Today\u2019s writing prompt remains visible. Sandbox provenance is explicit; no AI-generated imagery."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "reveal-360.png",
+      "observation": "Canonical postcard text wraps inside the paper artifact. Mobile card is above secondary controls; desktop uses a two-column reveal."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "empty-360.png",
+      "observation": "Empty collection is explicit and offers a next step."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "permission-360.png",
+      "observation": "Unavailable shared card contains no story or author-only controls."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "loading-360x800.png",
+      "observation": "Handshake loading remains legible and does not imply a successful connection."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "error-360x800.png",
+      "observation": "Pause error names the recoverable condition while retaining entered text."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "offline-360x800.png",
+      "observation": "Reconnection status remains visible with the saved draft."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "home-1440.png",
+      "observation": "Real moonlit-sea photograph, distant lighthouse and three-object dock frame a draggable bottle. Today\u2019s writing prompt remains visible. Sandbox provenance is explicit; no AI-generated imagery."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "reveal-1440.png",
+      "observation": "Canonical postcard text wraps inside the paper artifact. Mobile card is above secondary controls; desktop uses a two-column reveal."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "empty-1440.png",
+      "observation": "Empty collection is explicit and offers a next step."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "permission-1440.png",
+      "observation": "Unavailable shared card contains no story or author-only controls."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "loading-1440x1000.png",
+      "observation": "Handshake loading remains legible and does not imply a successful connection."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "error-1440x1000.png",
+      "observation": "Pause error names the recoverable condition while retaining entered text."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "offline-1440x1000.png",
+      "observation": "Reconnection status remains visible with the saved draft."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "storage-unavailable-360x800.png",
+      "observation": "Storage failures are visible and the draft label says kept in this tab; in-memory request metadata survives another read and submission works."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "storage-unavailable-1440x1000.png",
+      "observation": "Storage failures are visible and the draft label says kept in this tab; in-memory request metadata survives another read and submission works."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "hello-error-360.png",
+      "observation": "A failed private invitation read shows a direct retry action without revealing a phrase; subsequent retry succeeds and removes the stale error."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "paper-crumpled.png",
+      "observation": "Caught note begins as a photographed crumpled ball over the darkened sea. Open bottle is the single next action."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "paper-unfolding.png",
+      "observation": "One continuous textured mesh opens from a compact crumple. Creases loosen unevenly, edges spread, and content remains inert until the sheet settles. No disconnected square pieces."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "paper-open-desktop.png",
+      "observation": "Opened photographed paper is legible; moonlit sea remains visible behind the writing flow."
+    },
+    {
+      "viewport": "390x844",
+      "artifact": "phone-motion-denied.png",
+      "observation": "Denied motion access names the fallback; dock and draggable bottle remain available."
+    },
+    {
+      "viewport": "390x844",
+      "artifact": "phone-motion-enabled.png",
+      "observation": "Motion control and enabled status fit above the dock. Synthetic events activate only after explicit opt-in."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "shore-catch-error.png",
+      "observation": "Catch transport failure stays on the sea with visible recoverable feedback; the next deliberate shake succeeds."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "paper-relaxing.png",
+      "observation": "Later animation frame shows one opening sheet with diminishing creases and uneven edges over the sea."
+    },
+    {
+      "viewport": "1280x720",
+      "artifact": "motion-fallback.png",
+      "observation": "With WebGL deliberately unavailable, the original sea photograph and CSS paper opening leave the writing flow usable."
+    },
+    {
+      "viewport": "360x800",
+      "artifact": "catch-first-reveal-360.png",
+      "observation": "Catch-first produces a real peer postcard before inviting an optional beginning; maybe-later keeps the completed story."
+    },
+    {
+      "viewport": "1440x1000",
+      "artifact": "returned-bottle-1440.png",
+      "observation": "A real returned postcard updates the original writer\u2019s navigation and bottle bucket without refreshing."
+    }
+  ]
+}

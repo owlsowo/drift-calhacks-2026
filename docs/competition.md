@@ -22,11 +22,11 @@ The software-only evidence case is a fresh-input, two-browser loop; actual subsc
 | Domain                                    | Qualifying project domain                                     | Human registration/terms and current coach instructions                                      |
 | Vultr                                     | Real hosting                                                  | Only choose if deployment is quick; avoid redundant hosts                                    |
 
-The current public Devpost list explicitly includes Anthropic, Spacetime and Mana. Figma's detailed brief lists Best Design, Most Creative, Best Figma Workflow and Best Stage Log, while current Devpost exposes one Best Figma Workflow Hack entry. Prepare the complete Figma bundle without counting four confirmed entry slots. Maximum entry count and stacking rules were not established.
+As checked October 24, the public Devpost listing includes Anthropic's Claude for Public Benefit, Best Use of Spacetime, Best Use of Mana, and a single Best Figma Workflow Hack category. Earlier notes about those entries being absent or Figma being split across five labels are superseded. Maximum entry count, stacking, and the accepted judge-access path for the private repository remain to be confirmed in the actual submission flow. See [the submission guide](submission-guide.md) for the source-backed checklist and presentation plan.
 
 Do not add finance, payments, web scraping, an extra database, or a runtime coding agent merely to claim more integrations. The current project has no essential role for those services. Gemini is conditional on a distinct useful feature, rather than duplicate moderation.
 
-Rechecked October 24 around 04:20 PDT: the organizer guide and Figma brief retain their previously recorded modification times. The public rules page adds conduct requirements but does not resolve entry limits or stacking. The shortlist remains unchanged.
+The public rules page covers conduct and does not resolve entry limits or stacking. The shortlist remains focused on services and workflows actually used.
 
 Additional routes reviewed: Microsoft asks for a production-minded AI agent with customer understanding and measurable usefulness; the current social game is a weak competitive fit without changing its purpose. Fetch’s [event hackpack](https://www.fetch.ai/events/hackathons/calhacks-13-0/hackpack) requires an Agentverse/ACP workflow fully usable inside ASI:One and a public repository. That conflicts with the requested private repository and custom game experience. Snowflake would duplicate the existing model role. None is a default addition.
 

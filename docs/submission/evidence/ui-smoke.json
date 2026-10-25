@@ -1,0 +1,94 @@
+{
+  "checkedAt": "2026-10-24T20:48:33.058Z",
+  "mode": "local SpacetimeDB with explicitly disabled AI checks; synthetic test inputs, no attendee pilot",
+  "checks": [
+    "Real database connection and responsive home at 360 / 1440 pixels",
+    "Keyboard dialog focus is contained and restored; reduced motion disables decorative animation",
+    "Empty collection offers a working next action",
+    "Two isolated identities submit their own six-word setups",
+    "Each identity catches the other writer, never itself",
+    "Draft and exclusive assignment resume after a full reload",
+    "A server-confirmed postcard survives a lost reply acknowledgment",
+    "Original author receives the returned postcard without refreshing",
+    "Both authors complete a canonical two-human postcard",
+    "One-sided hello intent stays private to the other author",
+    "A failed private invitation read offers retry, keeps details hidden and clears the error after recovery",
+    "Mutual hello returns the same private phrase at the synthetic test meeting point",
+    "Withdrawal immediately removes the meeting details from both authors’ screens",
+    "Shared-card visitors can report and persistently hide for themselves without removing the authors’ card",
+    "PNG export creates a downloadable local image",
+    "Both completed and returned postcards appear in the collection",
+    "Author hiding removes the public card and collection projection",
+    "The hidden public permalink is unavailable to a new independent viewer",
+    "A quiet development room labels sample provenance in play, reveal and export, with no mutual hello",
+    "A valid near-limit long-word component fixture exports without losing its text",
+    "No uncaught browser errors"
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "artifact": "home-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "home-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "empty-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "empty-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "reply-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "reply-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "reveal-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "reveal-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "hello-error-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "hello-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "hello-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "shared-card-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "permission-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "collection-360.png",
+      "violations": []
+    },
+    {
+      "artifact": "permission-1440.png",
+      "violations": []
+    },
+    {
+      "artifact": "sample-360.png",
+      "violations": []
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "checkedOn": "October 24, 2026, Pacific time; verified during the submission-package session",
+  "exactTimestampRecorded": false,
+  "implementationBaseline": "ef6849229833a951d5eda5c1e0295c955081f27c",
+  "verification": "Commands executed by the product-audit subagent against the local checkout. No paid model calls or hosted gameplay were run by these checks.",
+  "checks": [
+    {
+      "command": "npm run test:server",
+      "result": "pass",
+      "exitCode": 0,
+      "testFilesPassed": 1,
+      "testsPassed": 43,
+      "testsFailed": 0,
+      "scope": "Official SpacetimeDB module harness: transaction, privacy, authorization, claim, replay, model-failure, retention, and related server behavior."
+    },
+    {
+      "command": "npm test",
+      "result": "sandbox wrapper failure before tests ran",
+      "exitCode": 1,
+      "error": "The tsx CLI could not create its local IPC pipe: listen EPERM, operation not permitted.",
+      "interpretation": "This command did not execute the test suite. The equivalent direct Node invocation below passed all 14 tests."
+    },
+    {
+      "command": "node --import tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts scripts/shake.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts",
+      "result": "pass",
+      "exitCode": 0,
+      "testsPassed": 14,
+      "testsFailed": 0,
+      "testsSkipped": 0,
+      "scope": "The same test files configured by npm test, executed without the tsx CLI IPC wrapper: rules, weekly prompt schedule, model contracts, shake gesture, draft retention, and CSP serialization."
+    }
+  ],
+  "limits": "These checks establish specified local software behavior. They do not verify current hosted positive Turnstile access, physical-phone sensors, live model quality, attendee participation, or social outcomes. Build and TypeScript checks were executed separately by the parent agent and are not attributed to this audit record."
+}

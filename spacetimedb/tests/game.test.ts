@@ -35,6 +35,10 @@ const setup = (a: any, text = 'I taught the octopus insider trading.') =>
     text,
   });
 const catchBottle = (a: any) => {
+  if (!active(a)) {
+    tx(a, (c) => module.start_catching(c, {}));
+    return;
+  }
   const roundId = active(a).id;
   return tx(a, (c) => module.claim_bottle(c, { roundId }));
 };
@@ -106,7 +110,7 @@ describe('authoritative game state', () => {
   it('only the owner can retire an unpublished bottle and revoke an in-progress claim', () => {
     start(A);
     setup(A);
-    const bottleId = active(A).setupId;
+    const bottleId = view(A).at(-1)!.setupId;
     tx(B, (c) => module.start_catching(c, {}));
     expect(() => tx(C, (c) => module.retire_bottle(c, { bottleId }))).toThrow(/owner/);
     tx(owner, (c) => module.retire_bottle(c, { bottleId }));
@@ -115,9 +119,12 @@ describe('authoritative game state', () => {
     expect(reply(B).ok).toBe(false);
     expect([...h.db.postcard.iter()]).toHaveLength(0);
   });
-  it('catch-first gives a real postcard before inviting the same round to toss a beginning', () => {
+  it('release only publishes a beginning; pick up only completes an ending', () => {
     start(B);
-    setup(B);
+    expect(setup(B).ok).toBe(true);
+    expect(active(B)).toBeUndefined();
+    const beginningId = view(B)[0].setupId;
+    expect(h.db.beginning.id.find(beginningId)?.text).toBe('I taught the octopus insider trading.');
     tx(A, (c) => module.start_catching(c, {}));
     expect(active(A).stage).toBe('reply');
     expect(active(A).setupId).toBe('');
@@ -125,13 +132,34 @@ describe('authoritative game state', () => {
     tx(A, (c) => module.start_catching(c, {}));
     expect(claim(A).id).toBe(assignment);
     expect(reply(A).ok).toBe(true);
-    expect(active(A).stage).toBe('write');
-    expect(active(A).cardId).toBeTruthy();
-    expect(module.my_cards(h.viewContext(B))).toHaveLength(1);
-    expect(setup(A, 'I challenged their shark to poker.').ok).toBe(true);
-    expect(view(A)).toHaveLength(1);
     expect(active(A)).toBeUndefined();
-    expect(module.my_outgoing(h.viewContext(A))).toHaveLength(1);
+    expect(view(A)[0].setupId).toBe('');
+    expect(view(A)[0].cardId).toBeTruthy();
+    expect(module.my_cards(h.viewContext(B))).toHaveLength(1);
+    expect(module.my_outgoing(h.viewContext(A))).toHaveLength(0);
+    expect([...h.db.postcard.iter()][0].beginningId).toBe(beginningId);
+  });
+  it('keeps a release draft and a pick-up assignment independent', () => {
+    start(A);
+    const releaseId = active(A).id;
+    tx(A, (c) => module.start_catching(c, {}));
+    const pickup = view(A).find((r) => r.stage === 'reply')!;
+    expect(pickup.id).not.toBe(releaseId);
+    expect(view(A).find((r) => r.id === releaseId)?.stage).toBe('write');
+    tx(A, (c) => module.start_round(c, {}));
+    tx(A, (c) => module.start_catching(c, {}));
+    expect(view(A)).toHaveLength(2);
+    expect(claim(A).roundId).toBe(pickup.id);
+    expect(
+      module.submit_reply(h.procedureContext(A), {
+        roundId: pickup.id,
+        requestId: crypto.randomUUID(),
+        text: 'Our lawyers would like another hand.',
+      }).ok,
+    ).toBe(true);
+    expect(view(A).find((r) => r.id === releaseId)?.stage).toBe('write');
+    expect(setup(A).ok).toBe(true);
+    expect(active(A)).toBeUndefined();
   });
   it('catch-first empty production pool consumes no round and leaves write-first available', () => {
     env.DRIFT_DEV_MODE = 'false';
@@ -140,12 +168,13 @@ describe('authoritative game state', () => {
     start(A);
     expect(active(A).stage).toBe('write');
   });
-  it('a catch-first writer can keep the result and skip tossing without losing the postcard', () => {
+  it('a pick-up result finishes immediately and survives a later release', () => {
     tx(A, (c) => module.start_catching(c, {}));
     reply(A);
-    const id = active(A).cardId;
-    const roundId = active(A).id;
-    tx(A, (c) => module.abandon_round(c, { roundId }));
+    const id = view(A)[0].cardId;
+    expect(active(A)).toBeUndefined();
+    start(A);
+    setup(A);
     expect(active(A)).toBeUndefined();
     expect(h.db.postcard.id.find(id)).toBeTruthy();
     expect(module.my_cards(h.viewContext(A))).toHaveLength(1);
@@ -233,18 +262,46 @@ describe('authoritative game state', () => {
     const aid = active(A).id;
     expect(() => tx(B, (c) => module.claim_bottle(c, { roundId: aid }))).toThrow(/another writer/);
   });
-  it('two claimants cannot hold the same bottle', () => {
-    for (const a of [A, B, C]) {
-      start(a);
-      setup(a);
-    }
-    catchBottle(A);
-    catchBottle(B);
-    const a = claim(A),
-      b = claim(B);
-    expect(a.id).not.toBe(b.id);
-    expect(a.text).toBeTruthy();
-    expect(b.text).toBeTruthy();
+  it('two writers can catch one beginning and independently return two endings', () => {
+    start(A);
+    setup(A);
+    const beginningId = view(A)[0].setupId;
+    tx(B, (c) => module.start_catching(c, {}));
+    tx(C, (c) => module.start_catching(c, {}));
+    expect(claim(B).id).toBe(beginningId);
+    expect(claim(C).id).toBe(beginningId);
+    expect(reply(B).ok).toBe(true);
+    expect(claim(C).id).toBe(beginningId);
+    expect(reply(C, crypto.randomUUID(), 'Our lawyers would like another hand.').ok).toBe(true);
+    const cards = [...h.db.postcard.beginningId.filter(beginningId)];
+    expect(cards).toHaveLength(2);
+    expect(new Set(cards.map((c) => c.id)).size).toBe(2);
+    expect(module.my_cards(h.viewContext(A))).toHaveLength(2);
+    expect(module.my_cards(h.viewContext(B))).toHaveLength(1);
+    expect(module.my_cards(h.viewContext(C))).toHaveLength(1);
+    tx(B, (c) => module.start_catching(c, {}));
+    expect(claim(B).id).not.toBe(beginningId);
+    expect(h.db.beginning.id.find(beginningId)).not.toBeNull();
+  });
+  it('reporting a shared beginning removes its public pool and invalidates all pending endings', () => {
+    start(A);
+    setup(A);
+    const beginningId = view(A)[0].setupId;
+    tx(B, (c) => module.start_catching(c, {}));
+    tx(C, (c) => module.start_catching(c, {}));
+    expect(reply(B).ok).toBe(true);
+    const cardId = view(B)[0].cardId;
+    report(C);
+    expect(h.db.beginning.id.find(beginningId)).toBeNull();
+    expect(h.db.postcard.id.find(cardId)).toBeNull();
+    expect(module.my_outgoing(h.viewContext(A))).toHaveLength(0);
+    expect(module.my_cards(h.viewContext(A))[0].hidden).toBe(true);
+    const reportId = [...h.db.report.iter()][0].id;
+    tx(owner, (c) => module.resolve_report(c, { reportId, decision: 'dismiss' }));
+    tx(owner, (c) => module.purge_old_data(c, {}));
+    expect(h.db.beginning.id.find(beginningId)).not.toBeNull();
+    tx(B, (c) => module.start_catching(c, {}));
+    expect(claim(B).id).not.toBe(beginningId);
   });
   it('publishes a single card and returns it only to its real authors', () => {
     start(A);
@@ -317,9 +374,9 @@ describe('authoritative game state', () => {
     expect(module.my_cards(h.viewContext(B))[0].hidden).toBe(true);
   });
   it('enforces three rounds per day and a global dispatch cap', () => {
-    for (let i = 0; i < 3; i++) {
-      start(A);
-      setup(A);
+    start(A);
+    setup(A);
+    for (let i = 0; i < 2; i++) {
       catchBottle(A);
       reply(A);
     }
@@ -413,6 +470,67 @@ describe('two-phase model boundary', () => {
       }).ok,
     ).toBe(false);
     expect(active(A).stage).toBe('catch');
+    expect([...h.db.postcard.iter()]).toHaveLength(0);
+  });
+  it('finishes concurrent model checks against the same beginning without mixing endings', () => {
+    start(A);
+    setup(A);
+    const beginningId = view(A)[0].setupId;
+    tx(B, (c) => module.start_catching(c, {}));
+    tx(C, (c) => module.start_catching(c, {}));
+    const bRound = active(B).id;
+    const cRound = active(C).id;
+    const bArgs = {
+      roundId: bRound,
+      requestId: crypto.randomUUID(),
+      text: 'Our lawyers would like another hand.',
+    };
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const cCtx = modelCtx(C, () => modelResponse({ decision: 'allow', reason: 'safe' }));
+    const bCtx = modelCtx(B, () => {
+      expect(
+        module.submit_reply(cCtx, {
+          roundId: cRound,
+          requestId: crypto.randomUUID(),
+          text: 'Your account has been permanently frozen.',
+        }).ok,
+      ).toBe(true);
+      return modelResponse({ decision: 'allow', reason: 'safe' });
+    });
+    expect(module.submit_reply(bCtx, bArgs).ok).toBe(true);
+    expect(module.submit_reply(bCtx, bArgs).ok).toBe(true);
+    const cards = [...h.db.postcard.beginningId.filter(beginningId)];
+    expect(cards).toHaveLength(2);
+    expect(h.db.postcard.id.find(view(B)[0].cardId)?.reply).toBe(bArgs.text);
+    expect(h.db.postcard.id.find(view(C)[0].cardId)?.reply).toBe(
+      'Your account has been permanently frozen.',
+    );
+    expect(module.my_cards(h.viewContext(A))).toHaveLength(2);
+    const publicBeginning = h.db.beginning.id.find(beginningId)!;
+    expect(Object.keys(publicBeginning).sort()).toEqual(
+      ['createdMs', 'day', 'id', 'promptId', 'promptJson', 'seeded', 'starterKind', 'text'].sort(),
+    );
+    const bCardId = view(B)[0].cardId;
+    expect(() => tx(C, (c) => module.hide_my_card(c, { cardId: bCardId }))).toThrow(/two authors/);
+  });
+  it('withholds an in-flight ending when another writer reports the shared beginning', () => {
+    start(A);
+    setup(A);
+    tx(B, (c) => module.start_catching(c, {}));
+    tx(C, (c) => module.start_catching(c, {}));
+    const roundId = active(B).id;
+    env.ANTHROPIC_API_KEY = 'synthetic-test-key';
+    const ctx = modelCtx(B, () => {
+      report(C);
+      return modelResponse({ decision: 'allow', reason: 'safe' });
+    });
+    expect(
+      module.submit_reply(ctx, {
+        roundId,
+        requestId: crypto.randomUUID(),
+        text: 'Our lawyers would like another hand.',
+      }),
+    ).toMatchObject({ ok: false, message: expect.stringMatching(/drifted on/) });
     expect([...h.db.postcard.iter()]).toHaveLength(0);
   });
   it('rechecks deadlines after an external call', () => {
@@ -710,8 +828,9 @@ describe('starter provenance', () => {
     setup(A);
     delete env.DRIFT_DEV_MODE;
     expect(() => catchBottle(A)).toThrow(/No bottles are available/);
-    expect(active(A).stage).toBe('catch');
-    expect(h.db.bottle.id.find(active(A).setupId)).not.toBeNull();
+    expect(active(A)).toBeUndefined();
+    expect(view(A)).toHaveLength(1);
+    expect(h.db.beginning.id.find(view(A)[0].setupId)).not.toBeNull();
   });
   it('an environment attestation cannot relabel bundled development samples as human', () => {
     start(A);
@@ -756,7 +875,7 @@ describe('private AI budget and latency accounting', () => {
       measuredCalls: 1,
     });
     const row = calls()[0];
-    expect(row.id).not.toContain(active(A).owner.toHexString());
+    expect(row.id).not.toContain(view(A)[0].owner.toHexString());
     expect(row).toMatchObject({
       state: 'settled',
       outcome: 'accepted',

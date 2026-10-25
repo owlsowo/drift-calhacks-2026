@@ -1,0 +1,788 @@
+// Based on web-ocean by Maksymilian Dendura. MIT; see LICENSE.
+// WebGPU ocean — custom renderer.
+// FFT ocean (6 cascades) + CDLOD surface mesh + physically based sky + HDR post.
+// All per-frame data lives in preallocated typed arrays / descriptors (no per-frame garbage
+// apart from the unavoidable swap-chain view and command buffer objects).
+import { N, CASCADES, SKY_W, SKY_H, ENV_SIZE, ENV_MIPS } from './wgsl/common.js';
+import { SIM_INIT, SIM_EVOLVE, FFT_ROWS, FFT_COLS, SIM_MIPS, FOAM_TEX, RGBA8_MIPS, FOAM_UPDATE, ARRAY16_MIPS, FOAM_RES } from './wgsl/sim.js';
+import { TRANS_LUT, MS_LUT, SKYVIEW_LUT, ENV_CUBE, CUBE_MIPS, SUN_VIS } from './wgsl/sky.js';
+import { OCEAN, SKY_BG, HEIGHT_PROBE } from './wgsl/ocean.js';
+import { BLOOM_DOWN, BLOOM_UP, COMPOSITE } from './wgsl/post.js';
+
+/** Drift adaptation: fixed-camera background; no controls, telemetry, or UI. */
+export async function createOcean(canvas, options = {}) {
+let release = () => {};
+try {
+let disposed = false, raf = 0, stopped = !!options.paused, observer;
+let initialized = false, last = performance.now();
+let context = null, ownedDevice = null;
+function destroy() {
+  if (disposed) return;
+  disposed = true;
+  cancelAnimationFrame(raf);
+  observer?.disconnect();
+  document.removeEventListener('visibilitychange', resume);
+  options.signal?.removeEventListener('abort', destroy);
+  try { context?.unconfigure(); } catch {}
+  ownedDevice?.destroy();
+}
+release = destroy;
+function ensureAlive() {
+  if (disposed || options.signal?.aborted) { destroy(); throw new DOMException('Ocean disposed', 'AbortError'); }
+}
+function schedule() {
+  if (!disposed && !stopped && !document.hidden) raf = requestAnimationFrame(frame);
+}
+function resume() {
+  cancelAnimationFrame(raf);
+  last = performance.now();
+  canvas.dataset.motion = stopped || document.hidden ? 'paused' : 'running';
+  if (initialized && !disposed) {
+    frame(last, true);
+    schedule();
+  }
+}
+
+const DBG = 0;
+const D2R = Math.PI / 180;
+const GU = GPUBufferUsage;
+const TU = GPUTextureUsage;
+
+// ----------------------------------------------------------------------------------------
+// Tunable parameters (UI panel edits these)
+// ----------------------------------------------------------------------------------------
+const P = {
+  windSpeed: 3.4,      // m/s at 10 m
+  windDir: 118,        // deg, direction waves travel (90 = towards +Z, i.e. towards the viewer)
+  fetchKm: 28,
+  swellHs: 0.30,        // m significant height
+  swellDir: 94,
+  swellLength: 120,    // m peak wavelength
+  swellSpread: 48,     // cos^2s exponent
+  choppy: 0.65,
+  turbidity: 0.65,     // water body brightness (coastal sediment / plankton)
+  foam: 0.15,
+  exposure: 1.0,
+  haze: 3.0,
+  clouds: 0.01,
+  veil: 0.0,
+  bloom: 0.035,
+};
+const CASC_L = [1103.0, 211.3, 39.7, 7.43, 1.393, 0.2617];
+
+function fail(msg) { throw new Error(msg); }
+function log(msg) { console.warn('[Drift ocean]', msg); }
+
+// ----------------------------------------------------------------------------------------
+// Small math helpers writing into preallocated arrays
+// ----------------------------------------------------------------------------------------
+function mat4Mul(out, a, b) {
+  for (let c = 0; c < 4; c++) {
+    const b0 = b[c * 4], b1 = b[c * 4 + 1], b2 = b[c * 4 + 2], b3 = b[c * 4 + 3];
+    out[c * 4] = a[0] * b0 + a[4] * b1 + a[8] * b2 + a[12] * b3;
+    out[c * 4 + 1] = a[1] * b0 + a[5] * b1 + a[9] * b2 + a[13] * b3;
+    out[c * 4 + 2] = a[2] * b0 + a[6] * b1 + a[10] * b2 + a[14] * b3;
+    out[c * 4 + 3] = a[3] * b0 + a[7] * b1 + a[11] * b2 + a[15] * b3;
+  }
+}
+
+
+  if (!navigator.gpu) fail('WebGPU is not available in this browser.');
+  const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+  if (!adapter) fail('No WebGPU adapter found.');
+  const hasTS = adapter.features.has('timestamp-query');
+  const device = await adapter.requestDevice({
+    requiredFeatures: hasTS ? ['timestamp-query'] : [],
+  });
+  ownedDevice = device;
+  ensureAlive();
+  options.signal?.addEventListener('abort', destroy, { once: true });
+  device.lost.then((i) => {
+    if (!disposed) { options.onError?.(new Error(i.message)); destroy(); }
+  });
+  device.onuncapturederror = (e) => {
+    if (!disposed) { options.onError?.(e.error); destroy(); }
+  };
+  const ctx = canvas.getContext('webgpu');
+  if (!ctx) { destroy(); fail('WebGPU canvas unavailable.'); }
+  context = ctx;
+  const swapFormat = navigator.gpu.getPreferredCanvasFormat();
+  ctx.configure({ device, format: swapFormat, alphaMode: 'opaque', usage: TU.RENDER_ATTACHMENT | TU.COPY_SRC });
+
+  async function shader(code, label) {
+    const m = device.createShaderModule({ code, label });
+    const info = await m.getCompilationInfo();
+    let bad = false;
+    for (const msg of info.messages) {
+      if (msg.type === 'error') bad = true;
+      if (msg.type !== 'info') {
+        const line = code.split('\n')[msg.lineNum - 1];
+        log(`[${label}] ${msg.type} ${msg.lineNum}:${msg.linePos} ${msg.message}\n    ${line}`);
+      }
+    }
+    ensureAlive();
+    if (bad) fail('Shader compile error in ' + label + ' (see console)');
+    return m;
+  }
+  async function computePipe(code, label) {
+    const module = await shader(code, label);
+    return device.createComputePipelineAsync({ label, layout: 'auto', compute: { module, entryPoint: 'main' } });
+  }
+
+  // --------------------------------------------------------------------------------------
+  // Simulation resources
+  // --------------------------------------------------------------------------------------
+  const C = CASCADES;
+  const SIM_MIP_COUNT = Math.log2(N) + 1;
+  const specBytes = N * N * C * 16;
+  const mkBuf = (size, usage, label) => device.createBuffer({ size, usage, label });
+  const simUBO = mkBuf(224, GU.UNIFORM | GU.COPY_DST, 'sim ubo');
+  const h0Buf = mkBuf(specBytes, GU.STORAGE, 'h0');
+  const specA = mkBuf(specBytes, GU.STORAGE, 'specA');
+  const specB = mkBuf(specBytes, GU.STORAGE, 'specB');
+  const tmpA = mkBuf(specBytes, GU.STORAGE, 'tmpA');
+  const tmpB = mkBuf(specBytes, GU.STORAGE, 'tmpB');
+
+  const mkSimTex = (label) => device.createTexture({
+    label, size: [N, N, C], format: 'rgba16float', mipLevelCount: SIM_MIP_COUNT,
+    usage: TU.TEXTURE_BINDING | TU.STORAGE_BINDING,
+  });
+  const dispTex = mkSimTex('disp');
+  const derivTex = mkSimTex('deriv');
+  const momTex = mkSimTex('moments');
+  const lvl = (t, m, dim = '2d-array') => t.createView({ dimension: dim, baseMipLevel: m, mipLevelCount: 1 });
+  const fullArr = (t) => t.createView({ dimension: '2d-array' });
+
+  const [initPipe, evolvePipe, rowsPipe, colsPipe, simMipPipe, foamGenPipe, rgba8MipPipe,
+    transPipe, msPipe, skyViewPipe, envPipe, cubeMipPipe, foamUpdPipe, arr16MipPipe, sunVisPipe] = await Promise.all([
+    computePipe(SIM_INIT, 'sim init'),
+    computePipe(SIM_EVOLVE, 'sim evolve'),
+    computePipe(FFT_ROWS, 'fft rows'),
+    computePipe(FFT_COLS, 'fft cols'),
+    computePipe(SIM_MIPS, 'sim mips'),
+    computePipe(FOAM_TEX, 'foam tex'),
+    computePipe(RGBA8_MIPS, 'rgba8 mips'),
+    computePipe(TRANS_LUT, 'transmittance'),
+    computePipe(MS_LUT, 'multiscatter'),
+    computePipe(SKYVIEW_LUT, 'skyview'),
+    computePipe(ENV_CUBE, 'env cube'),
+    computePipe(CUBE_MIPS, 'cube mips'),
+    computePipe(FOAM_UPDATE, 'foam update'),
+    computePipe(ARRAY16_MIPS, 'array16 mips'),
+    computePipe(SUN_VIS, 'sun visibility'),
+  ]);
+
+  const bg = (pipe, entries, label) => device.createBindGroup({
+    label, layout: pipe.getBindGroupLayout(0),
+    entries: entries.map((r, i) => ({ binding: i, resource: r })),
+  });
+  const bgInit = bg(initPipe, [{ buffer: simUBO }, { buffer: h0Buf }], 'init');
+  const bgEvolve = bg(evolvePipe, [{ buffer: simUBO }, { buffer: h0Buf }, { buffer: specA }, { buffer: specB }], 'evolve');
+  const bgRows = bg(rowsPipe, [{ buffer: specA }, { buffer: specB }, { buffer: tmpA }, { buffer: tmpB }], 'rows');
+  const bgCols = bg(colsPipe, [{ buffer: tmpA }, { buffer: tmpB },
+    lvl(dispTex, 0), lvl(derivTex, 0), lvl(momTex, 0)], 'cols');
+  const bgSimMips = [];
+  for (let m = 1; m < SIM_MIP_COUNT; m++) {
+    bgSimMips.push(bg(simMipPipe, [lvl(dispTex, m - 1), lvl(derivTex, m - 1), lvl(momTex, m - 1),
+      lvl(dispTex, m), lvl(derivTex, m), lvl(momTex, m)], 'simmip' + m));
+  }
+
+  // Foam micro-structure texture (generated once)
+  const FOAM_SIZE = 512, FOAM_MIPS = 10;
+  const foamTex = device.createTexture({
+    label: 'foam detail', size: [FOAM_SIZE, FOAM_SIZE], format: 'rgba8unorm', mipLevelCount: FOAM_MIPS,
+    usage: TU.TEXTURE_BINDING | TU.STORAGE_BINDING,
+  });
+  {
+    const enc = device.createCommandEncoder();
+    const cp = enc.beginComputePass();
+    cp.setPipeline(foamGenPipe);
+    cp.setBindGroup(0, bg(foamGenPipe, [lvl(foamTex, 0, '2d')]));
+    cp.dispatchWorkgroups(FOAM_SIZE / 8, FOAM_SIZE / 8);
+    cp.setPipeline(rgba8MipPipe);
+    for (let m = 1; m < FOAM_MIPS; m++) {
+      const s = FOAM_SIZE >> m;
+      cp.setBindGroup(0, bg(rgba8MipPipe, [lvl(foamTex, m - 1, '2d'), lvl(foamTex, m, '2d')]));
+      cp.dispatchWorkgroups(Math.ceil(s / 8), Math.ceil(s / 8));
+    }
+    cp.end();
+    device.queue.submit([enc.finish()]);
+  }
+
+  // World-space foam clipmaps (ping-pong)
+  const FOAM_LEVEL_SIZE = [128.0, 1024.0];
+  const FOAMW_MIPS = Math.log2(FOAM_RES) + 1;
+  const foamW = [0, 1].map((i) => device.createTexture({
+    label: 'foam world ' + i, size: [FOAM_RES, FOAM_RES, 2], format: 'rgba16float', mipLevelCount: FOAMW_MIPS,
+    usage: TU.TEXTURE_BINDING | TU.STORAGE_BINDING,
+  }));
+  const foamUBO = mkBuf(144, GU.UNIFORM | GU.COPY_DST, 'foam ubo');
+  const foamUArr = new ArrayBuffer(144);
+  const foamUI = new Int32Array(foamUArr);
+  const foamUF = new Float32Array(foamUArr);
+  const foamSnap = new Int32Array(4);  // previous camera texel per level
+  let foamFirst = true;
+  let foamCur = 0;
+  const samplerSim = device.createSampler({
+    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear', addressModeU: 'repeat', addressModeV: 'repeat',
+  });
+  const bgFoamUpd = [0, 1].map((i) => bg(foamUpdPipe, [{ buffer: foamUBO }, lvl(foamW[1 - i], 0), lvl(foamW[i], 0),
+    fullArr(dispTex), fullArr(derivTex), samplerSim, samplerSim], 'foamupd' + i));
+  const bgFoamMips = [0, 1].map((i) => {
+    const out = [];
+    for (let m = 1; m < FOAMW_MIPS; m++) out.push(bg(arr16MipPipe, [lvl(foamW[i], m - 1), lvl(foamW[i], m)]));
+    return out;
+  });
+
+  // --------------------------------------------------------------------------------------
+  // Atmosphere resources
+  // --------------------------------------------------------------------------------------
+  const atmoUBO = mkBuf(16, GU.UNIFORM | GU.COPY_DST, 'atmo ubo');
+  const mkLut = (w, h, label) => device.createTexture({
+    label, size: [w, h], format: 'rgba16float', usage: TU.TEXTURE_BINDING | TU.STORAGE_BINDING,
+  });
+  const transLUT = mkLut(256, 64, 'transmittance');
+  const msLUT = mkLut(32, 32, 'multiscatter');
+  const skyLUT = mkLut(SKY_W, SKY_H, 'skyview');
+  const envTex = device.createTexture({
+    label: 'env cube', size: [ENV_SIZE, ENV_SIZE, 6], format: 'rgba16float', mipLevelCount: ENV_MIPS,
+    usage: TU.TEXTURE_BINDING | TU.STORAGE_BINDING,
+  });
+  const envCubeView = envTex.createView({ dimension: 'cube' });
+  const sampClamp = device.createSampler({
+    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear',
+    addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge', addressModeW: 'clamp-to-edge',
+  });
+  const sampRepeat = device.createSampler({
+    magFilter: 'linear', minFilter: 'linear', mipmapFilter: 'linear',
+    addressModeU: 'repeat', addressModeV: 'repeat', maxAnisotropy: 16,
+  });
+  const frameUBO = mkBuf(384, GU.UNIFORM | GU.COPY_DST, 'frame ubo');
+  const sunVisBuf = mkBuf(16, GU.STORAGE, 'sun visibility');
+  const transView = transLUT.createView();
+  const msView = msLUT.createView();
+  const skyView = skyLUT.createView();
+
+  const bgTrans = bg(transPipe, [{ buffer: atmoUBO }, transView], 'trans');
+  const bgMS = bg(msPipe, [{ buffer: atmoUBO }, transView, sampClamp, msView], 'ms');
+  const bgSkyView = bg(skyViewPipe, [{ buffer: frameUBO }, transView, msView, sampClamp, skyView], 'skyview');
+  const bgEnv = bg(envPipe, [{ buffer: frameUBO }, transView, skyView, sampClamp, lvl(envTex, 0)], 'env');
+  const bgSunVis = bg(sunVisPipe, [{ buffer: frameUBO }, transView, skyView, sampClamp, { buffer: sunVisBuf }], 'sunvis');
+  const bgCubeMips = [];
+  for (let m = 1; m < ENV_MIPS; m++) bgCubeMips.push(bg(cubeMipPipe, [lvl(envTex, m - 1), lvl(envTex, m)], 'cubemip' + m));
+
+  // --------------------------------------------------------------------------------------
+  // Render pipelines
+  // --------------------------------------------------------------------------------------
+  const MSAA = 4;
+  const HDR = 'rgba16float';
+  const [oceanMod, skyMod, downMod, upMod, compMod] = await Promise.all([
+    shader(OCEAN, 'ocean'), shader(SKY_BG, 'sky'), shader(BLOOM_DOWN, 'bloom down'),
+    shader(BLOOM_UP, 'bloom up'), shader(COMPOSITE, 'composite'),
+  ]);
+  const oceanPipe = await device.createRenderPipelineAsync({
+    label: 'ocean', layout: 'auto',
+    vertex: {
+      module: oceanMod, entryPoint: 'vs',
+      buffers: [{ arrayStride: 16, stepMode: 'instance', attributes: [{ shaderLocation: 0, offset: 0, format: 'float32x4' }] }],
+    },
+    fragment: { module: oceanMod, entryPoint: 'fs', targets: [{ format: HDR }] },
+    primitive: { topology: 'triangle-list', cullMode: 'none' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: true, depthCompare: 'greater' },
+    multisample: { count: MSAA },
+  });
+  const skyPipe = await device.createRenderPipelineAsync({
+    label: 'sky', layout: 'auto',
+    vertex: { module: skyMod, entryPoint: 'vs' },
+    fragment: { module: skyMod, entryPoint: 'fs', targets: [{ format: HDR }] },
+    primitive: { topology: 'triangle-list' },
+    depthStencil: { format: 'depth32float', depthWriteEnabled: false, depthCompare: 'equal' },
+    multisample: { count: MSAA },
+  });
+  const downPipe = await device.createRenderPipelineAsync({
+    label: 'bloom down', layout: 'auto',
+    vertex: { module: downMod, entryPoint: 'vs' },
+    fragment: { module: downMod, entryPoint: 'fs', targets: [{ format: HDR }] },
+  });
+  const upPipe = await device.createRenderPipelineAsync({
+    label: 'bloom up', layout: 'auto',
+    vertex: { module: upMod, entryPoint: 'vs' },
+    fragment: {
+      module: upMod, entryPoint: 'fs',
+      targets: [{ format: HDR, blend: { color: { srcFactor: 'one', dstFactor: 'one', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one', operation: 'add' } } }],
+    },
+  });
+  const compPipe = await device.createRenderPipelineAsync({
+    label: 'composite', layout: 'auto',
+    vertex: { module: compMod, entryPoint: 'vs' },
+    fragment: { module: compMod, entryPoint: 'fs', targets: [{ format: swapFormat }] },
+  });
+
+  const bgOcean = [0, 1].map((i) => bg(oceanPipe, [{ buffer: frameUBO }, transView, skyView, sampClamp,
+    fullArr(dispTex), fullArr(derivTex), fullArr(momTex), foamTex.createView(), envCubeView, sampRepeat,
+    fullArr(foamW[i]), { buffer: sunVisBuf }], 'ocean' + i));
+  const bgSky = bg(skyPipe, [{ buffer: frameUBO }, transView, skyView, sampClamp], 'sky');
+
+  // Water height under the camera (async readback, a few frames of latency) so the
+  // floating camera rides above passing crests instead of clipping into them.
+  const probePipe = await computePipe(HEIGHT_PROBE, 'height probe');
+  const probeOut = mkBuf(16, GU.STORAGE | GU.COPY_SRC, 'probe out');
+  const probeRead = mkBuf(16, GU.MAP_READ | GU.COPY_DST, 'probe read');
+  const bgProbe = bg(probePipe, [{ buffer: frameUBO }, fullArr(dispTex), samplerSim, { buffer: probeOut }], 'probe');
+  let probePending = false, waterH = 0;
+  const onProbe = () => {
+    waterH = new Float32Array(probeRead.getMappedRange(0, 16))[0];
+    probeRead.unmap();
+    probePending = false;
+  };
+  const onProbeFail = () => { probePending = false; };
+
+  // CDLOD grid mesh
+  const GRID = 32;
+  const LEAF = 2.0;           // finest node size (m) -> 6.25 cm vertex spacing
+  const R0 = 8 * LEAF;        // LOD 0 range
+  const LODS = 17;
+  const MAX_DIST = 160000;
+  const MAX_NODES = 8192;
+  const idx = new Uint16Array(GRID * GRID * 6);
+  {
+    let k = 0;
+    for (let j = 0; j < GRID; j++) {
+      for (let i = 0; i < GRID; i++) {
+        const a = i + j * (GRID + 1), b = a + 1, c = a + GRID + 1, d = c + 1;
+        idx[k++] = a; idx[k++] = c; idx[k++] = d;
+        idx[k++] = a; idx[k++] = d; idx[k++] = b;
+      }
+    }
+  }
+  const idxBuf = mkBuf(idx.byteLength, GU.INDEX | GU.COPY_DST, 'grid idx');
+  device.queue.writeBuffer(idxBuf, 0, idx);
+  const instData = new Float32Array(MAX_NODES * 4);
+  const instBuf = mkBuf(instData.byteLength, GU.VERTEX | GU.COPY_DST, 'instances');
+
+  // --------------------------------------------------------------------------------------
+  // Screen-size dependent targets
+  // --------------------------------------------------------------------------------------
+  const BLOOM_LEVELS = 8;
+  const linSamp = device.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'clamp-to-edge' });
+  const compUBO = mkBuf(32, GU.UNIFORM | GU.COPY_DST, 'composite ubo');
+  const compData = new Float32Array(8);
+  const bloomUBOs = [];
+  for (let i = 0; i < BLOOM_LEVELS * 2; i++) bloomUBOs.push(mkBuf(16, GU.UNIFORM | GU.COPY_DST, 'bloom ubo'));
+
+  let W = 0, H = 0;
+  let colorMS, depthMS, hdrTex, bloomTex;
+  const mainPass = {
+    colorAttachments: [{ view: null, resolveTarget: null, clearValue: { r: 0, g: 0, b: 0, a: 1 }, loadOp: 'clear', storeOp: 'discard' }],
+    depthStencilAttachment: { view: null, depthClearValue: 0, depthLoadOp: 'clear', depthStoreOp: 'discard' },
+  };
+  const compPass = {
+    colorAttachments: [{ view: null, clearValue: { r: 0, g: 0, b: 0, a: 1 }, loadOp: 'clear', storeOp: 'store' }],
+    timestampWrites: undefined,
+  };
+  let downPasses = [], upPasses = [], downBGs = [], upBGs = [], bgComp = null;
+
+  function resize() {
+    if (disposed) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.min(device.limits.maxTextureDimension2D, Math.round(canvas.clientWidth * dpr)));
+    const h = Math.max(1, Math.min(device.limits.maxTextureDimension2D, Math.round(canvas.clientHeight * dpr)));
+    if (w === W && h === H) return;
+    W = w; H = h;
+    canvas.width = W; canvas.height = H;
+    for (const t of [colorMS, depthMS, hdrTex, bloomTex]) t && t.destroy();
+    colorMS = device.createTexture({ size: [W, H], format: HDR, sampleCount: MSAA, usage: TU.RENDER_ATTACHMENT });
+    depthMS = device.createTexture({ size: [W, H], format: 'depth32float', sampleCount: MSAA, usage: TU.RENDER_ATTACHMENT });
+    hdrTex = device.createTexture({ size: [W, H], format: HDR, usage: TU.RENDER_ATTACHMENT | TU.TEXTURE_BINDING });
+    const bw = Math.max(1, W >> 1), bh = Math.max(1, H >> 1);
+    bloomTex = device.createTexture({ size: [bw, bh], format: HDR, mipLevelCount: BLOOM_LEVELS, usage: TU.RENDER_ATTACHMENT | TU.TEXTURE_BINDING });
+    mainPass.colorAttachments[0].view = colorMS.createView();
+    mainPass.colorAttachments[0].resolveTarget = hdrTex.createView();
+    mainPass.depthStencilAttachment.view = depthMS.createView();
+    const hdrView = hdrTex.createView();
+    const bv = [];
+    for (let m = 0; m < BLOOM_LEVELS; m++) bv.push(bloomTex.createView({ baseMipLevel: m, mipLevelCount: 1 }));
+    downPasses = []; upPasses = []; downBGs = []; upBGs = [];
+    const tmp = new Float32Array(4);
+    for (let m = 0; m < BLOOM_LEVELS; m++) {
+      const srcW = m === 0 ? W : Math.max(1, bw >> (m - 1));
+      const srcH = m === 0 ? H : Math.max(1, bh >> (m - 1));
+      tmp[0] = 1 / srcW; tmp[1] = 1 / srcH; tmp[2] = m === 0 ? 1 : 0; tmp[3] = 0;
+      device.queue.writeBuffer(bloomUBOs[m], 0, tmp);
+      downBGs.push(bg(downPipe, [m === 0 ? hdrView : bv[m - 1], linSamp, { buffer: bloomUBOs[m] }]));
+      downPasses.push({ colorAttachments: [{ view: bv[m], clearValue: { r: 0, g: 0, b: 0, a: 1 }, loadOp: 'clear', storeOp: 'store' }] });
+    }
+    for (let m = BLOOM_LEVELS - 1; m > 0; m--) {
+      const sw = Math.max(1, bw >> m), sh = Math.max(1, bh >> m);
+      tmp[0] = 1 / sw; tmp[1] = 1 / sh; tmp[2] = 1.0; tmp[3] = 1.0;
+      const ubo = bloomUBOs[BLOOM_LEVELS + m];
+      device.queue.writeBuffer(ubo, 0, tmp);
+      upBGs.push(bg(upPipe, [bv[m], linSamp, { buffer: ubo }]));
+      upPasses.push({ colorAttachments: [{ view: bv[m - 1], loadOp: 'load', storeOp: 'store' }] });
+    }
+    bgComp = bg(compPipe, [hdrView, bv[0], linSamp, { buffer: compUBO }]);
+  }
+
+  // --------------------------------------------------------------------------------------
+  // GPU timing
+  // --------------------------------------------------------------------------------------
+  let tsQuery = null, tsResolve = null, tsRead = null, tsPending = false, gpuMs = 0;
+  let firstPassTS = undefined;
+  if (hasTS) {
+    tsQuery = device.createQuerySet({ type: 'timestamp', count: 2 });
+    tsResolve = mkBuf(16, GU.QUERY_RESOLVE | GU.COPY_SRC, 'ts resolve');
+    tsRead = mkBuf(16, GU.MAP_READ | GU.COPY_DST, 'ts read');
+    firstPassTS = { querySet: tsQuery, beginningOfPassWriteIndex: 0 };
+    compPass.timestampWrites = { querySet: tsQuery, endOfPassWriteIndex: 1 };
+  }
+  const computeDesc = { timestampWrites: firstPassTS };
+  const onTsMapped = () => {
+    const t = new BigUint64Array(tsRead.getMappedRange());
+    const ms = Number(t[1] - t[0]) / 1e6;
+    if (ms > 0 && ms < 1000) gpuMs = gpuMs ? gpuMs * 0.8 + ms * 0.2 : ms;
+    tsRead.unmap();
+    tsPending = false;
+  };
+  const onTsFail = () => { tsPending = false; };
+
+  // --------------------------------------------------------------------------------------
+  // Uniform data
+  // --------------------------------------------------------------------------------------
+  const simF = new Float32Array(56);
+  const frameF = new Float32Array(96);
+  const atmoF = new Float32Array(4);
+  const proj = new Float32Array(16), view = new Float32Array(16), viewProj = new Float32Array(16);
+  const LOOP = 600.0;  // s, spectrum time loop (frequencies quantised to it)
+  let needSpectrum = true, needLUT = true, envFull = 2;
+
+  function writeSimStatic() {
+    for (let c = 0; c < C; c++) {
+      const L = CASC_L[c];
+      simF[c] = L;
+      simF[8 + c] = c === 0 ? Math.PI / L : (2 * Math.PI * 6) / L;            // kMin
+      simF[16 + c] = c < C - 1 ? (2 * Math.PI * 6) / CASC_L[c + 1] : (Math.PI * N / L) * 0.98; // kMax
+    }
+    for (let c = 1; c < C; c++) simF[8 + c] = simF[16 + c - 1];
+    simF[40] = P.windSpeed; simF[41] = P.windDir * D2R; simF[42] = P.fetchKm * 1000; simF[43] = 3.3;
+    const ks = 2 * Math.PI / P.swellLength;
+    simF[44] = P.swellHs; simF[45] = P.swellDir * D2R; simF[46] = Math.sqrt(9.81 * ks); simF[47] = P.swellSpread;
+    simF[48] = P.choppy; simF[49] = 0.0012; simF[50] = LOOP; simF[51] = 1;
+    simF[54] = 2.2; simF[55] = 1.0;
+  }
+
+  // --------------------------------------------------------------------------------------
+  // Camera & input
+  // --------------------------------------------------------------------------------------
+  const cam = { x: 0, y: 4.0, z: 0, yaw: 0,
+    pitch: -Math.atan(0.20 * Math.tan(29 * D2R)), fovY: 58 * D2R };
+
+  // --------------------------------------------------------------------------------------
+  // CDLOD node selection (CPU, allocation free)
+  // --------------------------------------------------------------------------------------
+  const ranges = new Float64Array(LODS);
+  for (let l = 0; l < LODS; l++) ranges[l] = R0 * Math.pow(2, l);
+  const planes = new Float64Array(16);
+  const HB = 4.0;   // vertical bound of displaced surface
+  const XB = 4.0;   // horizontal displacement margin for culling
+  let nodeCount = 0, ccx = 0, ccy = 0, ccz = 0;
+
+  function sphereHit(x0, z0, size, r) {
+    const dx = Math.max(x0 - ccx, 0, ccx - (x0 + size));
+    const dz = Math.max(z0 - ccz, 0, ccz - (z0 + size));
+    const dy = Math.max(-HB - ccy, 0, ccy - HB);
+    return dx * dx + dy * dy + dz * dz <= r * r;
+  }
+  function inFrustum(x0, z0, size) {
+    const minx = x0 - XB - ccx, maxx = x0 + size + XB - ccx;
+    const minz = z0 - XB - ccz, maxz = z0 + size + XB - ccz;
+    const miny = -HB - ccy, maxy = HB - ccy;
+    for (let p = 0; p < 16; p += 4) {
+      const a = planes[p], b = planes[p + 1], c = planes[p + 2], d = planes[p + 3];
+      const px = a > 0 ? maxx : minx, py = b > 0 ? maxy : miny, pz = c > 0 ? maxz : minz;
+      if (a * px + b * py + c * pz + d < 0) return false;
+    }
+    return true;
+  }
+  function addNode(x0, z0, size, lod) {
+    if (nodeCount >= MAX_NODES) return;
+    const o = nodeCount * 4;
+    instData[o] = x0; instData[o + 1] = z0; instData[o + 2] = size; instData[o + 3] = lod;
+    nodeCount++;
+  }
+  function selectNode(x0, z0, size, lod) {
+    if (!sphereHit(x0, z0, size, ranges[lod])) return false;
+    if (!sphereHit(x0, z0, size, MAX_DIST) || !inFrustum(x0, z0, size)) return true;
+    if (lod === 0 || !sphereHit(x0, z0, size, ranges[lod - 1])) { addNode(x0, z0, size, lod); return true; }
+    const h = size * 0.5;
+    for (let i = 0; i < 4; i++) {
+      const nx = x0 + (i & 1) * h, nz = z0 + (i >> 1) * h;
+      if (!selectNode(nx, nz, h, lod - 1)) {
+        if (sphereHit(nx, nz, h, MAX_DIST) && inFrustum(nx, nz, h)) addNode(nx, nz, h, lod - 1);
+      }
+    }
+    return true;
+  }
+  function selectAll() {
+    nodeCount = 0;
+    ccx = cam.x; ccy = cam.y; ccz = cam.z;
+    // side planes from the camera-relative view-projection (rows 3±0, 3±1)
+    const m = viewProj;
+    for (let i = 0; i < 4; i++) {
+      const r = i >> 1, s = (i & 1) ? -1 : 1;
+      planes[i * 4] = m[3] + s * m[r];
+      planes[i * 4 + 1] = m[7] + s * m[4 + r];
+      planes[i * 4 + 2] = m[11] + s * m[8 + r];
+      planes[i * 4 + 3] = m[15] + s * m[12 + r];
+    }
+    const top = LODS - 1;
+    const ts = LEAF * Math.pow(2, top);
+    const x0 = Math.floor((ccx - MAX_DIST) / ts), x1 = Math.floor((ccx + MAX_DIST) / ts);
+    const z0 = Math.floor((ccz - MAX_DIST) / ts), z1 = Math.floor((ccz + MAX_DIST) / ts);
+    for (let zi = z0; zi <= z1; zi++) {
+      for (let xi = x0; xi <= x1; xi++) selectNode(xi * ts, zi * ts, ts, top);
+    }
+  }
+
+  // --------------------------------------------------------------------------------------
+  // Per-frame uniforms
+  // --------------------------------------------------------------------------------------
+  let simTime = 0;
+  let frameIndex = 0;
+
+  function writeFrame(time) {
+    const aspect = W / H;
+    const tanY = Math.tan(cam.fovY * 0.5), tanX = tanY * aspect;
+    const near = 0.05;
+    proj.fill(0);
+    proj[0] = 1 / tanX; proj[5] = 1 / tanY; proj[11] = -1; proj[14] = near;
+    const cy = Math.cos(cam.yaw), sy = Math.sin(cam.yaw), cp = Math.cos(cam.pitch), sp = Math.sin(cam.pitch);
+    const fx = cp * sy, fy = sp, fz = -cp * cy;            // forward
+    const rx = cy, ry = 0, rz = sy;                          // right
+    const ux = ry * fz - rz * fy, uy = rz * fx - rx * fz, uz = rx * fy - ry * fx; // up = right x fwd
+    view.fill(0);
+    view[0] = rx; view[4] = ry; view[8] = rz;
+    view[1] = ux; view[5] = uy; view[9] = uz;
+    view[2] = -fx; view[6] = -fy; view[10] = -fz;
+    view[15] = 1;
+    mat4Mul(viewProj, proj, view);
+    const f = frameF;
+    f.set(viewProj, 0);
+    f[16] = cam.x; f[17] = cam.y; f[18] = cam.z; f[19] = time;
+    f[20] = rx * tanX; f[21] = ry * tanX; f[22] = rz * tanX; f[23] = 0;
+    f[24] = ux * tanY; f[25] = uy * tanY; f[26] = uz * tanY; f[27] = 0;
+    f[28] = fx; f[29] = fy; f[30] = fz; f[31] = 0;
+    // Keep the moon in the left sky on both wide and portrait screens. Its direction
+    // also lights the simulated waves, so the glitter is a real surface reflection.
+    const mx = fx - 0.56 * rx * tanX + 0.64 * ux * tanY;
+    const my = fy - 0.56 * ry * tanX + 0.64 * uy * tanY;
+    const mz = fz - 0.56 * rz * tanX + 0.64 * uz * tanY;
+    const ml = Math.hypot(mx, my, mz);
+    f[32] = mx / ml; f[33] = my / ml; f[34] = mz / ml; f[35] = 0.025;
+    f[36] = W; f[37] = H; f[38] = 1 / W; f[39] = 1 / H;
+    for (let c = 0; c < C; c++) { f[40 + c] = CASC_L[c]; f[48 + c] = 1 / CASC_L[c]; }
+    f[56] = Math.cos(P.windDir * D2R); f[57] = Math.sin(P.windDir * D2R); f[58] = P.windSpeed;
+    f[64] = R0; f[65] = GRID; f[66] = FOAM_LEVEL_SIZE[0]; f[67] = FOAM_LEVEL_SIZE[1];
+    f[68] = P.exposure; f[69] = P.bloom; f[70] = frameIndex; f[71] = DBG;
+    f[72] = P.haze; f[73] = Math.max(cam.y, 10) * 0.001; f[74] = P.veil; f[75] = 0.9;
+    // deep water body scatter colour (greenish coastal water), unresolved slope variance
+    f[76] = 0.010 * P.turbidity; f[77] = 0.055 * P.turbidity; f[78] = 0.190 * P.turbidity; f[79] = 0.0024;
+    f[80] = 0.020; f[81] = 0.060; f[82] = 0.140; f[83] = 2.6;
+    f[84] = 0.36 + 0.12 * P.foam; f[85] = 2.5; f[86] = 1.0; f[87] = 1.0;
+    f[88] = (5.802e-3 + 4.40e-3 * P.haze) * 1e-3;
+    f[89] = (13.558e-3 + 4.40e-3 * P.haze) * 1e-3;
+    f[90] = (33.1e-3 + 4.40e-3 * P.haze) * 1e-3;
+    f[91] = 1.0e-6;
+    f[92] = 1.5; f[93] = P.clouds; f[94] = 2.2; f[95] = time;
+    device.queue.writeBuffer(frameUBO, 0, f);
+  }
+
+  // Frame state is owned by the React lifecycle rather than an independent page.
+  const submitList = [null];
+
+  function encodeSim(cp) {
+    cp.setPipeline(evolvePipe);
+    cp.setBindGroup(0, bgEvolve);
+    cp.dispatchWorkgroups(N / 16, N / 16, C);
+    cp.setPipeline(rowsPipe);
+    cp.setBindGroup(0, bgRows);
+    cp.dispatchWorkgroups(N, 1, C);
+    cp.setPipeline(colsPipe);
+    cp.setBindGroup(0, bgCols);
+    cp.dispatchWorkgroups(N, 1, C);
+    cp.setPipeline(simMipPipe);
+    for (let m = 1; m < SIM_MIP_COUNT; m++) {
+      const s = N >> m;
+      cp.setBindGroup(0, bgSimMips[m - 1]);
+      cp.dispatchWorkgroups(Math.ceil(s / 8), Math.ceil(s / 8), C);
+    }
+    // foam clipmaps
+    foamCur = 1 - foamCur;
+    cp.setPipeline(foamUpdPipe);
+    cp.setBindGroup(0, bgFoamUpd[foamCur]);
+    cp.dispatchWorkgroups(FOAM_RES / 8, FOAM_RES / 8, 2);
+    cp.setPipeline(arr16MipPipe);
+    const fm = bgFoamMips[foamCur];
+    for (let m = 1; m < FOAMW_MIPS; m++) {
+      const s = Math.max(1, FOAM_RES >> m);
+      cp.setBindGroup(0, fm[m - 1]);
+      cp.dispatchWorkgroups(Math.ceil(s / 8), Math.ceil(s / 8), 2);
+    }
+  }
+
+  function writeFoamUniforms(dt) {
+    for (let l = 0; l < 2; l++) {
+      const ts = FOAM_LEVEL_SIZE[l] / FOAM_RES;
+      const cx = Math.floor(cam.x / ts), cz = Math.floor(cam.z / ts);
+      foamUI[l * 4] = cx; foamUI[l * 4 + 1] = cz;
+      // first frame: pretend the previous window was far away so everything is reset
+      foamUI[l * 4 + 2] = foamFirst ? cx + 100000 : foamSnap[l * 2];
+      foamUI[l * 4 + 3] = foamFirst ? cz + 100000 : foamSnap[l * 2 + 1];
+      foamSnap[l * 2] = cx; foamSnap[l * 2 + 1] = cz;
+      foamUF[8 + l] = ts;
+    }
+    foamFirst = false;
+    foamUF[10] = dt; foamUF[11] = 0.22;          // decay 1/s
+    foamUF[12] = 0.52 + 0.16 * P.foam; foamUF[13] = 2.0; foamUF[14] = 1.0; foamUF[15] = 0;
+    for (let c = 0; c < C; c++) { foamUF[16 + c] = CASC_L[c]; foamUF[24 + c] = 1 / CASC_L[c]; }
+    const drift = 0.03 * P.windSpeed;
+    foamUF[32] = Math.cos(P.windDir * D2R) * drift; foamUF[33] = Math.sin(P.windDir * D2R) * drift;
+    device.queue.writeBuffer(foamUBO, 0, foamUArr);
+  }
+
+  function frame(now, still = false) {
+    if (disposed || !initialized) return;
+    if (!still && (stopped || document.hidden)) return;
+    if (!still) schedule();
+    resize();
+    const dt = still ? 0 : Math.min(0.05, Math.max(0, (now - last) / 1000));
+    last = now;
+    simTime = (simTime + dt * 0.62) % LOOP;
+    frameIndex++;
+
+    writeFrame(simTime);
+    writeSimStatic();
+    simF[52] = simTime; simF[53] = dt;
+    device.queue.writeBuffer(simUBO, 0, simF);
+    writeFoamUniforms(dt);
+    selectAll();
+    if (nodeCount) device.queue.writeBuffer(instBuf, 0, instData, 0, nodeCount * 4);
+
+    const enc = device.createCommandEncoder();
+    const cp = enc.beginComputePass(computeDesc);
+    if (needSpectrum) {
+      cp.setPipeline(initPipe);
+      cp.setBindGroup(0, bgInit);
+      cp.dispatchWorkgroups(N / 16, N / 16, C);
+      needSpectrum = false;
+    }
+    if (needLUT) {
+      atmoF[0] = P.haze;
+      device.queue.writeBuffer(atmoUBO, 0, atmoF);
+      cp.setPipeline(transPipe);
+      cp.setBindGroup(0, bgTrans);
+      cp.dispatchWorkgroups(256 / 8, 64 / 8);
+      cp.setPipeline(msPipe);
+      cp.setBindGroup(0, bgMS);
+      cp.dispatchWorkgroups(32 / 8, 32 / 8);
+      needLUT = false;
+    }
+    encodeSim(cp);
+    cp.setPipeline(probePipe);
+    cp.setBindGroup(0, bgProbe);
+    cp.dispatchWorkgroups(1);
+    cp.setPipeline(skyViewPipe);
+    cp.setBindGroup(0, bgSkyView);
+    cp.dispatchWorkgroups(Math.ceil(SKY_W / 8), Math.ceil(SKY_H / 8));
+    cp.setPipeline(sunVisPipe);
+    cp.setBindGroup(0, bgSunVis);
+    cp.dispatchWorkgroups(1);
+    cp.setPipeline(envPipe);
+    cp.setBindGroup(0, bgEnv);
+    // one cube face per frame (all six on start-up / after parameter changes)
+    cp.dispatchWorkgroups(ENV_SIZE / 8, ENV_SIZE / 8, envFull > 0 ? 6 : 1);
+    if (envFull > 0) envFull--;
+    cp.setPipeline(cubeMipPipe);
+    for (let m = 1; m < ENV_MIPS; m++) {
+      const s = Math.max(1, ENV_SIZE >> m);
+      cp.setBindGroup(0, bgCubeMips[m - 1]);
+      cp.dispatchWorkgroups(Math.ceil(s / 8), Math.ceil(s / 8), 6);
+    }
+    cp.end();
+
+    const rp = enc.beginRenderPass(mainPass);
+    if (nodeCount) {
+      rp.setPipeline(oceanPipe);
+      rp.setBindGroup(0, bgOcean[foamCur]);
+      rp.setVertexBuffer(0, instBuf);
+      rp.setIndexBuffer(idxBuf, 'uint16');
+      rp.drawIndexed(GRID * GRID * 6, nodeCount);
+    }
+    rp.setPipeline(skyPipe);
+    rp.setBindGroup(0, bgSky);
+    rp.draw(3);
+    rp.end();
+
+    for (let m = 0; m < BLOOM_LEVELS; m++) {
+      const p = enc.beginRenderPass(downPasses[m]);
+      p.setPipeline(downPipe);
+      p.setBindGroup(0, downBGs[m]);
+      p.draw(3);
+      p.end();
+    }
+    for (let i = 0; i < upPasses.length; i++) {
+      const p = enc.beginRenderPass(upPasses[i]);
+      p.setPipeline(upPipe);
+      p.setBindGroup(0, upBGs[i]);
+      p.draw(3);
+      p.end();
+    }
+
+    compData[0] = P.exposure; compData[1] = P.bloom; compData[2] = frameIndex % 64; compData[3] = 0.025;
+    compData[4] = 1.08; compData[5] = 1.04; compData[6] = 0.0; compData[7] = 0;
+    device.queue.writeBuffer(compUBO, 0, compData);
+    const swapTex = ctx.getCurrentTexture();
+    compPass.colorAttachments[0].view = swapTex.createView();
+    const pc = enc.beginRenderPass(compPass);
+    pc.setPipeline(compPipe);
+    pc.setBindGroup(0, bgComp);
+    pc.draw(3);
+    pc.end();
+
+    let doProbe = false;
+    if (!probePending && (frameIndex & 7) === 0) {
+      enc.copyBufferToBuffer(probeOut, 0, probeRead, 0, 16);
+      doProbe = true;
+    }
+    let doTs = false;
+    if (hasTS && !tsPending && (frameIndex & 7) === 0) {
+      enc.resolveQuerySet(tsQuery, 0, 2, tsResolve, 0);
+      enc.copyBufferToBuffer(tsResolve, 0, tsRead, 0, 16);
+      doTs = true;
+    }
+    submitList[0] = enc.finish();
+    device.queue.submit(submitList);
+    if (doProbe) { probePending = true; probeRead.mapAsync(GPUMapMode.READ).then(onProbe, onProbeFail); }
+    if (doTs) { tsPending = true; tsRead.mapAsync(GPUMapMode.READ).then(onTsMapped, onTsFail); }
+  }
+
+  ensureAlive();
+  initialized = true;
+  observer = new ResizeObserver(resume);
+  observer.observe(canvas);
+  document.addEventListener('visibilitychange', resume);
+  // Warm both world-space foam buffers and all environment cube faces before revealing.
+  frame(performance.now(), true);
+  frame(performance.now(), true);
+  await device.queue.onSubmittedWorkDone();
+  ensureAlive();
+  options.onReady?.();
+  resume();
+  return {
+    setPaused(value) { stopped = !!value; resume(); },
+    destroy,
+  };
+} catch (error) {
+  release();
+  throw error;
+}
+}

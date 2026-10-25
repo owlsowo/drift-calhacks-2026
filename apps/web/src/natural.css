@@ -1,0 +1,746 @@
+/* Notes held in the same cold light as the water. The writing is the object. */
+:root {
+  --letter-ink: #263342;
+  --letter-pencil: #59616b;
+  --letter-paper: #dadddf;
+  --letter-edge: #91979c;
+  --letter-hand: 'Kalam', 'Segoe Print', 'Bradley Hand', cursive;
+  --letter-ui: Arial, Helvetica, sans-serif;
+  font-family: var(--letter-ui);
+  background: #102140;
+}
+
+.sea-world {
+  --ink: var(--letter-ink);
+  --muted: var(--letter-pencil);
+  --paper: var(--letter-paper);
+  --white: #e6e7e6;
+  --line: #8b929b60;
+  --sea: #ccd4dc;
+  --shore-ink: #e0e6ec;
+  --shore-soft: #c5d0dc;
+  --shore-light: #dbe2e9;
+  --rust: #87483d;
+  font-family: var(--letter-ui);
+}
+
+.sea-world h1,
+.sea-world h2 {
+  font-family: var(--letter-ui);
+  letter-spacing: 0;
+}
+.sea-world .wordmark {
+  color: #e2e6e9;
+  font: 400 29px/1 var(--letter-hand);
+  letter-spacing: 0;
+}
+.sea-world .preview-mark {
+  color: #b8c6d3;
+  font: 400 10px/1.5 var(--letter-ui);
+  letter-spacing: 0;
+  margin-left: -10px;
+}
+.sea-world .shore-back {
+  color: #dce3ea;
+  font: 400 13px/1.5 var(--letter-ui);
+}
+.sea-world .icon-button.help {
+  color: #dce3ea;
+}
+.sea-world .open-bottle {
+  color: #e0e6ec;
+  font: 400 15px/1.5 var(--letter-ui);
+}
+.sea-world .open-bottle small {
+  color: #c4d0dd;
+  font-family: var(--letter-ui);
+}
+.sea-world .shore-whisper,
+.sea-world .shore-heading > p {
+  color: #dce3ea;
+  font: 400 14px/1.6 var(--letter-ui);
+}
+
+.sea-world button,
+.sea-world input,
+.modal,
+.modal button {
+  font-family: var(--letter-ui);
+}
+
+/* Slightly uneven light, fibres, and a thin edge replace flat application panels. */
+.sea-world .paper-content,
+.sea-world .reveal-art .postcard,
+.sea-world .collection-card .postcard,
+.sea-world .beginning-preview,
+.sea-world .ending-preview,
+.sea-world .quiet-tide-note,
+.sea-world .hello-panel,
+.modal {
+  color: var(--letter-ink);
+  background-color: var(--letter-paper);
+  background-image:
+    linear-gradient(115deg, #e6eaf01f 0%, #c2cbd216 43%, #33445a14 100%),
+    url('/assets/letter-paper.webp');
+  background-position: center;
+  background-size: cover;
+  border: 1px solid #a2a5a759;
+  border-radius: 1px 2px 1px 1px;
+  box-shadow:
+    0 1px 1px #05101e70,
+    0 12px 27px #04122552,
+    inset 0 1px 0 #ffffff47;
+}
+.sea-world .paper-content {
+  padding: clamp(25px, 4vw, 39px);
+}
+.sea-world .postcard-paper .paper-content {
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Practical headings stay quiet. The handwriting belongs to people's messages. */
+.sea-world .writing-desk h1 {
+  margin: 0 0 24px;
+  color: var(--letter-ink);
+  font: 400 19px/1.5 var(--letter-ui);
+  letter-spacing: 0;
+}
+.sea-world .desk-heading {
+  margin: 0 0 18px;
+  align-items: center;
+}
+.sea-world .eyebrow,
+.sea-world .desk-heading .eyebrow {
+  color: var(--letter-pencil);
+  font: 400 12px/1.5 var(--letter-ui);
+  text-transform: none;
+  letter-spacing: 0;
+}
+.sea-world .draft-saved {
+  color: var(--letter-pencil);
+  font: 400 11px/1.5 var(--letter-ui);
+}
+.sea-world .story-input {
+  min-height: 112px;
+  padding: 10px 0 16px;
+  color: var(--letter-ink);
+  caret-color: var(--letter-ink);
+  font: 400 clamp(30px, 3.2vw, 35px)/1.35 var(--letter-hand);
+  letter-spacing: 0;
+  border-bottom: 1px solid #70778280;
+  text-shadow: 0 0 0.3px #26334240;
+}
+.sea-world .story-input::placeholder {
+  color: #737a83;
+  opacity: 1;
+}
+.sea-world .story-input:focus-visible {
+  outline: 0;
+  border-bottom: 2px solid #3d4d61;
+}
+.sea-world .word-feedback {
+  margin: 12px 0 18px;
+  color: var(--letter-pencil);
+  font: 400 12px/1.5 var(--letter-ui);
+}
+.sea-world .word-feedback > .character-count {
+  color: var(--letter-pencil);
+  font-size: 11px;
+}
+.sea-world .word-feedback .count-done {
+  color: #36475b;
+}
+.sea-world .word-feedback .count-over {
+  color: #87483d;
+}
+.sea-world .word-dots span {
+  width: 5px;
+  height: 5px;
+  border-color: #727c87;
+}
+.sea-world .word-dots span.filled {
+  border-color: #42536a;
+  background: #42536a;
+}
+.sea-world .word-dots.over span.filled {
+  border-color: #87483d;
+  background: #87483d;
+}
+.sea-world .caught-note {
+  padding: 0 0 24px;
+  margin: 0 0 19px;
+  border: 0;
+  border-bottom: 1px solid #7e87934d;
+  border-radius: 0;
+  background: none;
+}
+.sea-world .caught-note p,
+.sea-world .letter-text {
+  margin: 9px 0 0;
+  color: var(--letter-ink);
+  font: 400 clamp(30px, 3.1vw, 35px)/1.35 var(--letter-hand);
+  letter-spacing: 0;
+}
+.sea-world .caught-note .eyebrow,
+.sea-world .lease {
+  color: var(--letter-pencil);
+  font: 400 11px/1.5 var(--letter-ui);
+}
+.sea-world .lease.urgent {
+  color: #87483d;
+}
+
+/* Small weathered pieces of wood, lit along their top edge. */
+.sea-world .button,
+.modal .button {
+  min-height: 44px;
+  padding: 10px 19px;
+  gap: 9px;
+  border-radius: 2px;
+  font: 400 13px/1.45 var(--letter-ui);
+  letter-spacing: 0;
+  transform: none;
+  transition:
+    filter 140ms ease,
+    box-shadow 140ms ease;
+}
+.sea-world .button.primary,
+.modal .button.primary {
+  border: 1px solid #3e3834;
+  border-top-color: #8b8479;
+  color: #f0eeea;
+  background:
+    linear-gradient(#1b273e91, #171d2cab),
+    url('/assets/wood-desk.webp') center 55% / 420px auto;
+  box-shadow:
+    inset 0 1px 0 #d4c5ad30,
+    inset 0 -1px 0 #0e142b6b,
+    0 2px 2px #151b233b;
+  text-shadow: 0 1px 1px #101728b3;
+}
+.sea-world .button.secondary,
+.modal .button.secondary {
+  color: #2c3948;
+  border: 1px solid #7b828a;
+  background: #d5d8d926;
+  box-shadow: inset 0 1px 0 #fff5;
+}
+.sea-world .button.primary:hover:not(:disabled),
+.modal .button.primary:hover:not(:disabled) {
+  filter: brightness(1.13);
+  background:
+    linear-gradient(#1b273e91, #171d2cab),
+    url('/assets/wood-desk.webp') center 55% / 420px auto;
+}
+.sea-world .button.secondary:hover:not(:disabled),
+.modal .button.secondary:hover:not(:disabled) {
+  background: #d5d8d961;
+}
+.sea-world .button:active:not(:disabled),
+.modal .button:active:not(:disabled) {
+  box-shadow: inset 0 2px 3px #0e142b59;
+}
+.sea-world .desk-actions {
+  gap: 12px;
+}
+.sea-world .desk-actions > .button {
+  align-self: flex-end;
+  width: auto;
+  min-width: 150px;
+}
+.sea-world .text-button,
+.sea-world .minor-actions button,
+.sea-world .nudge-button,
+.sea-world .letter-address .text-button {
+  min-height: 44px;
+  font: 400 12px/1.5 var(--letter-ui);
+}
+.sea-world .paper-content .text-button,
+.sea-world .minor-actions button,
+.sea-world .nudge-button,
+.sea-world .nudge-button > span,
+.sea-world .word-rules,
+.sea-world .privacy-note,
+.sea-world .bottle-receipt,
+.modal .shore-settings {
+  color: var(--letter-pencil);
+}
+.sea-world .word-rules summary,
+.sea-world .bottle-receipt summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.sea-world .nudge {
+  color: var(--letter-ink);
+  background: #66768b0b;
+  border: 0;
+  border-left: 1px solid #65758a7a;
+  padding: 10px 15px;
+}
+.sea-world .nudge p {
+  color: var(--letter-ink);
+}
+.sea-world .privacy-note,
+.sea-world .word-rules {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* A folded letter has no title or numbered anatomy. */
+.sea-world .reveal-layout.has-postcard {
+  width: min(530px, 100%);
+  gap: 15px;
+}
+.sea-world .reveal-copy > h1 {
+  color: #e0e6ec;
+  font: 400 22px/1.5 var(--letter-ui);
+  letter-spacing: 0;
+}
+.sea-world .has-postcard .reveal-copy > h1 {
+  color: #e0e4e8;
+  font: 400 17px/1.5 var(--letter-ui);
+  letter-spacing: 0;
+}
+.sea-world .postcard {
+  padding: 21px 0 13px;
+  text-align: left;
+  overflow: hidden;
+  transform: none;
+}
+.sea-world .postcard .letter-date {
+  display: block;
+  width: auto;
+  margin: 0 28px 15px;
+  color: #626b77;
+  font: 400 11px/1.5 var(--letter-ui);
+  letter-spacing: 0;
+  text-align: right;
+  border: 0;
+  border-radius: 0;
+  transform: none;
+}
+.sea-world .postcard .card-half,
+.sea-world .reveal-art .postcard .card-half,
+.sea-world .collection-card .postcard .card-half {
+  position: relative;
+  padding: 17px 32px 23px;
+  background: none;
+}
+.sea-world .postcard .card-half + .card-half {
+  padding-top: 26px;
+}
+.sea-world .postcard .letter-fold {
+  height: 3px;
+  background: linear-gradient(#5c687015, #f0f3f557 55%, #84909b04);
+  box-shadow: 0 -1px 8px #4f596914;
+}
+.sea-world .postcard .starter-source {
+  display: block;
+  margin: 0 32px 15px;
+  color: var(--letter-pencil);
+  font: 400 11px/1.5 var(--letter-ui);
+}
+.sea-world .postcard .card-half + .card-half::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(#5c687015, #f0f3f557 55%, #84909b04);
+  box-shadow: 0 -1px 8px #4f596914;
+  pointer-events: none;
+}
+.sea-world .postcard .card-half p,
+.sea-world .reveal-art .postcard .card-half p {
+  margin: 0;
+  color: var(--letter-ink);
+  font: 400 clamp(29px, 3.3vw, 33px)/1.4 var(--letter-hand);
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+  text-shadow: 0 0 0.3px #26334230;
+}
+.sea-world .postcard .card-half:not(.setup-half) p {
+  color: #34445e;
+}
+.sea-world .postcard .postcard-top,
+.sea-world .postcard .postcard-bottom,
+.sea-world .postcard .perforation,
+.sea-world .postcard .card-half > .eyebrow {
+  display: none;
+}
+.sea-world .has-postcard .share-actions {
+  gap: 10px;
+}
+.sea-world .has-postcard .share-actions .button {
+  width: auto;
+  flex: 0 0 auto;
+}
+.sea-world .has-postcard .share-actions .text-button {
+  width: auto;
+  min-height: 44px;
+  padding: 0 5px;
+  font-size: 12px;
+}
+.sea-world .has-postcard .share-actions .button.secondary {
+  color: #e4e5e6;
+  border-color: #d2d6d075;
+  background: #18243a73;
+  box-shadow: inset 0 1px 0 #e6ebee1a;
+}
+.sea-world .has-postcard .card-management {
+  gap: 20px;
+}
+.sea-world .has-postcard .card-management button {
+  font-size: 12px;
+  color: #d4dce5;
+}
+
+/* Saved letters are paper slips, with only the information needed to open one. */
+.sea-world .bottle-shelf {
+  max-width: 760px;
+}
+.sea-world .collection-heading {
+  margin: 0 0 27px;
+  align-items: baseline;
+}
+.sea-world .bottle-shelf h1,
+.sea-world .bottle-page > h1 {
+  margin: 0;
+  color: #e5e8eb;
+  font: 400 24px/1.4 var(--letter-ui);
+  letter-spacing: 0;
+}
+.sea-world .bottle-page > h1 {
+  margin: 0 0 20px;
+  text-align: left;
+  font-size: 18px;
+}
+.sea-world .collection-total {
+  color: #c2cdd8;
+  font: 400 11px/1.5 var(--letter-ui);
+}
+.sea-world .shelf-section {
+  margin: 30px 0;
+}
+.sea-world .shelf-section h2,
+.sea-world .endings-heading h2 {
+  margin: 0 0 13px;
+  color: #dce3e9;
+  font: 400 14px/1.5 var(--letter-ui);
+  letter-spacing: 0;
+}
+.sea-world .beginning-list,
+.sea-world .ending-list {
+  gap: 12px;
+}
+.sea-world .beginning-preview,
+.sea-world .ending-preview {
+  min-height: 78px;
+  padding: 19px 23px;
+  gap: 16px;
+  transform: none;
+  transition: filter 140ms ease;
+}
+.sea-world .beginning-preview:hover,
+.sea-world .ending-preview:hover {
+  filter: brightness(1.04);
+}
+.sea-world .beginning-preview > span,
+.sea-world .ending-preview > span {
+  font: 400 29px/1.3 var(--letter-hand);
+  color: var(--letter-ink);
+}
+.sea-world .beginning-preview small,
+.sea-world .ending-preview small {
+  color: var(--letter-pencil);
+  font: 400 11px/1.5 var(--letter-ui);
+}
+.sea-world .beginning-preview > svg,
+.sea-world .ending-preview > svg {
+  color: #536174;
+}
+.sea-world .collection-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.sea-world .collection-card {
+  transition: filter 140ms ease;
+}
+.sea-world .collection-card:hover {
+  transform: none;
+  filter: brightness(1.04);
+}
+.sea-world .collection-card .postcard {
+  padding-top: 17px;
+  padding-bottom: 4px;
+  height: 100%;
+}
+.sea-world .collection-card .postcard .letter-date {
+  margin: 0 23px 7px;
+  font-size: 10px;
+}
+.sea-world .collection-card .postcard .card-half {
+  padding: 15px 23px 20px;
+}
+.sea-world .collection-card .postcard .card-half p {
+  font-size: 28px;
+}
+.sea-world .collection-card > span {
+  padding: 11px 0;
+  font: 400 11px/1.5 var(--letter-ui);
+  color: #d3dce6;
+}
+.sea-world .bottle-lookup,
+.sea-world .shelf-note,
+.sea-world .endings-heading p {
+  color: #d3dce6;
+  font: 400 13px/1.65 var(--letter-ui);
+}
+.sea-world .bottle-lookup input {
+  min-height: 44px;
+  color: var(--letter-ink);
+  background: #d9dce0;
+  border: 1px solid #6b7787;
+  font: 400 13px/1.5 var(--letter-ui);
+}
+.sea-world .bottle-lookup .button.secondary {
+  color: #e0e6ec;
+  border-color: #b8c5d17d;
+  background: #12253b80;
+}
+.sea-world .letter-text {
+  margin: 4px 0 24px;
+}
+.sea-world .letter-address {
+  padding-top: 8px;
+  border-top: 1px solid #727f8e33;
+}
+.sea-world .bottle-receipt code {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.sea-world .endings-heading {
+  margin-top: 28px;
+}
+.sea-world .shelf-back {
+  color: #dce3e9;
+}
+.sea-world .collection-empty h2 {
+  color: #e0e6ec;
+  font: 400 20px/1.5 var(--letter-ui);
+  letter-spacing: 0;
+}
+.sea-world .collection-empty p {
+  color: #d3dce6;
+  font: 400 13px/1.7 var(--letter-ui);
+}
+
+/* Dialogs are another small sheet, never a new visual system. */
+.modal {
+  --ink: var(--letter-ink);
+  --muted: var(--letter-pencil);
+  max-width: 470px;
+  padding: 33px;
+  font: 400 13px/1.6 var(--letter-ui);
+}
+.modal::backdrop {
+  background: #08182b80;
+  backdrop-filter: blur(2px);
+}
+.modal h2,
+.sea-world .quiet-tide-note h2,
+.sea-world .hello-panel h2 {
+  color: var(--letter-ink);
+  font: 400 21px/1.4 var(--letter-ui);
+  letter-spacing: 0;
+  margin: 0 0 17px;
+}
+.modal p,
+.modal .how-list,
+.sea-world .hello-panel p,
+.sea-world .hello-panel small {
+  color: var(--letter-pencil);
+  font: 400 13px/1.7 var(--letter-ui);
+}
+.modal .close {
+  color: #4f5966;
+}
+.modal .close:hover {
+  background: #5361740c;
+}
+.modal .how-list li {
+  margin: 14px 0;
+}
+.modal .shore-settings {
+  border-top-color: #75839442;
+}
+.sea-world .hello-panel .text-button,
+.sea-world .quiet-tide-actions button {
+  color: #3f4e61;
+}
+.sea-world .connection-banner,
+.sea-world .error-note,
+.sea-world .shore-gate {
+  color: #e0e6ec;
+  background: #162637f2;
+  border: 1px solid #76869659;
+  font: 400 12px/1.6 var(--letter-ui);
+}
+.toast {
+  color: #e0e6ec;
+  background: #162637f2;
+  border: 1px solid #76869659;
+  border-radius: 2px;
+  font-family: var(--letter-ui);
+}
+
+.sea-world .quota-recovery {
+  color: var(--letter-ink);
+  background: #6c7b8e0a;
+  border: 1px solid #63718442;
+  border-radius: 1px;
+}
+.sea-world .quota-recovery p,
+.sea-world .quota-recovery button {
+  color: var(--letter-pencil);
+  font: 400 12px/1.6 var(--letter-ui);
+}
+.sea-world .recognition-phrase {
+  color: var(--letter-ink);
+  background: #f0f2f41f;
+  border: 1px solid #74829670;
+  border-radius: 1px;
+  font: 400 27px/1.5 var(--letter-hand);
+  letter-spacing: 0;
+}
+.sea-world .hello-panel .hello-error {
+  color: #87483d;
+}
+.sea-world .writing-desk .empty-state,
+.sea-world .writing-desk .empty-state h1 {
+  color: #e0e6ec;
+}
+.sea-world .writing-desk .empty-state h1 {
+  font: 400 22px/1.5 var(--letter-ui);
+  margin: 18px 0 0;
+}
+.sea-world .writing-desk .empty-state p {
+  color: #d3dce6;
+  font: 400 13px/1.7 var(--letter-ui);
+}
+.sea-world .main h1.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible,
+input:focus-visible {
+  outline: 2px solid #b4c7df;
+  outline-offset: 4px;
+}
+.sea-world .paper-content button:focus-visible,
+.sea-world .paper-content summary:focus-visible,
+.sea-world .beginning-preview:focus-visible,
+.sea-world .ending-preview:focus-visible,
+.modal button:focus-visible,
+.modal summary:focus-visible {
+  outline-color: #455e7d;
+}
+
+@media (max-width: 700px) {
+  .sea-world .paper-content {
+    padding: 25px;
+  }
+  .sea-world .writing-desk h1 {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  .sea-world .postcard-paper .paper-content {
+    padding: 0;
+  }
+  .sea-world .postcard {
+    padding-top: 18px;
+  }
+  .sea-world .postcard .letter-date {
+    margin: 0 24px 13px;
+  }
+  .sea-world .postcard .card-half,
+  .sea-world .reveal-art .postcard .card-half {
+    padding: 16px 25px 23px;
+  }
+  .sea-world .postcard .card-half p,
+  .sea-world .reveal-art .postcard .card-half p {
+    font-size: 29px;
+  }
+  .sea-world .postcard .card-half + .card-half {
+    padding-top: 25px;
+  }
+  .sea-world .collection-heading {
+    flex-direction: row;
+    gap: 12px;
+  }
+  .sea-world .bottle-shelf h1 {
+    font-size: 23px;
+  }
+  .sea-world .collection-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .sea-world .collection-card .postcard .card-half p {
+    font-size: 29px;
+  }
+  .sea-world .beginning-preview,
+  .sea-world .ending-preview {
+    flex-wrap: nowrap;
+    padding: 17px 19px;
+    gap: 12px;
+  }
+  .sea-world .beginning-preview > span,
+  .sea-world .ending-preview > span {
+    min-width: 0;
+    font-size: 28px;
+  }
+  .sea-world .beginning-preview > svg:first-child {
+    display: none;
+  }
+  .sea-world .beginning-preview small {
+    margin-left: 0;
+  }
+  .sea-world .beginning-preview small,
+  .sea-world .ending-preview small {
+    white-space: normal;
+    max-width: 55px;
+  }
+  .sea-world .letter-text,
+  .sea-world .story-input {
+    font-size: 32px;
+  }
+  .modal {
+    padding: 29px 25px;
+  }
+  .modal h2 {
+    font-size: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sea-world .button,
+  .sea-world .beginning-preview,
+  .sea-world .ending-preview,
+  .sea-world .collection-card {
+    transition: none;
+  }
+}

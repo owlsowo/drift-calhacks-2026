@@ -62,7 +62,7 @@ try {
     await page.getByRole('button', { name: 'Write my six words', exact: true }).click();
     await page.getByRole('textbox').fill('I taught the octopus insider trading.');
     pause(true);
-    await page.getByRole('button', { name: 'Toss my bottle', exact: true }).click();
+    await page.getByRole('button', { name: 'Release', exact: true }).click();
     await page
       .getByRole('alert')
       .filter({ hasText: 'The tide is taking a short break.' })
@@ -88,7 +88,7 @@ try {
       'I taught the octopus insider trading.',
     );
     assert.equal(
-      await page.getByRole('button', { name: 'Toss my bottle', exact: true }).isDisabled(),
+      await page.getByRole('button', { name: 'Release', exact: true }).isDisabled(),
       true,
     );
     await capture(
@@ -101,7 +101,7 @@ try {
     await page.waitForFunction(
       () =>
         [...document.querySelectorAll('button')].some(
-          (b) => b.textContent.includes('Toss my bottle') && !b.disabled,
+          (b) => b.textContent.includes('Release') && !b.disabled,
         ),
       undefined,
       { timeout: 15000 },
@@ -110,7 +110,7 @@ try {
       await page.getByRole('textbox').inputValue(),
       'I taught the octopus insider trading.',
     );
-    await page.getByRole('button', { name: 'Toss my bottle', exact: true }).click();
+    await page.getByRole('button', { name: 'Release', exact: true }).click();
     await page.getByRole('button', { name: 'Catch a bottle', exact: true }).waitFor();
     await capture(
       page,
@@ -151,14 +151,14 @@ try {
       };
     });
     assert.deepEqual(retainedRequest, { retained: true, storageAvailable: false });
-    await limitedPage.getByText('Kept in this tab', { exact: false }).waitFor();
+    await limitedPage.getByText('Unsaved', { exact: false }).waitFor();
     await capture(
       limitedPage,
       `${width}x${height}`,
       'storage-unavailable',
       'Blocked browser storage is named honestly; draft and immutable request metadata remain in memory within the current tab.',
     );
-    await limitedPage.getByRole('button', { name: 'Toss my bottle', exact: true }).click();
+    await limitedPage.getByRole('button', { name: 'Release', exact: true }).click();
     await limitedPage.getByRole('button', { name: 'Catch a bottle', exact: true }).waitFor();
     await limited.close();
   }

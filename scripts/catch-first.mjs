@@ -38,7 +38,7 @@ try {
   }
   await button(B, 'Write my six words').click();
   await B.getByRole('textbox').fill('I challenged their shark to poker.');
-  await button(B, 'Toss my bottle').click();
+  await button(B, 'Release').click();
   await button(B, 'Catch a bottle').waitFor();
   const box = await A.locator('.bottle-grip').boundingBox();
   const x = box.x + box.width / 2,
@@ -54,8 +54,8 @@ try {
   await A.getByText('I challenged their shark to poker.', { exact: true }).waitFor();
   pass('A fresh identity shakes to catch a real peer beginning before writing anything');
   await A.getByRole('textbox').fill('Our lawyers would like another hand.');
-  await button(A, 'Seal our postcard').click();
-  await A.getByRole('heading', { name: 'Well, look what we made.' }).waitFor();
+  await button(A, 'Send reply').click();
+  await A.getByRole('heading', { name: 'Saved reply' }).waitFor();
   await button(B, 'My postcards 1').waitFor();
   await screen(A, 'catch-first-reveal-360.png');
   await screen(B, 'returned-bottle-1440.png');
@@ -64,7 +64,7 @@ try {
   );
   await button(A, 'Toss my own bottle').click();
   await A.getByRole('textbox').fill('I taught the octopus insider trading.');
-  await button(A, 'Toss my bottle').click();
+  await button(A, 'Release').click();
   await button(A, 'Write another little story').waitFor();
   assert.equal(
     await A.evaluate(async () => (await import('/src/game.ts')).game.snapshot().rounds.length),
@@ -74,7 +74,7 @@ try {
   await A.locator('.shore-dock button').nth(1).click();
   await A.getByRole('button', { name: 'Open bottle', exact: false }).click();
   await A.getByRole('textbox').fill('Your account has been permanently frozen.');
-  await button(A, 'Seal our postcard').click();
+  await button(A, 'Send reply').click();
   await button(A, 'Keep this story. Maybe later.').click();
   await A.locator('.shore-home').waitFor();
   assert.equal(

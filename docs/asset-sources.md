@@ -1,6 +1,8 @@
 # Drift image sources
 
-The interface uses human-made photographs and original web geometry. No AI-generated images are bundled.
+The current interface uses the MIT-licensed Noniv WebGPU ocean renderer and original generated coastal artwork, wood and paper textures. The generated assets are `coast-night-wide.webp`, `coast-night-mobile.webp`, transparent `coast-headland.webp`, `wood-desk.webp` and `letter-paper.webp`; creation prompts and provenance are in [coast-art.md](coast-art.md). No WeChat screenshot pixels are bundled.
+
+The photographs below remain in the repository as legacy assets; their licenses and attribution are retained.
 
 | Asset                             | Creator and source                                                                                                                                                                            | License                                                         | Changes                                                                                    |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -10,4 +12,6 @@ The interface uses human-made photographs and original web geometry. No AI-gener
 
 The paper ball remains available under its original share-alike license. The site’s Image credits page carries attribution and license links alongside the distributed assets.
 
-Interface references: [the owner's supplied WeChat video](https://www.bilibili.com/video/BV1PW411x7n4/), [classic WeChat screenshots](https://www.freedomwall.net/technews/revolutionize-your-mobile-messaging-and-calling-experience-with-wechat/), and [QQ Mail bottle imagery](https://www.woshipm.com/it/5063202.html). These inform the sea, distant lighthouse, bottom dock and note-opening ritual. No Tencent screenshot or video is distributed in the application. Bottle, lighthouse, dock and folding geometry are original SVG/CSS components.
+Interface references: [the owner's supplied WeChat video](https://www.bilibili.com/video/BV1PW411x7n4/), [classic WeChat screenshots](https://www.freedomwall.net/technews/revolutionize-your-mobile-messaging-and-calling-experience-with-wechat/), and [QQ Mail bottle imagery](https://www.woshipm.com/it/5063202.html). These inform the sea, distant lighthouse, bottom dock and note-opening ritual. No Tencent screenshot or video is distributed in the application. The bottle and dock controls are original SVG/CSS components. The current lighthouse/headland is generated artwork, and the paper opens directly.
+
+Actual message text uses locally bundled Kalam Regular by Indian Type Foundry under the SIL Open Font License; see `public/vendor/kalam/OFL.txt`. Controls use system fonts.

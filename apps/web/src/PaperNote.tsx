@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { PaperSurface, NOTE_OPEN_MS } from './PaperSurface';
+import { GlassBottle } from './Shore';
 
 export function PaperNote({
   children,
@@ -11,51 +11,29 @@ export function PaperNote({
   postcard?: boolean;
 }) {
   const note = useRef<HTMLDivElement>(null);
-  const [meshReady, setMeshReady] = useState(false);
-  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const [phase, setPhase] = useState<'closed' | 'unfolding' | 'open'>(() =>
-    closed ? 'closed' : reduced() ? 'open' : 'unfolding',
-  );
+  const [open, setOpen] = useState(!closed);
   useEffect(() => {
-    if (phase !== 'unfolding') return;
-    const timer = setTimeout(() => setPhase('open'), NOTE_OPEN_MS);
-    return () => clearTimeout(timer);
-  }, [phase]);
+    if (!closed) setOpen(true);
+  }, [closed]);
   useEffect(() => {
-    if (!closed && phase === 'closed') setPhase('open');
-  }, [closed, phase]);
-  useEffect(() => {
-    if (phase === 'unfolding') return;
     const target = note.current?.querySelector<HTMLElement>(
-      phase === 'closed' ? '.open-bottle' : '[tabindex="-1"]',
+      open ? '[tabindex="-1"]' : '.open-bottle',
     );
     target?.focus({ preventScroll: true });
-  }, [phase]);
+  }, [open]);
   return (
     <div
       ref={note}
-      className={`paper-note paper-${phase} ${meshReady ? 'has-paper-mesh' : ''} ${postcard ? 'postcard-paper' : ''}`}
-      data-paper-phase={phase}
+      className={`paper-note paper-${open ? 'open' : 'closed'} ${postcard ? 'postcard-paper' : ''}`}
+      data-paper-phase={open ? 'open' : 'closed'}
     >
-      {phase === 'closed' && (
-        <button className="open-bottle" onClick={() => setPhase(reduced() ? 'open' : 'unfolding')}>
-          <img src="/assets/paper-ball.png" alt="" draggable={false} />
+      {!open && (
+        <button className="open-bottle" onClick={() => setOpen(true)}>
+          <GlassBottle />
           <span>Open bottle</span>
-          <small>Someone’s words are inside.</small>
         </button>
       )}
-      {phase === 'unfolding' && (
-        <>
-          <img className="unfolding-ball" src="/assets/paper-ball.png" alt="" draggable={false} />
-          <PaperSurface onReady={() => setMeshReady(true)} />
-          <span className="sr-only" role="status">
-            Unfolding the note.
-          </span>
-        </>
-      )}
-      <div className="paper-content" inert={phase !== 'open'} aria-hidden={phase !== 'open'}>
-        {children}
-      </div>
+      {open && <div className="paper-content">{children}</div>}
     </div>
   );
 }

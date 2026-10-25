@@ -26,7 +26,7 @@ import {
   ROUNDS_PER_DAY,
 } from '../../packages/game-rules/index';
 
-// All participant state is private. Only approved anonymous postcards are public.
+// Participant ownership and drafts stay private. Approved anonymous beginnings and pairs are public.
 const round = table(
   { name: 'round' },
   {
@@ -61,18 +61,30 @@ const bottle = table(
     text: t.string(),
     seeded: t.bool(),
     seedIndex: t.u32(),
-    claimRound: t.string(),
-    claimVersion: t.u32(),
-    claimUntil: t.f64(),
     cardId: t.string(),
     hidden: t.bool(),
     starterKind: t.string().default('sample'),
+    createdMs: t.f64(),
+  },
+);
+const beginning = table(
+  { name: 'beginning', public: true },
+  {
+    id: t.string().primaryKey(),
+    day: t.u32().index('btree'),
+    promptId: t.string(),
+    promptJson: t.string(),
+    text: t.string(),
+    seeded: t.bool(),
+    starterKind: t.string(),
+    createdMs: t.f64(),
   },
 );
 const postcard = table(
   { name: 'postcard', public: true },
   {
     id: t.string().primaryKey(),
+    beginningId: t.string().index('btree'),
     promptId: t.string(),
     setup: t.string(),
     reply: t.string(),
@@ -87,6 +99,7 @@ const authorship = table(
     id: t.string().primaryKey(),
     setupOwner: t.option(t.identity()),
     replyOwner: t.identity(),
+    beginningId: t.string(),
     hidden: t.bool(),
   },
 );
@@ -194,6 +207,7 @@ const db = schema(
   {
     round,
     bottle,
+    beginning,
     postcard,
     authorship,
     request,
@@ -249,18 +263,54 @@ function currentRound(ctx: Tx, id: string) {
   if (!r || !same(r.owner, ctx.sender)) fail('This round belongs to another writer.');
   return r!;
 }
+function alreadyReplied(ctx: Tx, beginningId: string) {
+  return (
+    [...ctx.db.authorship.iter()].some(
+      (a) => a.beginningId === beginningId && same(a.replyOwner, ctx.sender),
+    ) ||
+    [...ctx.db.round.owner.filter(ctx.sender)].some(
+      (r) => r.assignmentId === beginningId && !!r.cardId,
+    )
+  );
+}
 function currentClaim(ctx: Tx, r: Round) {
   const b = ctx.db.bottle.id.find(r.assignmentId);
+  // A catch belongs to this private round, not an exclusive lock on the beginning.
+  // Other writers may complete their own endings while this writer is composing.
   if (
     !b ||
     b.hidden ||
-    b.cardId ||
-    b.claimRound !== r.id ||
-    b.claimVersion !== r.version ||
-    b.claimUntil <= now(ctx)
+    !ctx.db.beginning.id.find(b.id) ||
+    r.leaseMs <= now(ctx) ||
+    (b.owner && same(b.owner, ctx.sender)) ||
+    alreadyReplied(ctx, b.id)
   )
     fail('This bottle has drifted on. Your draft is saved; catch another.');
   return b!;
+}
+function publishBeginning(ctx: Tx, b: Bottle) {
+  const row = {
+    id: b.id,
+    day: b.day,
+    promptId: b.promptId,
+    promptJson: promptJson(b.day),
+    text: b.text,
+    seeded: b.seeded,
+    starterKind: b.seeded ? b.starterKind : 'none',
+    createdMs: b.createdMs,
+  };
+  if (ctx.db.beginning.id.find(b.id)) ctx.db.beginning.id.update(row);
+  else ctx.db.beginning.insert(row);
+}
+function hideBeginning(ctx: Tx, b: Bottle) {
+  ctx.db.bottle.id.update({ ...b, hidden: true });
+  ctx.db.beginning.id.delete(b.id);
+  for (const card of ctx.db.postcard.beginningId.filter(b.id)) {
+    ctx.db.postcard.id.delete(card.id);
+    const a = ctx.db.authorship.id.find(card.id);
+    if (a) ctx.db.authorship.id.update({ ...a, hidden: true });
+    ctx.db.hello.cardId.delete(card.id);
+  }
 }
 function ready(ctx: Tx) {
   const c = ctx.db.config.id.find(0)!;
@@ -415,8 +465,11 @@ function startRound(ctx: Tx, initialStage: 'write' | 'catch') {
   const day = dayOf(now(ctx));
   const own = [...ctx.db.round.owner.filter(ctx.sender)];
   // An unexpired old claim is resumable; it never acquires a fresh lease at reset.
-  const active = own.find(
-    (r) => r.stage !== 'done' && (r.day === day || (r.stage === 'reply' && r.leaseMs > now(ctx))),
+  const active = own.find((r) =>
+    initialStage === 'write'
+      ? r.stage === 'write' && r.day === day
+      : (r.stage === 'catch' || r.stage === 'reply') &&
+        (r.day === day || (r.stage === 'reply' && r.leaseMs > now(ctx))),
   );
   if (active) return active;
   const today = own.filter((r) => r.day === day);
@@ -445,8 +498,7 @@ function startRound(ctx: Tx, initialStage: 'write' | 'catch') {
   });
 }
 export const start_round = db.reducer((ctx) => {
-  const r = startRound(ctx, 'write');
-  if (r.stage === 'catch' && !r.setupId && !r.cardId) saveRound(ctx, { ...r, stage: 'write' });
+  startRound(ctx, 'write');
 });
 export const start_catching = db.reducer((ctx) => {
   const r = startRound(ctx, 'catch');
@@ -661,10 +713,11 @@ function paidAction(
       if (
         !live ||
         live.hidden ||
-        live.cardId ||
-        live.claimRound !== r.id ||
-        live.claimVersion !== r.version ||
-        live.claimUntil <= now(tx)
+        !tx.db.beginning.id.find(live.id) ||
+        current.assignmentId !== b!.id ||
+        current.stage !== 'reply' ||
+        current.leaseMs <= now(tx) ||
+        alreadyReplied(tx, live.id)
       ) {
         const value = result(
           false,
@@ -696,7 +749,7 @@ function paidAction(
     }
     if (operation === 'setup') {
       const id = newId(tx);
-      tx.db.bottle.insert({
+      const created = tx.db.bottle.insert({
         id,
         owner: tx.sender,
         day: r.day,
@@ -704,16 +757,15 @@ function paidAction(
         text,
         seeded: false,
         starterKind: 'none',
+        createdMs: now(tx),
         seedIndex: 0,
-        claimRound: '',
-        claimVersion: 0,
-        claimUntil: 0,
         cardId: '',
         hidden: false,
       });
+      publishBeginning(tx, created);
       saveRound(tx, {
         ...current,
-        stage: current.cardId ? 'done' : 'catch',
+        stage: 'done',
         setupId: id,
         inFlight: '',
         busyUntil: 0,
@@ -722,6 +774,7 @@ function paidAction(
       const id = newId(tx);
       tx.db.postcard.insert({
         id,
+        beginningId: b!.id,
         promptId: r.promptId,
         setup: b!.text,
         reply: text,
@@ -729,16 +782,21 @@ function paidAction(
         starterKind: b!.seeded ? b!.starterKind : 'none',
         createdMs: now(tx),
       });
-      tx.db.authorship.insert({ id, setupOwner: b!.owner, replyOwner: tx.sender, hidden: false });
+      tx.db.authorship.insert({
+        id,
+        setupOwner: b!.owner,
+        replyOwner: tx.sender,
+        beginningId: b!.id,
+        hidden: false,
+      });
       tx.db.bottle.id.update({
         ...tx.db.bottle.id.find(b!.id)!,
-        cardId: id,
-        claimRound: '',
-        claimUntil: 0,
+        // Kept as the first return for compatibility; it does not consume the beginning.
+        cardId: tx.db.bottle.id.find(b!.id)!.cardId || id,
       });
       saveRound(tx, {
         ...current,
-        stage: current.setupId || r.day !== dayOf(now(tx)) ? 'done' : 'write',
+        stage: 'done',
         cardId: id,
         inFlight: '',
         busyUntil: 0,
@@ -784,16 +842,18 @@ function assign(ctx: Tx, r: Round) {
   // Skips and reports persist across the identity's rounds for this day.
   for (const previous of ctx.db.round.owner.filter(ctx.sender))
     if (previous.day === r.day) for (const id of JSON.parse(previous.excluded)) excluded.add(id);
-  let found = [...ctx.db.bottle.day.filter(r.day)].find(
+  const candidates = [...ctx.db.bottle.day.filter(r.day)].filter(
     (b) =>
       !b.hidden &&
-      !b.cardId &&
       !b.seeded &&
       b.owner &&
       !same(b.owner, ctx.sender) &&
-      (!b.claimRound || b.claimUntil <= now(ctx)) &&
+      !alreadyReplied(ctx, b.id) &&
       !excluded.has(b.id),
   );
+  let found = candidates.length
+    ? candidates[ctx.random.integerInRange(0, candidates.length - 1)]
+    : undefined;
   if (!found) {
     const approved =
       ctx.env.DRIFT_STARTERS_HUMAN_WRITTEN === 'true' ? teamStartersFor(r.promptId) : [];
@@ -815,23 +875,16 @@ function assign(ctx: Tx, r: Round) {
       text: seed.text,
       seeded: true,
       starterKind: humanWritten ? 'team' : 'sample',
+      createdMs: now(ctx),
       seedIndex: seed.index,
-      claimRound: '',
-      claimVersion: 0,
-      claimUntil: 0,
       cardId: '',
       hidden: false,
     };
     ctx.db.bottle.insert(found);
+    publishBeginning(ctx, found);
   }
   const version = r.version + 1;
   const deadline = now(ctx) + LEASE_MS;
-  ctx.db.bottle.id.update({
-    ...found,
-    claimRound: r.id,
-    claimVersion: version,
-    claimUntil: deadline,
-  });
   saveRound(ctx, {
     ...r,
     stage: 'reply',
@@ -849,8 +902,8 @@ export const claim_bottle = db.reducer({ roundId: t.string() }, (ctx, { roundId 
   unlocked(ctx, r);
   if (r.stage === 'reply') {
     const b = ctx.db.bottle.id.find(r.assignmentId);
-    if (b && !b.hidden && !b.cardId && b.claimRound === r.id && b.claimUntil > now(ctx)) return;
-  } else if (r.stage !== 'catch') fail('Toss your setup first.');
+    if (b && !b.hidden && r.leaseMs > now(ctx) && !alreadyReplied(ctx, b.id)) return;
+  } else if (r.stage !== 'catch') fail('Pick up a bottle to write an ending.');
   assign(ctx, r);
 });
 function release(ctx: Tx, r: Round, reported: boolean) {
@@ -861,7 +914,6 @@ function release(ctx: Tx, r: Round, reported: boolean) {
   const excluded = new Set<string>(JSON.parse(r.excluded));
   if (b) {
     excluded.add(b.seeded ? 'seed:' + b.seedIndex : b.id);
-    if (b.claimRound === r.id) ctx.db.bottle.id.update({ ...b, claimRound: '', claimUntil: 0 });
   }
   saveRound(ctx, {
     ...r,
@@ -895,7 +947,7 @@ export const report_content = db.reducer(
       const r = currentRound(ctx, roundId);
       const b = currentClaim(ctx, r);
       recordReport(ctx, b.id, reason);
-      ctx.db.bottle.id.update({ ...b, hidden: true });
+      hideBeginning(ctx, b);
       release(ctx, r, true);
       return;
     }
@@ -1268,9 +1320,15 @@ export const resolve_report = db.reducer(
     const r = ctx.db.report.id.find(reportId);
     if (!r) fail('This report is no longer available.');
     const b = ctx.db.bottle.id.find(r.target);
-    if (b && !b.cardId) ctx.db.bottle.id.update({ ...b, hidden: decision === 'hide' });
-    if (decision === 'hide') {
-      const a = ctx.db.authorship.id.find(b?.cardId || r.target);
+    if (b) {
+      if (decision === 'hide') hideBeginning(ctx, b);
+      else {
+        ctx.db.bottle.id.update({ ...b, hidden: false });
+        publishBeginning(ctx, b);
+      }
+    }
+    if (decision === 'hide' && !b) {
+      const a = ctx.db.authorship.id.find(r.target);
       if (a) {
         ctx.db.postcard.id.delete(a.id);
         ctx.db.authorship.id.update({ ...a, hidden: true });
@@ -1299,7 +1357,10 @@ function purgeExpired(ctx: Tx) {
     if (row.createdMs < cutoff && row.heldMicros === 0n && row.state !== 'pending')
       ctx.db.aiCall.id.delete(row.id);
   for (const b of ctx.db.bottle.iter())
-    if (b.day < dayOf(now(ctx)) - 7) ctx.db.bottle.id.delete(b.id);
+    if (b.createdMs < cutoff) {
+      ctx.db.bottle.id.delete(b.id);
+      ctx.db.beginning.id.delete(b.id);
+    }
   for (const r of ctx.db.report.iter())
     if (r.createdMs < cutoff) {
       ctx.db.report.id.delete(r.id);
@@ -1326,14 +1387,11 @@ export const retire_bottle = db.reducer({ bottleId: t.string() }, (ctx, { bottle
   admin(ctx);
   const b = ctx.db.bottle.id.find(bottleId);
   if (!b) return;
-  if (b.cardId) fail('Only unpublished bottles can be retired.');
+  hideBeginning(ctx, b);
   ctx.db.bottle.id.update({
-    ...b,
+    ...ctx.db.bottle.id.find(b.id)!,
     hidden: true,
     text: '',
-    claimRound: '',
-    claimUntil: 0,
-    claimVersion: b.claimVersion + 1,
   });
 });
 export const maintenance_tick = db.reducer(
@@ -1366,7 +1424,7 @@ export const my_assignment = db.view(
     for (const r of ctx.db.round.owner.filter(ctx.sender)) {
       if (r.stage !== 'reply') continue;
       const b = ctx.db.bottle.id.find(r.assignmentId);
-      if (b && !b.hidden && !b.cardId && b.claimRound === r.id)
+      if (b && !b.hidden)
         result.push({
           id: b.id,
           text: b.text,

@@ -65,6 +65,7 @@ import * as SubmitSetupProcedure from "./submit_setup_procedure";
 import * as VerifyShoreProcedure from "./verify_shore_procedure";
 
 // Import all table schema definitions
+import BeginningRow from "./beginning_table";
 import MyAssignmentRow from "./my_assignment_table";
 import MyCardsRow from "./my_cards_table";
 import MyHelloRow from "./my_hello_table";
@@ -79,9 +80,26 @@ import TodayRow from "./today_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
+  beginning: __table({
+    name: 'beginning',
+    indexes: [
+      { accessor: 'day', name: 'beginning_day_idx_btree', algorithm: 'btree', columns: [
+        'day',
+      ] },
+      { accessor: 'id', name: 'beginning_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'beginning_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, BeginningRow),
   postcard: __table({
     name: 'postcard',
     indexes: [
+      { accessor: 'beginningId', name: 'postcard_beginning_id_idx_btree', algorithm: 'btree', columns: [
+        'beginningId',
+      ] },
       { accessor: 'id', name: 'postcard_id_idx_btree', algorithm: 'btree', columns: [
         'id',
       ] },

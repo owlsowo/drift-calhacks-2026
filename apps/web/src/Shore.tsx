@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type PointerEvent, type RefObject } from 'react';
-import { Hand, LoaderCircle, Smartphone } from 'lucide-react';
+import { useEffect, useId, useRef, useState, type PointerEvent, type RefObject } from 'react';
+import { LoaderCircle, Smartphone } from 'lucide-react';
 import { ShakeMeter } from './shake';
 import type { Prompt } from '../../../packages/game-rules/index';
 import './shore.css';
@@ -8,6 +8,7 @@ type MotionConstructor = typeof DeviceMotionEvent & { requestPermission?: () => 
 let motionOptedIn = false;
 
 export function GlassBottle({ small = false }: { small?: boolean }) {
+  const glassId = useId();
   return (
     <svg
       viewBox="0 0 180 290"
@@ -17,7 +18,7 @@ export function GlassBottle({ small = false }: { small?: boolean }) {
     >
       <defs>
         <linearGradient
-          id={small ? 'glass-small' : 'glass-large'}
+          id={glassId}
           x1="40"
           y1="140"
           x2="140"
@@ -33,7 +34,7 @@ export function GlassBottle({ small = false }: { small?: boolean }) {
       <g className="floating-bottle">
         <path
           d="M69 45h43v58c0 14 9 24 21 36 11 11 15 23 15 38v73c0 17-12 28-29 28H62c-17 0-29-11-29-28v-73c0-15 4-27 15-38 12-12 21-22 21-36V45Z"
-          fill={`url(#${small ? 'glass-small' : 'glass-large'})`}
+          fill={`url(#${glassId})`}
           stroke="#c3e5d6"
           strokeWidth="2"
         />
@@ -85,6 +86,8 @@ export function Shore({
   mode,
   prompt,
   disabled,
+  writeDisabled = disabled,
+  pickDisabled = disabled,
   busy,
   actionLabel,
   onAction,
@@ -93,12 +96,14 @@ export function Shore({
   count,
   returnedCount = 0,
   empty = false,
-  hasOutgoing = true,
   headingRef,
+  restingMessage,
 }: {
   mode: 'home' | 'catch';
   prompt?: Prompt;
   disabled: boolean;
+  writeDisabled?: boolean;
+  pickDisabled?: boolean;
   busy: string;
   actionLabel: string;
   onAction: () => Promise<unknown>;
@@ -107,8 +112,8 @@ export function Shore({
   count: number;
   returnedCount?: number;
   empty?: boolean;
-  hasOutgoing?: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
+  restingMessage?: string;
 }) {
   const grip = useRef<HTMLButtonElement>(null);
   const emptyHeading = useRef<HTMLHeadingElement>(null);
@@ -120,6 +125,7 @@ export function Shore({
     { id: number; x: number; y: number; anchorX: number; anchorY: number } | undefined
   >(undefined);
   const fired = useRef(false);
+  const moved = useRef(false);
   const [progress, setProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [motion, setMotion] = useState(motionOptedIn);
@@ -127,8 +133,8 @@ export function Shore({
   const [phone, setPhone] = useState(false);
   const actionRef = useRef(onAction);
   actionRef.current = onAction;
-  const disabledRef = useRef(disabled);
-  disabledRef.current = disabled;
+  const disabledRef = useRef(pickDisabled);
+  disabledRef.current = pickDisabled;
   useEffect(() => {
     setPhone(matchMedia('(pointer: coarse)').matches && 'DeviceMotionEvent' in window);
   }, []);
@@ -151,7 +157,7 @@ export function Shore({
     if (result.complete) void activateRef.current();
   }
   useEffect(() => {
-    if (!motion) return;
+    if (!motion || mode !== 'catch') return;
     let gravity = [0, 0, 0];
     const listener = (e: DeviceMotionEvent) => {
       if (disabledRef.current || document.visibilityState !== 'visible' || fired.current) return;
@@ -172,7 +178,7 @@ export function Shore({
     };
     window.addEventListener('devicemotion', listener);
     return () => window.removeEventListener('devicemotion', listener);
-  }, [motion]);
+  }, [motion, mode]);
   async function enableMotion() {
     if (!isSecureContext) {
       setMotionMessage('Phone shake needs HTTPS. You can drag the bottle or use the buttons.');
@@ -196,8 +202,9 @@ export function Shore({
     }
   }
   function down(e: PointerEvent<HTMLButtonElement>) {
-    if (disabled || fired.current) return;
+    if (pickDisabled || fired.current) return;
     e.preventDefault();
+    moved.current = false;
     e.currentTarget.setPointerCapture(e.pointerId);
     pointer.current = {
       id: e.pointerId,
@@ -212,9 +219,10 @@ export function Shore({
   }
   function move(e: PointerEvent<HTMLButtonElement>) {
     const p = pointer.current;
-    if (!p || p.id !== e.pointerId || disabled || fired.current) return;
+    if (!p || p.id !== e.pointerId || pickDisabled || fired.current) return;
     const x = e.clientX - p.x,
       y = e.clientY - p.y;
+    if (Math.hypot(x, y) > 8) moved.current = true;
     grip.current?.style.setProperty('--drag-x', `${Math.max(-110, Math.min(110, x))}px`);
     grip.current?.style.setProperty('--drag-y', `${Math.max(-55, Math.min(55, y))}px`);
     grip.current?.style.setProperty('--drag-angle', `${Math.max(-24, Math.min(24, x / 4))}deg`);
@@ -241,129 +249,110 @@ export function Shore({
       className={`shore shore-${mode} ${empty ? 'shore-empty' : ''} ${dragging ? 'is-grabbed' : ''} ${busy ? 'is-searching' : ''}`}
       aria-label={mode === 'catch' ? 'Catch a bottle on the moonlit shore' : 'Drift bottle shore'}
     >
-      <div className="shore-heading">
-        <h1 ref={headingRef} tabIndex={-1} className="sr-only">
-          {mode === 'catch' ? 'Something’s washing ashore.' : 'There’s a story out there.'}
-        </h1>
-        <p>
-          {mode === 'catch'
-            ? hasOutgoing
-              ? 'Your beginning is on its way. Catch someone else’s.'
-              : 'A different little beginning is out there.'
-            : 'A little daily nonsense from someone else.'}
-        </p>
-      </div>
+      <h1 ref={headingRef} tabIndex={-1} className="sr-only">
+        {mode === 'catch' ? 'Find a bottle on the shore' : 'Drift, a few words between strangers'}
+      </h1>
+      {mode === 'home' && !empty && restingMessage && (
+        <div className="shore-whisper">
+          <p>{restingMessage}</p>
+        </div>
+      )}
       {empty && (
         <div className="quiet-tide-note">
           <div role="status">
             <h2 ref={emptyHeading} tabIndex={-1}>
-              The water is quiet.
+              No bottles available.
             </h2>
-            <p>No bottles just now. Leave six words for the next stranger.</p>
+            <p>Release a beginning, or try picking up again later.</p>
           </div>
           <div className="quiet-tide-actions">
-            {!(mode === 'catch' && hasOutgoing) && (
-              <button disabled={disabled} onClick={() => void onWrite()}>
-                Toss a beginning
+            {
+              <button disabled={writeDisabled} onClick={() => void onWrite()}>
+                Release a beginning
               </button>
-            )}
-            <button disabled={disabled} onClick={() => void activate()}>
+            }
+            <button disabled={pickDisabled} onClick={() => void activate()}>
               Try again
             </button>
           </div>
-          {mode === 'catch' && hasOutgoing && <small>Your beginning is safe on the tide.</small>}
         </div>
       )}
-      {mode === 'home' && !empty && (
-        <div className="shore-prompt">
-          <span>Today’s beginning</span>
-          <p>{prompt?.setup || 'A little story is washing ashore…'}</p>
-          <small>
-            {prompt
-              ? `Then: ${prompt.reply}`
-              : 'Write a beginning, then finish another bottle’s story.'}
-          </small>
-        </div>
-      )}
-      <div className="bottle-spotlight" />
-      <div className="bottle-ripple" />
-      <button
-        ref={grip}
-        className="bottle-grip"
-        aria-label={
-          mode === 'catch'
-            ? 'Shake the bottle to catch a story'
-            : 'Shake the bottle to catch a story'
-        }
-        disabled={disabled}
-        onPointerDown={down}
-        onPointerMove={move}
-        onPointerUp={release}
-        onPointerCancel={release}
-        onLostPointerCapture={release}
-        onClick={(e) => {
-          if (e.detail === 0) void activate();
-        }}
-      >
-        <GlassBottle />
-      </button>
-      <div className="shake-instruction" aria-live="polite">
-        {busy ? (
-          <>
-            <LoaderCircle className="spin" size={16} />
-            {busy}
-          </>
-        ) : (
-          <>
-            <Hand size={16} />
-            {dragging ? 'A little left. A little right.' : 'Grab the bottle. Give it a shake.'}
-          </>
-        )}
-        <div className="shake-meter" aria-hidden="true">
-          {[0, 1, 2, 3].map((i) => (
-            <i key={i} className={progress > i / 4 ? 'full' : ''} />
-          ))}
-        </div>
-      </div>
-      {phone && (
-        <div className="phone-shake">
+      {mode === 'catch' && (
+        <>
+          <div className="bottle-spotlight" />
+          <div className="bottle-ripple" />
           <button
-            onClick={() => {
-              if (motion) {
-                motionOptedIn = false;
-                setMotion(false);
-                setMotionMessage('');
-              } else void enableMotion();
+            ref={grip}
+            className="bottle-grip"
+            aria-label="Pick up the drifting bottle"
+            disabled={pickDisabled}
+            onPointerDown={down}
+            onPointerMove={move}
+            onPointerUp={release}
+            onPointerCancel={release}
+            onLostPointerCapture={release}
+            onClick={(e) => {
+              if (e.detail === 0 || !moved.current) void activate();
             }}
-            disabled={disabled}
           >
-            <Smartphone size={15} />
-            {motion ? 'Turn phone shake off' : 'Enable phone shake'}
+            <GlassBottle />
           </button>
-          <span role="status">{motionMessage}</span>
-        </div>
+          <div className="shake-instruction" aria-live="polite">
+            {busy ? (
+              <>
+                <LoaderCircle className="spin" size={16} />
+                {busy}
+              </>
+            ) : (
+              <>
+                {dragging ? 'Keep shaking to pick it up.' : 'Tap or shake the bottle to open it.'}
+              </>
+            )}
+            {progress > 0 && (
+              <div className="shake-meter" aria-hidden="true">
+                {[0, 1, 2, 3].map((i) => (
+                  <i key={i} className={progress > i / 4 ? 'full' : ''} />
+                ))}
+              </div>
+            )}
+          </div>
+          {phone && (
+            <div className="phone-shake">
+              <button
+                onClick={() => {
+                  if (motion) {
+                    motionOptedIn = false;
+                    setMotion(false);
+                    setMotionMessage('');
+                  } else void enableMotion();
+                }}
+                disabled={pickDisabled}
+              >
+                <Smartphone size={15} />
+                {motion ? 'Turn phone shake off' : 'Enable phone shake'}
+              </button>
+              <span role="status">{motionMessage}</span>
+            </div>
+          )}
+        </>
       )}
-      <div className="shore-dock">
+      <div className="shore-dock" role="group" aria-label="Bottles on the shore">
         <button
           className={`dock-action ${mode === 'home' ? 'dock-primary' : ''}`}
+          aria-label={mode === 'home' ? `Release a bottle. ${actionLabel}` : 'Release a bottle'}
           onClick={() => void onWrite()}
-          disabled={disabled || (mode === 'catch' && hasOutgoing)}
+          disabled={writeDisabled}
         >
           <span className="dock-object">
             <GlassBottle small />
           </span>
-          <span>
-            {mode === 'home'
-              ? actionLabel
-              : hasOutgoing
-                ? 'Your beginning is sent'
-                : 'Toss a bottle instead'}
-          </span>
+          <span>Release</span>
         </button>
         <button
           className={`dock-action ${mode === 'catch' ? 'dock-primary' : ''}`}
+          aria-label="Pick up a bottle. Write an ending"
           onClick={() => void activate()}
-          disabled={disabled}
+          disabled={pickDisabled}
         >
           <span className="dock-object dock-net">
             <svg viewBox="0 0 64 64" aria-hidden="true">
@@ -386,11 +375,12 @@ export function Shore({
               <ellipse cx="32" cy="7" rx="4" ry="3" fill="#f9edac" />
             </svg>
           </span>
-          <span>{mode === 'catch' ? 'Catch a bottle' : 'Pick up a bottle'}</span>
+          <span>Pick up</span>
         </button>
         <button
           className={`dock-action ${returnedCount ? 'dock-returned' : ''}`}
           onClick={onCollection}
+          aria-label={returnedCount ? `My bottles. ${returnedCount} replies today` : 'My bottles'}
         >
           <span className="dock-object">
             <svg viewBox="0 0 64 64" aria-hidden="true">
@@ -425,15 +415,14 @@ export function Shore({
             </svg>
             {count > 0 && <b>{count}</b>}
           </span>
-          <span>{returnedCount ? 'Your bottle came back' : 'View my postcards'}</span>
+          <span>My bottles</span>
         </button>
       </div>
-      <p className="shore-fine-print">
-        {mode === 'catch'
-          ? 'No bottle yet? Try again, or leave a beginning of your own.'
-          : 'Catch a beginning. Add six words. Leave a bottle for someone else.'}{' '}
-        Buttons and keyboard work too.
-      </p>
+      {returnedCount > 0 && (
+        <p className="shore-fine-print" role="status">
+          {returnedCount} {returnedCount === 1 ? 'reply' : 'replies'} today
+        </p>
+      )}
     </section>
   );
 }
