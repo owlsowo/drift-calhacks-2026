@@ -33,6 +33,7 @@ import { savePng, shareCard, cardText, copyText } from './export';
 import './style.css';
 import { HelloPanel } from './HelloPanel';
 import { friendlyError } from './errors';
+import { contribution } from './contribution';
 import { Shore } from './Shore';
 import { Ocean } from './Ocean';
 import { PaperNote } from './PaperNote';
@@ -107,7 +108,7 @@ function Bottle({ small = false }: { small?: boolean }) {
     </svg>
   );
 }
-function Postcard({ card }: { card: Card }) {
+function Postcard({ card, role = 'public' }: { card: Card; role?: string }) {
   return (
     <article className="postcard" aria-label="Your completed postcard" data-card-id={card.id}>
       <time className="letter-date" dateTime={new Date(card.createdMs).toISOString()}>
@@ -128,6 +129,7 @@ function Postcard({ card }: { card: Card }) {
       <div className="card-half">
         <p>{card.reply}</p>
       </div>
+      <p className="contribution-note">{contribution(card, role)}</p>
     </article>
   );
 }
@@ -808,6 +810,7 @@ function App() {
                               <Sparkles size={12} /> AI hint
                             </span>
                             <p>{active.hint}</p>
+                            <small>Your ending is still yours.</small>
                           </aside>
                         )}
                       </div>
@@ -1024,7 +1027,7 @@ function App() {
               {card && (
                 <div className="reveal-art">
                   <PaperNote key={card.id} postcard onOpen={recordOpen}>
-                    <Postcard card={card} />
+                    <Postcard card={card} role={ownership?.role} />
                   </PaperNote>
                 </div>
               )}
@@ -1079,7 +1082,12 @@ function App() {
                         key={pair.id}
                         onClick={() => showCard(pair.id)}
                       >
-                        <Postcard card={pair} />
+                        <Postcard
+                          card={pair}
+                          role={
+                            s.ownership.find((item) => item.id === pair.id && !item.hidden)?.role
+                          }
+                        />
                       </button>
                     ))}
                   </div>

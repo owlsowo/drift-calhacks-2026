@@ -164,6 +164,44 @@ try {
   pass(
     'Each ending creates its own pair, finishes its pick-up round, and appears live in the original author’s pool',
   );
+  assert.equal(
+    await B.locator('.contribution-note').innerText(),
+    'Someone began it. You finished it.',
+  );
+  const [download] = await Promise.all([
+    B.waitForEvent('download'),
+    button(B, 'Save image').click(),
+  ]);
+  const exportFile = new URL(`contribution-${engine.toLowerCase()}-postcard.png`, evidence)
+    .pathname;
+  await download.saveAs(exportFile);
+  const png = await fs.readFile(exportFile);
+  assert.equal(png.subarray(1, 4).toString(), 'PNG');
+  assert.equal(png.readUInt32BE(16), 1080);
+  assert.equal(png.readUInt32BE(20), 1350);
+  const copiedWords = await B.evaluate(async () => {
+    const { game } = await import('/src/game.ts');
+    const { cardText } = await import('/src/export.ts');
+    const state = game.snapshot();
+    const id = state.ownership.find((o) => o.role === 'reply').id;
+    return cardText(state.cards.find((c) => c.id === id));
+  });
+  assert.equal(copiedWords, setupText + '\n' + bReply);
+  pass(
+    'The actual PNG export downloads at 1080×1350 while Copy text keeps only the two creative lines for a peer story',
+  );
+  await A.locator('.ending-preview').filter({ hasText: bReply }).click();
+  await A.locator('.postcard-paper.paper-open').waitFor();
+  assert.equal(
+    await A.locator('.contribution-note').innerText(),
+    'You began it. Someone finished it.',
+  );
+  await A.screenshot({
+    path: new URL(`contribution-${engine.toLowerCase()}-author.png`, evidence).pathname,
+    fullPage: true,
+  });
+  await button(A, 'Back to bottles').click();
+  await A.locator('.beginning-preview').filter({ hasText: setupText }).click();
   for (const [index, page] of [A, B, C].entries()) {
     await page.screenshot({
       path: new URL(`letter-pools-${engine.toLowerCase()}-view-${index}.png`, evidence).pathname,
@@ -277,6 +315,10 @@ try {
   await D.locator('.collection-card').click();
   await D.getByRole('heading', { name: 'Saved reply', exact: true }).waitFor();
   assert.equal(await button(D, 'Hide').count(), 0);
+  assert.equal(await D.locator('.contribution-note').innerText(), 'Two writers. One little story.');
+  pass(
+    'Contribution labels use private ownership for each author and stay neutral when only public bookmark cookies are recovered',
+  );
   await D.goto(`${origin}?bottle=${encodeURIComponent(beginningId)}`);
   await D.getByRole('heading', { name: '2 replies', exact: true }).waitFor();
   assert.equal(await D.locator('.ending-preview').count(), 2);

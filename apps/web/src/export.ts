@@ -1,4 +1,5 @@
 import type { Card } from '../../../packages/game-rules/index';
+import { contribution } from './contribution';
 const provenance = (card: Card) =>
   card.seeded
     ? card.starterKind === 'team'
@@ -109,8 +110,15 @@ export async function postcardPng(card: Card): Promise<Blob> {
     100,
   );
   c.textAlign = 'left';
-  if (provenance(card)) c.fillText(provenance(card), 100, 1220);
+  c.fillText(contribution(card), 100, 1220);
   c.fillText(location.host, 100, 1270);
+  c.font = '400 16px Arial, sans-serif';
+  c.fillText(
+    'Paper photo: D Sharon Pruitt · CC BY 2.0 · ' + location.host + '/credits.html',
+    100,
+    1310,
+    880,
+  );
   return new Promise((resolve, reject) =>
     canvas.toBlob(
       (blob) =>
