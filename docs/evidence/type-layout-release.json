@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-25T06:28:37.905Z",
+  "sourceCommit": "f2678ef5748570774753430d7e8b1880bdd98325",
+  "cloudflareVersion": "3f549c4f-8930-49f2-925f-4596879403c0",
+  "ci": {
+    "run": 40168024538,
+    "conclusion": "success"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-BkaU0F8V.js",
+      "sha256": "2c333f08a10e3c9211f785c6e83617e2b8ea261b54cc850d0cc8639b8cb9a8a0"
+    },
+    {
+      "asset": "/assets/index-BPjnzlSf.css",
+      "sha256": "d37c4e94d86fe9f7b27ae4dbb278dd10fd850889f7af56c289ff9426405796c0"
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb"
+    }
+  ],
+  "verification": "Served entry names match the prior tested typography build output; remote hashes recorded here. Ocean bytes match the established full-quality release. The prior entry/CSS local dist was replaced by the pending voting build, so a new local byte comparison for those files is not claimed.",
+  "scope": "Larger handwriting for essential instructions, separate ending thanks/date metadata. Four widths in Chrome/WebKit, six human-check layout cases, app build/script types passed. No backend change or provider call."
+}
