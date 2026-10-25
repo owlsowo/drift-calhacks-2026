@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-25T04:55:16.453Z",
+  "sourceCommit": "4c217cc68b517de7d9d866fb1976316aa8e66257",
+  "cloudflareVersion": "9b87cb9e-c260-48af-9e6f-31fc15a0ddcb",
+  "ci": {
+    "run": 40163512906,
+    "conclusion": "success"
+  },
+  "database": {
+    "identity": "c20021eee2fe643cce13a21845d5dcb1a168026f58ec4ac83d36ebd86563be60",
+    "migrationPlan": "Only additive my_appreciation view; no stored table or column changes",
+    "readback": "appreciation-upgrade-hosted.json"
+  },
+  "assets": [
+    {
+      "asset": "/assets/index-CPdN3Xvi.js",
+      "sha256": "f858d89dbf47daa8a51e29024fa925f40f3fbd48f3ab397dcac1a8ad7f1373a7",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/index-BmdMGGZn.css",
+      "sha256": "9db1eb7c8bc2136053e85dd885d222de98c395f16cd3f5873881f5ef44f2c538",
+      "matchesTestedBuild": true
+    },
+    {
+      "asset": "/assets/main-DzgfkmHL.js",
+      "sha256": "1741187880fe366a2e024208d11f32623be2ce39d3867a8d81d48f02e44025fb",
+      "matchesTestedBuild": true
+    }
+  ],
+  "scope": "Private intentional co-writer thanks. 100 server checks, seven cases per Chrome/WebKit, four Chrome unopened-return cases and eight Chrome withdrawal checks pass. No production story/receipt was created by these probes. Full-quality ocean remains byte-identical."
+}
