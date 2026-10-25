@@ -20,19 +20,19 @@ Phone motion is optional. The game also supports keyboard controls, paused anima
 
 - **React, TypeScript and Vite** for the web app.
 - **SpacetimeDB** for catches, private progress, shared stories, voting and live updates between writers.
-- **Claude** for moderation, optional writing hints and arranging approved artwork into postcard illustrations. People write both six-word lines.
+- **Claude** for moderation, writing hints and postcard illustrations. People write both six-word lines.
 - **Cloudflare Workers and Turnstile** for hosting, HTTPS and server-checked human verification.
-- **WebGPU** for the moving sea, using the bundled MIT-licensed Noniv FFT ocean engine. Devices without WebGPU get a coast artwork fallback.
+- **WebGPU** for the moving sea, using the Noniv FFT ocean engine.
 
-We used **Figma Make and Slides** to prototype interactions and document the design process. **Mana** helped build Bottle Kitchen, a separate tool for preparing and reviewing starter lines. Its app, build chat and tested export handoff are linked in the [workflow notes](docs/workflow-checkpoint.md).
+We used **Figma Make and Slides** to prototype interactions and document the design process. We built **Bottle Kitchen** in **Mana** to prepare and review starter lines. See the [workflow notes](docs/workflow-checkpoint.md).
 
 ## How the shared story works
 
-SpacetimeDB gives each writer a timed assignment. Claude's check runs outside the database transaction; before saving the result, the server checks the writer, assignment and deadline again. The completed postcard then appears for both writers through subscriptions.
+SpacetimeDB gives each writer a timed assignment. After Claude reviews the ending, the server checks the assignment and saves the story. Both writers receive the postcard through live subscriptions.
 
-Each accepted ending also queues a postcard illustration. Claude chooses and positions pieces from a fixed art catalog. It cannot add new story text, remote assets or executable markup. If illustration generation fails, the original words and sharing remain available.
+Claude illustrates each postcard by arranging pieces from a fixed art catalog.
 
-Unfinished drafts stay in the browser. The server keeps ownership, reports and other private state behind caller-specific views. Either co-writer can hide a completed pair; the original writer can withdraw a beginning and its replies. See [security and privacy details](docs/security-boundaries.md), [retry recovery](docs/hint-retry-context.md) and [author withdrawal](docs/author-withdrawal.md).
+Drafts save in the browser. Writers can report stories, hide a completed pair or withdraw their own beginning. See [security and privacy](docs/security-boundaries.md) and [draft recovery](docs/navigation-and-recovery.md) for details.
 
 ## Run locally
 
@@ -81,9 +81,7 @@ npm run test:pickup-flow
 
 Browser checks need the local database and Chrome. Install WebKit with `npx playwright install webkit` for WebKit runs. The test runner creates disposable local databases and uses synthetic writers; it does not call the live game's database or paid models.
 
-The current recorded release passed 63 unit tests and 133 server tests. Browser checks cover writing, live returns, saved drafts, bottle opening, voting and image downloads. The [domain deployment report](docs/evidence/owned-domain-deployment-2026-10-25.json) records the published versions, asset checks and HTTPS verification.
-
-Physical-phone checks, an attendee pilot and independent human review of moderation quality remain incomplete. Automated and synthetic tests do not establish those outcomes. Production team-starter inventory is still empty; the bundled samples are development fixtures.
+The current recorded release passed 63 unit tests and 133 server tests. Browser checks cover writing, live returns, saved drafts, bottle opening, voting and image downloads. See the [test records](docs/team-progress.md) and [domain deployment report](docs/evidence/owned-domain-deployment-2026-10-25.json) for results and remaining checks.
 
 ## Hosting and saved bottles
 
@@ -91,11 +89,9 @@ The primary address is **[driftbottle.ink](https://driftbottle.ink/)**. The [ori
 
 ## More detail
 
-- [Artwork sources and licenses](docs/asset-sources.md), including the team-approved AI coast artwork and credited paper photograph.
+- [Artwork credits and licenses](docs/asset-sources.md).
 - [Navigation and draft recovery](docs/navigation-and-recovery.md).
 - [Model budget and owner controls](docs/ai-budget.md).
 - [Figma and Mana files, stage log and workflow evidence](docs/workflow-checkpoint.md).
 - [Illustration contracts and art catalog](packages/scene-contracts/index.ts).
 - [Release history and test records](docs/team-progress.md).
-
-The optional mutual-hello feature is disabled by default. It requires both writers to opt in and the owner to verify a public meeting point before enabling it; see the [security notes](docs/security-boundaries.md#hello).
