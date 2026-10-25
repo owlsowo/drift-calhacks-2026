@@ -13,6 +13,7 @@ Checked October 24, 2026 against the Devpost listing, organizer guide and Figma 
 | Most Creative Project | A revival of QQ/WeChat drift bottles as a daily six-plus-six-word ritual | Explain the original inspiration and our contribution; show the physical interaction and coauthored artifact. No separate published essay requirement found. |
 | Hacker's Choice | A memorable experience other hackers can try | A working link, clear project image and concise demo. No separate published writeup requirement found. |
 | Overall awards | A complete project with intentional UX and engineering depth | Main Devpost submission and demonstration. First/second/third are placements, not three independent integrations. |
+| Most Technically Complex Hack — stretch | Authoritative concurrency, private views, bound AI transactions/cost holds and connected WebGL paper/sea | Use the existing architecture, ten-writer checks and failure/recovery evidence. Final category selection remains subject to the form/cap and team eligibility. |
 | Best Figma Workflow Hack | Actual Make iteration, implemented handoff and native Slides deck with playable embed | Stage log, Education verification and file access recorded. The 2:31 video draft needs team review/upload and files need embedding in the submission. |
 | Best Use of Mana | Working Bottle Kitchen app, public build chat and real export-to-validator handoff | The submission draft contains the concrete paragraph and public links; actual app/export gates appear in the video draft. Final category fields/upload remain. |
 

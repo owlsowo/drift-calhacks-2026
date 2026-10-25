@@ -225,6 +225,7 @@ const db = schema(
     env: {
       ANTHROPIC_API_KEY: t.option(t.string()),
       DRIFT_DEV_MODE: t.option(t.string()),
+      DRIFT_DEV_STARTERS: t.option(t.string()),
       DRIFT_STARTERS_HUMAN_WRITTEN: t.option(t.string()),
       NUDGE_MODEL: t.option(t.string()),
       MODERATION_MODEL: t.option(t.string()),
@@ -891,7 +892,10 @@ function assign(ctx: Tx, r: Round) {
     const approved =
       ctx.env.DRIFT_STARTERS_HUMAN_WRITTEN === 'true' ? teamStartersFor(r.promptId) : [];
     const humanWritten = approved.length > 0;
-    if (!humanWritten && ctx.env.DRIFT_DEV_MODE !== 'true')
+    if (
+      !humanWritten &&
+      (ctx.env.DRIFT_DEV_MODE !== 'true' || ctx.env.DRIFT_DEV_STARTERS === 'false')
+    )
       fail('No bottles are available just now. Your setup is safe; try again later.');
     const prompt = promptForDay(r.day);
     const available = (humanWritten ? approved : prompt.starters)

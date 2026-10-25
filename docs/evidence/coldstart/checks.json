@@ -1,0 +1,70 @@
+{
+  "checkedAt": "2026-10-25T00:11:31.585Z",
+  "mode": "Real local Spacetime transitions with two isolated synthetic identities. AI off and all sample/team starters disabled. No provider calls, public test stories or attendee participation.",
+  "checks": [
+    {
+      "engine": "Chrome",
+      "width": 390,
+      "message": "An empty first catch consumes no round; leaving a published beginning closes one counted round without removing the bottle"
+    },
+    {
+      "engine": "Chrome",
+      "width": 390,
+      "message": "A second independent identity completes the real peer bottle and its canonical postcard returns after the original round was closed"
+    },
+    {
+      "engine": "Chrome",
+      "width": 390,
+      "message": "A return that arrives while the author waits changes the recovery copy; keeping it preserves both postcards and the daily round count"
+    },
+    {
+      "engine": "Chrome",
+      "width": 1440,
+      "message": "An empty first catch consumes no round; leaving a published beginning closes one counted round without removing the bottle"
+    },
+    {
+      "engine": "Chrome",
+      "width": 1440,
+      "message": "A second independent identity completes the real peer bottle and its canonical postcard returns after the original round was closed"
+    },
+    {
+      "engine": "Chrome",
+      "width": 1440,
+      "message": "A return that arrives while the author waits changes the recovery copy; keeping it preserves both postcards and the daily round count"
+    },
+    {
+      "engine": "WebKit",
+      "width": 390,
+      "message": "An empty first catch consumes no round; leaving a published beginning closes one counted round without removing the bottle"
+    },
+    {
+      "engine": "WebKit",
+      "width": 390,
+      "message": "A second independent identity completes the real peer bottle and its canonical postcard returns after the original round was closed"
+    },
+    {
+      "engine": "WebKit",
+      "width": 390,
+      "message": "A return that arrives while the author waits changes the recovery copy; keeping it preserves both postcards and the daily round count"
+    },
+    {
+      "engine": "WebKit",
+      "width": 1440,
+      "message": "An empty first catch consumes no round; leaving a published beginning closes one counted round without removing the bottle"
+    },
+    {
+      "engine": "WebKit",
+      "width": 1440,
+      "message": "A second independent identity completes the real peer bottle and its canonical postcard returns after the original round was closed"
+    },
+    {
+      "engine": "WebKit",
+      "width": 1440,
+      "message": "A return that arrives while the author waits changes the recovery copy; keeping it preserves both postcards and the daily round count"
+    }
+  ],
+  "errors": [],
+  "limits": [
+    "Desktop browser engines with mobile/touch emulation; no physical phone or attendee outcome claim"
+  ]
+}
