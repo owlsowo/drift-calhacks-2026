@@ -47,8 +47,10 @@ import { EarlierDrafts } from './EarlierDrafts';
 import { BottleRitual, type BottleRitualKind } from './BottleRitual';
 import { useDriftNavigation } from './useDriftNavigation';
 import { confirmedAction } from './confirmed-action';
+import { useCoastPeriod } from './useCoastPeriod';
 import './natural.css';
 import './postcard-scene.css';
+import './daylight-coast.css';
 
 function Bottle({ small = false }: { small?: boolean }) {
   return (
@@ -297,6 +299,7 @@ function DailyTurnReceipt({ used, reset }: { used?: number; reset: string }) {
 
 function App() {
   const s = useSyncExternalStore(game.subscribe, game.snapshot);
+  const coastPeriod = useCoastPeriod();
   const beforeNavigation = useRef(() => {});
   const {
     route,
@@ -822,8 +825,9 @@ function App() {
       </a>
       <div
         className={`app-shell sea-world ${view === 'today' || (view === 'play' && active?.stage === 'catch') ? 'shore-shell' : ''}${ritual ? ' has-bottle-ritual' : ''}${view === 'today' && needsShoreCheck ? ' has-shore-check' : ''}${view === 'today' && returnedCard ? ' has-returned-note' : ''}`}
+        data-time-of-day={coastPeriod}
       >
-        <Ocean paused={seaPaused} />
+        <Ocean paused={seaPaused} timeOfDay={coastPeriod} />
         <header className="site-header" inert={!!ritual}>
           <button
             className="wordmark"

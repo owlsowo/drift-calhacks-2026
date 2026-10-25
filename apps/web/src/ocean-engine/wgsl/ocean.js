@@ -266,7 +266,8 @@ fn foamPattern(xz: vec2f, t: f32) -> f32 {
   // aerial perspective: atmosphere extinction plus a marine haze floor
   let T = exp(-max(F.fogExt.rgb, vec3f(F.fogExt.w)) * dist);
   let hz = normalize(vec3f(-V.x, 0.002, -V.z));
-  let fogCol = skyAtmo(hz) * vec3f(0.19, 0.33, 0.58);
+  let fogTint = select(vec3f(0.19, 0.33, 0.58), vec3f(0.035, 0.09, 0.115), F.camFwd.w > 0.5);
+  let fogCol = skyAtmo(hz) * fogTint;
   col = col * T + fogCol * (1.0 - T);
   return vec4f(col, 1.0);
 }

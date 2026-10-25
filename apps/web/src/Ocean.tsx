@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
+import type { CoastPeriod } from './coast-time';
 import './ocean.css';
 
-type OceanController = { setPaused: (paused: boolean) => void; destroy: () => void };
+type OceanController = {
+  setPaused: (paused: boolean) => void;
+  setTimeOfDay: (period: CoastPeriod) => void;
+  destroy: () => void;
+};
 type OceanModule = {
   createOcean: (
     canvas: HTMLCanvasElement,
     options: {
       paused: boolean;
+      timeOfDay: CoastPeriod;
       signal: AbortSignal;
       onReady: () => void;
       onError: (error: unknown) => void;
@@ -14,11 +20,13 @@ type OceanModule = {
   ) => Promise<OceanController>;
 };
 
-export function Ocean({ paused = false }: { paused?: boolean }) {
+export function Ocean({ paused = false, timeOfDay }: { paused?: boolean; timeOfDay: CoastPeriod }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const controller = useRef<OceanController | null>(null);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
+  const periodRef = useRef(timeOfDay);
+  periodRef.current = timeOfDay;
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -29,6 +37,7 @@ export function Ocean({ paused = false }: { paused?: boolean }) {
     const fallback = () => {
       if (abort.signal.aborted) return;
       target.dataset.renderer = 'coast-art';
+      target.dataset.motion = 'paused';
       setReady(false);
     };
     media.addEventListener('change', update);
@@ -39,6 +48,7 @@ export function Ocean({ paused = false }: { paused?: boolean }) {
         if (abort.signal.aborted) return;
         const active = await engine.createOcean(target, {
           paused: pausedRef.current || media.matches,
+          timeOfDay: periodRef.current,
           signal: abort.signal,
           onReady: () => {
             if (abort.signal.aborted) return;
@@ -50,6 +60,7 @@ export function Ocean({ paused = false }: { paused?: boolean }) {
         if (abort.signal.aborted) active.destroy();
         else {
           controller.current = active;
+          active.setTimeOfDay(periodRef.current);
           update();
         }
       } catch {
@@ -69,14 +80,30 @@ export function Ocean({ paused = false }: { paused?: boolean }) {
     controller.current?.setPaused(paused || matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, [paused]);
 
+  useEffect(() => {
+    controller.current?.setTimeOfDay(timeOfDay);
+  }, [timeOfDay]);
+
   return (
-    <div className={`ocean-world fft-ocean${ready ? ' ocean-ready' : ''}`} aria-hidden="true">
+    <div
+      className={`ocean-world fft-ocean${ready ? ' ocean-ready' : ''}`}
+      data-time-of-day={timeOfDay}
+      aria-hidden="true"
+    >
       <div className="ocean-photograph">
         <canvas ref={canvas} className="sea-surface fft-surface" aria-hidden="true" />
       </div>
       {ready && (
         <div className="coast-headland fft-headland">
-          <img src="/assets/coast-headland.webp" alt="" draggable={false} />
+          <img
+            src={
+              timeOfDay === 'day'
+                ? '/assets/coast-headland-day.webp'
+                : '/assets/coast-headland.webp'
+            }
+            alt=""
+            draggable={false}
+          />
         </div>
       )}
     </div>

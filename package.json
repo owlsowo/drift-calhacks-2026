@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --config apps/web/vite.config.ts",
     "build": "tsc --noEmit && vite build --config apps/web/vite.config.ts",
-    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/scene-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts scripts/bottle-link.test.ts",
+    "test": "tsx --test packages/game-rules/*.test.ts packages/ai-contracts/*.test.ts packages/scene-contracts/*.test.ts packages/starter-content/*.test.ts packages/ai-costs/*.test.ts scripts/shake.test.ts scripts/bottle-book.test.ts scripts/drafts.test.ts scripts/csp-serialization.test.ts scripts/navigation.test.ts scripts/bottle-link.test.ts scripts/coast-time.test.ts",
     "starters:check": "tsx scripts/check-starters.ts",
     "check:server": "tsc --noEmit -p spacetimedb/tsconfig.json",
     "check:scripts": "tsc --noEmit -p tsconfig.scripts.json",
@@ -59,7 +59,9 @@
     "test:shared-landing": "node scripts/test-room.mjs shared-landing",
     "test:qr-invitation": "node scripts/test-room.mjs qr-invitation",
     "test:shore-motion": "node scripts/test-room.mjs shore-motion",
-    "test:shelf-render": "node scripts/test-room.mjs shelf-render"
+    "test:shelf-render": "node scripts/test-room.mjs shelf-render",
+    "test:coast-time": "node scripts/coast-time-ui.mjs",
+    "test:coast-gpu": "node scripts/coast-gpu-ui.mjs"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
