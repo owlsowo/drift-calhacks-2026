@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { DbConnection } from '../apps/web/src/module_bindings/index.ts';
 const root = path.resolve(new URL('../', import.meta.url).pathname);
 process.chdir(root);
-const baseline = '99419ddb4d014ce60de67223e9c4df431a75e3b0';
+const baseline = 'ec98abf151c035a20463d31ebd54b2827c817977';
 const database = `drift-test-unopened-upgrade-${Date.now().toString(36)}`;
 const previous = path.join(root, '.spacetime', database, 'previous');
 await fs.mkdir(previous, { recursive: true });

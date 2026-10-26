@@ -81,7 +81,7 @@ npm run test:pickup-flow
 
 Browser checks need the local database and Chrome. Install WebKit with `npx playwright install webkit` for WebKit runs. The test runner creates disposable local databases and uses synthetic writers; it does not call the live game's database or paid models.
 
-The current recorded release passed 64 unit tests and 136 server tests. Browser checks cover writing, live returns, saved drafts, bottle opening, voting and image downloads. See the [test records](docs/team-progress.md) and [domain deployment report](docs/evidence/owned-domain-deployment-2026-10-25.json) for results and remaining checks.
+Browser checks cover writing, live returns, saved drafts, bottle opening, voting and image downloads.
 
 ## Hosting and saved bottles
 
@@ -92,6 +92,5 @@ The primary address is **[driftbottle.ink](https://driftbottle.ink/)**. The [ori
 - [Artwork credits and licenses](docs/asset-sources.md).
 - [Navigation and draft recovery](docs/navigation-and-recovery.md).
 - [Model budget and owner controls](docs/ai-budget.md).
-- [Figma and Mana files, stage log and workflow evidence](docs/workflow-checkpoint.md).
+- [Figma and Mana workflow](docs/workflow-checkpoint.md).
 - [Illustration contracts and art catalog](packages/scene-contracts/index.ts).
-- [Release history and test records](docs/team-progress.md).

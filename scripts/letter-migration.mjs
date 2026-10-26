@@ -9,7 +9,7 @@ import { chromium } from '@playwright/test';
 import { DbConnection } from '../apps/web/src/module_bindings/index.ts';
 const root = path.resolve(new URL('../', import.meta.url).pathname);
 process.chdir(root);
-const legacyCommit = 'f68baf452a2f85614ff7a18629e86ec0ca02df1c';
+const legacyCommit = 'e3cc82e46257656a3097d4d48b6dbb2729612351';
 const room = `drift-test-migration-${Date.now().toString(36)}`;
 const work = path.join(root, '.spacetime', room);
 const legacy = path.join(work, 'legacy');

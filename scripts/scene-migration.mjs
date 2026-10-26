@@ -8,7 +8,7 @@ import { createHash } from 'node:crypto';
 
 const root = path.resolve(new URL('../', import.meta.url).pathname);
 process.chdir(root);
-const legacyRef = '4c217cc68b517de7d9d866fb1976316aa8e66257';
+const legacyRef = '68f59a3681744f3494e0ddb4f4ca40b8cd8d9692';
 const candidateRef = process.env.DRIFT_SCENE_MIGRATION_REF || 'origin/codex/claude-scenes';
 const git = (...args) => {
   const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
