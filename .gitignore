@@ -17,3 +17,4 @@ evals/*results*.json
 outputs/
 archive-local/
 *retrospective*.md
+!evals/scene-results.json

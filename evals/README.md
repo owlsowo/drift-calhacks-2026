@@ -15,3 +15,5 @@ Never describe dry runs, mock HTTP tests, or unreviewed output as successful liv
 Use `--kind nudge --limit 14` to run only the 14 nudge cases, or `--ids nudge-1,nudge-injection --limit 2` for a named subset. Dry runs print the exact selected IDs before spending. Filters do not raise the lifetime cap. To compare Haiku and Sonnet, run the same nudge subset with `NUDGE_MODEL=claude-haiku-5-5` and `NUDGE_MODEL=claude-sonnet-5-5`; keep each output and inspect both against the same criteria. Labels and model outputs still need review, and repeated calls may vary.
 
 Nine additional `coach-v2-*` fixtures cover the real payload shape for all seven themes and two adversarial drafts. Their optional `promptId` makes the runner reject stale theme instructions. There are now 59 fixtures: 36 moderation and 23 coaching. Use explicit IDs for a subset; `--kind nudge --limit 14` retains the original first fourteen cases rather than selecting all themes.
+
+`scene-results.json` contains synthetic story/layout fixtures used by the renderer tests and local preview. It keeps the scene and model label, without provider usage, billing or request metadata.
