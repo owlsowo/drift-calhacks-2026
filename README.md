@@ -97,4 +97,4 @@ The primary address is **[driftbottle.ink](https://driftbottle.ink/)**. The [ori
 
 ## Credits
 
-[EG-xry](https://github.com/EG-xry) came up with the idea of multiple floating bottles for the bottle pickup process.
+[EG-xry](https://github.com/EG-xry) came up with the idea of multiple floating bottles for the bottle pickup process and built the engine that lets the bottles float on the water.
