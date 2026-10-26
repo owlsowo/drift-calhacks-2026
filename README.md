@@ -94,3 +94,7 @@ The primary address is **[driftbottle.ink](https://driftbottle.ink/)**. The [ori
 - [Model budget and owner controls](docs/ai-budget.md).
 - [Figma and Mana workflow](docs/workflow-checkpoint.md).
 - [Illustration contracts and art catalog](packages/scene-contracts/index.ts).
+
+## Credits
+
+[EG-xry](https://github.com/EG-xry) came up with the idea of multiple floating bottles for the bottle pickup process.
